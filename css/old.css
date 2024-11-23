@@ -16,76 +16,6 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/*Tooltip*/
-.calc-tooltip {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  background-color: #141a24;
-  border: 1px solid #868c94;
-  padding: 15px;
-  border-radius: 10px;
-  visibility: hidden;
-  opacity: 0;
-  font-size: 11px;
-  width: 100%;
-  min-width: 250px;
-  display: flex;
-  flex-direction: column;
-  transition: 300ms ease;
-  font-family: "Montserrat", sans-serif;
-  z-index: 3;
-}
-.calc-tooltip__title {
-  font-size: 16px;
-  text-align: center;
-  margin-bottom: 5px;
-  line-height: 1.2;
-}
-.calc-tooltip__text a {
-  font-weight: 700;
-  text-decoration: underline;
-}
-.calc-tooltip__link {
-  text-decoration: underline;
-  color: #f7951d;
-}
-.main-calc-radio:hover .calc-tooltip,
-.main-calc-checkbox:hover .calc-tooltip,
-.main-calc__title:hover .calc-tooltip,
-.help:hover .calc-tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-.help .calc-tooltip {
-  top: -5px;
-  left: calc(100% + 10px);
-  min-width: 300px;
-}
-.yuan-help .calc-tooltip {
-  min-width: max-content;
-  left: calc(100% + 5px);
-}
-
-.type-of-goods-dropdown-toggle .help .calc-tooltip,
-.type-of-goods-dropdown-list .help .calc-tooltip {
-  bottom: calc(100% + 10px);
-  top: initial;
-  left: inherit;
-  right: 0;
-  min-width: 220px;
-}
-
-.main-calc-parametr .calc-tooltip,
-.order-data-dimensions .calc-tooltip,
-.order-data-general .calc-tooltip {
-  bottom: calc(100% + 10px);
-  top: initial;
-  left: inherit;
-  right: 0;
-  min-width: 250px;
-}
-
 /*Circle Info*/
 .circle-info {
   display: flex;
@@ -107,16 +37,6 @@ input[type="number"] {
   gap: 20px;
   align-items: center;
   width: 100%;
-}
-.calc-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  position: relative;
-  padding: 30px 15px;
-  gap: 20px;
-  height: auto !important;
 }
 
 .client-requisite-container {
@@ -441,128 +361,7 @@ input[type="number"] {
   overflow: visible;
 }
 
-/* Mobile */
-@media screen and (max-width: 768px) {
-  .main-calc-select {
-    width: 100%;
-    justify-content: space-evenly;
-    gap: 5px;
-  }
 
-  .main-calc-select__btn {
-    width: auto;
-  }
-
-  .main-calc-first__block {
-    padding: 40px 0 0;
-  }
-
-  .main-calc-first__choose {
-    flex-wrap: wrap;
-    gap: 30px;
-  }
-
-  .main-calc-first__from-to {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .main-calc-first__choose_block {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .calc-container {
-    padding: 20px 0;
-  }
-
-  .main-calc-parametr__main {
-    grid-template-columns: 1fr;
-    gap: 20px 15px;
-  }
-
-  .main-calc-first__from-to_arrow {
-    display: none;
-  }
-
-  .group-input-increment {
-    width: 100%;
-  }
-
-  .main-calc-parametr__secondary_block {
-    grid-template-columns: 1fr;
-    gap: 20px 15px;
-  }
-  .main-calc-parametr__secondary_block .group-input:first-child {
-    grid-column-end: inherit;
-  }
-
-  .group-input-dimensions__block {
-    width: 100%;
-    justify-content: space-between;
-    gap: 12px 5px;
-    flex-wrap: wrap;
-  }
-
-  .main-calc-packing {
-    padding: 0;
-  }
-
-  .img-boxing-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 20px;
-    gap: 20px;
-  }
-
-  .img-boxing-item img {
-    height: 60px;
-    max-height: inherit;
-    min-height: inherit;
-  }
-
-  .main-client-requisites-parametr__main {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-
-  .client-requisite-container {
-    padding: 20px 0;
-  }
-
-  .main-calc-code__container {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .main-calc-buy-info {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 15px;
-  }
-
-  .main-calc-upload {
-    height: 150px;
-  }
-
-  .main-calc-buy-info__form {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .main-calc-buy-info__form .group-input:first-child {
-    grid-column-start: 1;
-    grid-column-end: 3;
-  }
-  .main-calc-buy-info__form .group-input:nth-child(6) {
-    grid-column-start: 1;
-    grid-column-end: 3;
-  }
-  .main-calc-buy-info__form .group-input:nth-child(7) {
-    grid-column-start: 1;
-    grid-column-end: 3;
-  }
-}
 
 .main-calc img.pop-up-ads-banner {
   width: 100%;
@@ -1783,7 +1582,7 @@ label.dimensions-label {
 
 /* Стили для содержимого спойлера */
 .boxing-spoiler-content {
-  display: none;
+  display: flex;
   justify-content: center;
   align-items: center;
   height: auto;
