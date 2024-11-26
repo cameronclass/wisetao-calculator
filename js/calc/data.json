@@ -1,0 +1,137 @@
+[
+  {
+    "category_name": "Одежда",
+    "category_key": 1,
+    "data": [
+      { "weight_range": "0-100", "price_kg": 4.4 },
+      { "weight_range": "100-110", "price_kg": 4.4 },
+      { "weight_range": "110-120", "price_kg": 4.3 },
+      { "weight_range": "120-130", "price_kg": 4.2 },
+      { "weight_range": "130-140", "price_kg": 4.1 },
+      { "weight_range": "140-150", "price_kg": 4.0 },
+      { "weight_range": "150-160", "price_kg": 3.9 },
+      { "weight_range": "160-170", "price_kg": 3.8 },
+      { "weight_range": "170-180", "price_kg": 3.7 },
+      { "weight_range": "180-190", "price_kg": 3.6 },
+      { "weight_range": "190-200", "price_kg": 3.5 },
+      { "weight_range": "200-250", "price_kg": 3.4 },
+      { "weight_range": "250-300", "price_kg": 3.3 },
+      { "weight_range": "300-350", "price_kg": 3.2 },
+      { "weight_range": "350-400", "price_kg": 3.1 },
+      { "weight_range": "400-1000", "price_kg": 3.0 }
+    ]
+  },
+  {
+    "category_name": "Обувь",
+    "category_key": 2,
+    "data": [
+      { "weight_range": "0-100", "price_kg": 3.1 },
+      { "weight_range": "100-110", "price_kg": 3.0 },
+      { "weight_range": "110-120", "price_kg": 2.9 },
+      { "weight_range": "120-130", "price_kg": 2.8 },
+      { "weight_range": "130-140", "price_kg": 2.7 },
+      { "weight_range": "140-150", "price_kg": 2.6 },
+      { "weight_range": "150-160", "price_kg": 2.5 },
+      { "weight_range": "160-170", "price_kg": 2.4 },
+      { "weight_range": "170-180", "price_kg": 2.3 },
+      { "weight_range": "180-190", "price_kg": 2.2 },
+      { "weight_range": "190-200", "price_kg": 2.1 }
+    ]
+  },
+  {
+    "category_name": "Продукты",
+    "category_key": 3,
+    "data": [
+      { "weight_range": "0-100", "price_kg": 2.7 },
+      { "weight_range": "100-110", "price_kg": 2.6 },
+      { "weight_range": "110-120", "price_kg": 2.5 },
+      { "weight_range": "120-130", "price_kg": 2.4 },
+      { "weight_range": "130-140", "price_kg": 2.3 },
+      { "weight_range": "140-150", "price_kg": 2.2 },
+      { "weight_range": "150-160", "price_kg": 2.1 },
+      { "weight_range": "160-170", "price_kg": 2.0 },
+      { "weight_range": "170-180", "price_kg": 1.9 },
+      { "weight_range": "180-190", "price_kg": 1.8 },
+      { "weight_range": "190-200", "price_kg": 1.7 },
+      { "weight_range": "200-250", "price_kg": 1.6 },
+      { "weight_range": "250-300", "price_kg": 1.5 },
+      { "weight_range": "300-1000", "price_kg": 1.4 }
+    ]
+  },
+  {
+    "category_name": "Бытовая электроника",
+    "category_key": 4,
+    "data": [
+      { "weight_range": "0-100", "price_kg": 2.7 },
+      { "weight_range": "100-110", "price_kg": 2.6 },
+      { "weight_range": "110-120", "price_kg": 2.5 },
+      { "weight_range": "120-150", "price_kg": 1.9 },
+      { "weight_range": "150-200", "price_kg": 1.8 },
+      { "weight_range": "200-250", "price_kg": 1.7 },
+      { "weight_range": "250-300", "price_kg": 1.6 },
+      { "weight_range": "300-350", "price_kg": 1.5 },
+      { "weight_range": "350-400", "price_kg": 1.4 },
+      { "weight_range": "400-600", "price_kg": 1.3 },
+      { "weight_range": "600+", "price_kg": 1.2 }
+    ]
+  },
+  {
+    "category_name": "Товары для дома и аксессуары",
+    "category_key": 5,
+    "data": [
+      { "weight_range": "0-100", "price_kg": 2.6 },
+      { "weight_range": "100-110", "price_kg": 2.5 },
+      { "weight_range": "110-120", "price_kg": 2.4 },
+      { "weight_range": "120-150", "price_kg": 1.8 },
+      { "weight_range": "150-200", "price_kg": 1.7 },
+      { "weight_range": "200-250", "price_kg": 1.6 },
+      { "weight_range": "250-300", "price_kg": 1.5 },
+      { "weight_range": "300-350", "price_kg": 1.4 },
+      { "weight_range": "350-400", "price_kg": 1.3 },
+      { "weight_range": "400-600", "price_kg": 1.2 },
+      { "weight_range": "600+", "price_kg": 1.1 }
+    ]
+  },
+  {
+    "category_name": "Домашние и хозяйственные товары",
+    "category_key": 6,
+    "data": [
+      { "weight_range": "0-10", "price_kg": 2.5 },
+      { "weight_range": "100-110", "price_kg": 2.4 },
+      { "weight_range": "110-120", "price_kg": 2.3 },
+      { "weight_range": "120-150", "price_kg": 1.7 },
+      { "weight_range": "150-200", "price_kg": 1.6 },
+      { "weight_range": "200-250", "price_kg": 1.5 },
+      { "weight_range": "250-300", "price_kg": 1.4 },
+      { "weight_range": "300-350", "price_kg": 1.3 },
+      { "weight_range": "350-400", "price_kg": 1.2 },
+      { "weight_range": "400-600", "price_kg": 1.1 },
+      { "weight_range": "600+", "price_kg": 1.0 }
+    ]
+  },
+  {
+    "category_name": "Бытовые мелочи и аксессуары",
+    "category_key": 7,
+    "data": [
+      { "weight_range": "0-100", "price_kg": 3.7 },
+      { "weight_range": "100-110", "price_kg": 3.6 },
+      { "weight_range": "110-120", "price_kg": 3.5 },
+      { "weight_range": "120-130", "price_kg": 3.4 },
+      { "weight_range": "130-140", "price_kg": 3.3 },
+      { "weight_range": "140-150", "price_kg": 3.2 },
+      { "weight_range": "150-160", "price_kg": 3.1 },
+      { "weight_range": "160-170", "price_kg": 3.0 },
+      { "weight_range": "170-180", "price_kg": 2.9 },
+      { "weight_range": "180-190", "price_kg": 2.8 },
+      { "weight_range": "190-200", "price_kg": 2.7 },
+      { "weight_range": "200-250", "price_kg": 2.6 },
+      { "weight_range": "250-300", "price_kg": 2.5 },
+      { "weight_range": "300-350", "price_kg": 2.4 },
+      { "weight_range": "350-400", "price_kg": 2.3 },
+      { "weight_range": "400-500", "price_kg": 2.2 },
+      { "weight_range": "500-700", "price_kg": 2.1 },
+      { "weight_range": "700-1000", "price_kg": 2.0 },
+      { "weight_range": "1000+", "price_kg": 1.9 }
+    ]
+  }
+]

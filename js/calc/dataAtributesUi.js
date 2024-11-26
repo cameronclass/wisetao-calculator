@@ -47,6 +47,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // Инициализация для начального состояния
     handleClassChange();
   });
+  /* Increment */
+      document
+        .querySelectorAll(".group-input-increment")
+        .forEach(function (element) {
+          const minusButton = element.querySelector(
+            ".group-input-increment__minus"
+          );
+          const plusButton = element.querySelector(
+            ".group-input-increment__plus"
+          );
+          const inputField = element.querySelector(".group-input-increment input");
+
+          minusButton.addEventListener("click", function () {
+            let currentValue = parseInt(inputField.value);
+            if (currentValue > 1) {
+              // Предотвращаем отрицательные значения
+              inputField.value = currentValue - 1;
+            }
+          });
+
+          plusButton.addEventListener("click", function () {
+            let currentValue = parseInt(inputField.value);
+            inputField.value = currentValue + 1;
+          });
+        });
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -57,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Открытие/закрытие выпадающего списка
   selectedOption.addEventListener("click", () => {
     optionsContainer.style.display =
-      optionsContainer.style.display === "block" ? "none" : "block";
+      optionsContainer.style.display === "flex" ? "none" : "flex";
   });
 
   // Выбор опции
