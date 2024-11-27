@@ -1167,6 +1167,11 @@ body {
   min-width: 250px;
 }
 
+.calc-by-custom{
+  grid-column-start: 1;
+  grid-column-end: 3;
+}
+
 /* Mobile */
 @media screen and (max-width: 768px) {
   body {
