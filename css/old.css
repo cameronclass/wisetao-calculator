@@ -1308,33 +1308,7 @@ label.dimensions-label {
   outline: none;
 }
 
-.cross {
-  width: 0px;
-  height: 8px;
-  color: #f09123;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  margin-right: 11px;
-}
 
-.equals {
-  color: #f09123;
-  font-size: 22px;
-}
-
-.result {
-  color: white;
-  font-weight: bold;
-  font-size: 35px;
-  height: 40px;
-}
-
-.m3 {
-  color: #f09123;
-  margin-top: -12px;
-  font-size: 15px;
-}
 
 .custom-input-label-dimensions.active {
   color: white;

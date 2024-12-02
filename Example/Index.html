@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор доставки</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="calculator">
+        <h1>Калькулятор стоимости доставки</h1>
+        <div class="field">
+            <label for="total_volume">Общий объём (м³):</label>
+            <input type="text" id="total_volume" name="total_volume" placeholder="Введите объём">
+            <span class="error-message"></span>
+        </div>
+        <div class="field">
+            <label for="total_weight">Общий вес (кг):</label>
+            <input type="text" id="total_weight" name="total_weight" placeholder="Введите вес">
+            <span class="error-message"></span>
+        </div>
+        <div class="field">
+            <label for="quantity">Количество мест:</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1">
+            <span class="error-message"></span>
+        </div>
+        <div class="field">
+            <label for="category">Категория:</label>
+            <select id="category" name="category">
+                <option value="clothes">Одежда</option>
+                <option value="shoes">Обувь</option>
+                <option value="products">Продукты</option>
+                <option value="consumer_electronics">Бытовая электроника</option>
+            </select>
+            <span class="error-message"></span>
+        </div>
+        <div class="field">
+            <label for="insurance">Страховка:</label>
+            <input type="checkbox" id="insurance" name="insurance">
+        </div>
+        <button class="calculate-button">Рассчитать</button>
+        <div class="results">
+            <p>Стоимость доставки: <span class="calculate-result__ship">-</span></p>
+            <p>Стоимость упаковки: <span class="calculate-result__package">-</span></p>
+            <p>Общая стоимость (USD): <span class="calculate-result__dollar">-</span></p>
+            <p>Общая стоимость (RUB): <span class="calculate-result__ruble">-</span></p>
+            <p>Общая стоимость (CNY): <span class="calculate-result__cny">-</span></p>
+        </div>
+    </div>
+    <script src="data-loader.js"></script>
+    <script src="validation.js"></script>
+    <script src="calculation.js"></script>
+    <script src="ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

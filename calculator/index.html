@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор доставки</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="currency-block">
+        <h2>Текущие курсы валют</h2>
+        <div class="currency-list">
+            <p>Курс доллара (USD): <span id="current-dollar-rate">-</span></p>
+            <p>Курс рубля (RUB): <span id="current-ruble-rate">-</span></p>
+            <p>Курс юаня (CNY): <span id="current-yuan-rate">-</span></p>
+        </div>
+    </div>
+
+    <div class="calculator">
+        <h1 class="calculator-title">Калькулятор стоимости доставки</h1>
+        <form class="calculator-form" id="calculator-form">
+            <!-- Страховка -->
+            <div class="field">
+                <label>
+                    <input type="checkbox" name="insurance">
+                    Страховка
+                </label>
+            </div>
+            <!-- Переключатель объема -->
+            <div class="field">
+                <label>
+                    <input type="checkbox" name="weight_volume_change" checked>
+                    Использовать объем напрямую
+                </label>
+            </div>
+            <!-- Общий объем -->
+            <div class="field">
+                <label for="total_volume">Общий объём (м³):</label>
+                <input type="text" name="total_volume" id="total_volume" value="0.1" placeholder="Введите объём">
+                <span class="error-message"></span>
+            </div>
+            <!-- Длина, ширина, высота -->
+            <div class="field dimensions-group">
+                <label for="volume_lenght">Длина:</label>
+                <input type="text" name="volume_lenght" id="volume_lenght" placeholder="см" required>
+                <label for="volume_width">Ширина:</label>
+                <input type="text" name="volume_width" id="volume_width" placeholder="см" required>
+                <label for="volume_height">Высота:</label>
+                <input type="text" name="volume_height" id="volume_height" placeholder="см" required>
+                <span class="error-message"></span>
+                <input type="text" name="total_volume_calculated" class="volume-total__result" readonly placeholder="Рассчитанный объём">
+            </div>
+            <!-- Общий вес -->
+            <div class="field">
+                <label for="total_weight">Общий вес (кг):</label>
+                <input type="text" name="total_weight" id="total_weight" required placeholder="Введите вес">
+                <span class="error-message"></span>
+            </div>
+            <!-- Количество мест -->
+            <div class="field">
+                <label for="quantity">Количество мест:</label>
+                <input type="number" name="quantity" id="quantity" value="1" min="1" required>
+                <span class="error-message"></span>
+            </div>
+            <!-- Общая стоимость -->
+            <div class="field">
+                <label for="total_cost">Общая стоимость (USD):</label>
+                <input type="text" name="total_cost" id="total_cost" required placeholder="Введите стоимость">
+                <div class="currency-selector">
+                    <label><input type="radio" name="total_currency" value="dollar" checked> USD</label>
+                    <label><input type="radio" name="total_currency" value="ruble"> RUB</label>
+                    <label><input type="radio" name="total_currency" value="yuan"> CNY</label>
+                </div>
+                <span class="error-message"></span>
+            </div>
+            <button type="button" class="js-calculate-result">Рассчитать</button>
+        </form>
+    </div>
+
+    <!-- Подключение JS -->
+    <script src="js/modules/validation.js"></script>
+    <script src="js/modules/currency-loader.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

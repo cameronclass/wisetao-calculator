@@ -72,31 +72,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   /* Select Category */
-  const selectedOption = document.getElementById("selected-option");
-  const optionsContainer = document.getElementById("options-container");
-  const options = document.querySelectorAll(".calc-select__input");
+  document.querySelectorAll(".calc-select").forEach((selectBlock) => {
+    const selectedOption = selectBlock.querySelector(".calc-select__selected");
+    const optionsContainer = selectBlock.querySelector(".calc-select__options");
+    const options = selectBlock.querySelectorAll(".calc-select__input");
 
-  // Открытие/закрытие выпадающего списка
-  selectedOption.addEventListener("click", () => {
-    optionsContainer.style.display =
-      optionsContainer.style.display === "flex" ? "none" : "flex";
-  });
+    // Открытие/закрытие выпадающего списка
+    selectedOption.addEventListener("click", () => {
+      optionsContainer.style.display =
+        optionsContainer.style.display === "flex" ? "none" : "flex";
+    });
 
-  // Выбор опции
-  options.forEach((option) => {
-    option.addEventListener("change", (e) => {
-      const label = e.target.closest(".calc-select__label");
-      const optionName = label.querySelector(".calc-select__name").textContent;
-      const tooltipTitle = label.querySelector(
-        ".calc-tooltip__title"
-      ).textContent;
-      const tooltipText = label.querySelector(
-        ".calc-tooltip__text"
-      ).textContent;
+    // Выбор опции
+    options.forEach((option) => {
+      option.addEventListener("change", (e) => {
+        const label = e.target.closest(".calc-select__label");
+        const optionName =
+          label.querySelector(".calc-select__name").textContent;
+        const tooltipTitle = label.querySelector(
+          ".calc-tooltip__title"
+        ).textContent;
+        const tooltipText = label.querySelector(
+          ".calc-tooltip__text"
+        ).textContent;
 
-      // Обновляем текст и tooltip в выбранной опции
-      selectedOption.innerHTML = `
-                ${optionName}
+        // Обновляем текст и tooltip в выбранной опции
+        selectedOption.innerHTML = `
+                <span>${optionName}</span>
                 <span class="tooltip selected-tooltip">
                     <span class="tooltip-icon">?</span>
                     <span class="calc-tooltip">
@@ -106,14 +108,52 @@ document.addEventListener("DOMContentLoaded", () => {
                 </span>
             `;
 
-      optionsContainer.style.display = "none"; // Закрыть список
+        optionsContainer.style.display = "none"; // Закрыть список
+      });
+    });
+
+    // Закрытие списка при клике вне селекта
+    document.addEventListener("click", (e) => {
+      if (!selectBlock.contains(e.target)) {
+        optionsContainer.style.display = "none";
+      }
     });
   });
 
-  // Закрытие списка при клике вне селекта
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".calc-select")) {
-      optionsContainer.style.display = "none";
-    }
+  /* Custom select */
+  document.querySelectorAll(".currency-select").forEach((selectBlock) => {
+    const selectedNameElement = selectBlock.querySelector(
+      ".currency-select__selected_name"
+    );
+    const optionsList = selectBlock.querySelector(".currency-select__list");
+    const radioButtons = selectBlock.querySelectorAll(".custom-select__input");
+
+    // Открытие/закрытие выпадающего списка
+    selectedNameElement.parentElement.addEventListener("click", () => {
+      optionsList.style.display =
+        optionsList.style.display === "block" ? "none" : "block";
+    });
+
+    // Выбор опции
+    radioButtons.forEach((radio) => {
+      radio.addEventListener("change", (e) => {
+        const label = e.target.closest(".custom-select__label");
+        const optionName = label.querySelector(
+          ".custom-select__name"
+        ).textContent;
+
+        // Обновляем текст в выбранной опции
+        selectedNameElement.textContent = optionName;
+
+        optionsList.style.display = "none"; // Закрыть список
+      });
+    });
+
+    // Закрытие списка при клике вне селекта
+    document.addEventListener("click", (e) => {
+      if (!selectBlock.contains(e.target)) {
+        optionsList.style.display = "none";
+      }
+    });
   });
 });
