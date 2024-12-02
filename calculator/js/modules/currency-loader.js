@@ -1,43 +1,120 @@
-const botToken = "7077778313:AAGQu7UV0XiNs0z8aGDyQiCwaqzOEgZLnbQ";
-const chatId = "-413166690";
-let currencyRates = {
-  dollar: "-",
-  ruble: "-",
-  yuan: "-",
-};
+// Глобальные переменные для хранения значений
+let currencyYuan; // Курс юаня
+let currencyDollar; // Курс доллара в рублях
 
-async function fetchCurrencyRates() {
-  try {
-    const response = await fetch(
-      `https://api.telegram.org/bot${botToken}/getUpdates`
-    );
-    const data = await response.json();
-    const messages = data.result.map((item) => item.message.text).reverse();
+// Класс для работы с Telegram API
+class TelegramGroupInfo {
+  constructor(botToken, chatId) {
+    this.botToken = botToken; // Токен Telegram-бота
+    this.chatId = chatId; // ID группы Telegram
+    this.apiUrl = `https://api.telegram.org/bot${botToken}`;
+  }
 
-    const relevantMessage = messages.find((text) => text.includes("курс"));
-    if (relevantMessage) {
-      const matches = relevantMessage.match(
-        /курс\s([\d.,]+)\s*\/\s*([\d.,]+)\s*\/\s*([\d.,]+)\s*ю/i
+  // Метод для выполнения запроса к Telegram API
+  async fetchChatData() {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/getChat?chat_id=${this.chatId}`
       );
-      if (matches) {
-        currencyRates = {
-          dollar: matches[1],
-          ruble: matches[2],
-          yuan: matches[3],
-        };
+      const data = await response.json();
+      if (data.ok) {
+        return data.result; // Возвращает объект с данными чата
+      } else {
+        console.error("Ошибка API:", data.description);
+        return null;
       }
+    } catch (error) {
+      console.error("Ошибка запроса:", error);
+      return null;
     }
-  } catch (error) {
-    console.error("Ошибка загрузки курсов валют:", error.message);
+  }
+
+  // Метод для получения имени группы
+  async getGroupName() {
+    const chatData = await this.fetchChatData();
+    return chatData ? chatData.title : null; // Возвращает имя группы
   }
 }
 
-function displayCurrencyRates() {
-  document.getElementById("current-dollar-rate").textContent =
-    currencyRates.dollar;
-  document.getElementById("current-ruble-rate").textContent =
-    currencyRates.ruble;
-  document.getElementById("current-yuan-rate").textContent = currencyRates.yuan;
+// Класс для парсинга курсов валют
+class CurrencyParser {
+  constructor(multiplier = 7.3) {
+    this.multiplier = multiplier; // Множитель (по умолчанию 7.3)
+    this.currencyYuan = null; // Средняя цена юаня
+    this.currencyDollar = null; // Курс доллара в рублях
+  }
+
+  // Метод для извлечения средней цены юаня из текста
+  extractYuanRate(text) {
+    const match = text.match(
+      /курс\s([\d.,]+)\s*\/\s*([\d.,]+)\s*\/\s*([\d.,]+)\s*ю/i
+    );
+    if (match) {
+      this.currencyYuan = parseFloat(match[2].replace(",", ".")).toFixed(2);
+    } else {
+      throw new Error("Не удалось извлечь курс юаня из текста");
+    }
+  }
+
+  // Метод для вычисления курса доллара в рублях
+  calculateDollarRate() {
+    if (this.currencyYuan !== null) {
+      this.currencyDollar = (this.currencyYuan * this.multiplier).toFixed(2);
+    } else {
+      throw new Error("Сначала нужно извлечь курс юаня");
+    }
+  }
+
+  // Главный метод: парсинг и вычисления
+  parseAndCalculate(text) {
+    this.extractYuanRate(text);
+    this.calculateDollarRate();
+  }
+
+  // Геттеры для получения результата
+  getYuanRate() {
+    return this.currencyYuan;
+  }
+
+  getDollarRate() {
+    return this.currencyDollar;
+  }
+
+  // Метод для обновления множителя
+  updateMultiplier(newMultiplier) {
+    this.multiplier = newMultiplier;
+    this.calculateDollarRate();
+  }
 }
 
-export { fetchCurrencyRates, displayCurrencyRates };
+// Использование
+const botToken = "7077778313:AAGQu7UV0XiNs0z8aGDyQiCwaqzOEgZLnbQ"; // Ваш токен
+const chatId = "-413166690"; // ID группы
+
+(async () => {
+  // 1. Получаем имя группы через Telegram API
+  const groupInfo = new TelegramGroupInfo(botToken, chatId);
+  const groupName = await groupInfo.getGroupName();
+
+  if (groupName) {
+    const currencyParser = new CurrencyParser(); // Создаём объект парсера
+    currencyParser.parseAndCalculate(groupName); // Парсим имя группы
+
+    // Получаем результаты
+    currencyYuan = currencyParser.getYuanRate(); // Средняя цена юаня
+    currencyDollar = currencyParser.getDollarRate(); // Курс доллара в рублях
+
+    console.log(`1$ = ${currencyYuan} юань`);
+    console.log(`1$ = ${currencyDollar} рубль`);
+
+    // Обновляем поля в HTML
+    document.querySelector(
+      'input[name="current_rate_ruble"]'
+    ).value = `${currencyDollar} руб.`;
+    document.querySelector(
+      'input[name="current_rate_yuan"]'
+    ).value = `${currencyYuan} юань`;
+  } else {
+    console.error("Не удалось получить имя группы.");
+  }
+})();

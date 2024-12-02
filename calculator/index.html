@@ -1,85 +1,214 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор доставки</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="currency-block">
-        <h2>Текущие курсы валют</h2>
-        <div class="currency-list">
-            <p>Курс доллара (USD): <span id="current-dollar-rate">-</span></p>
-            <p>Курс рубля (RUB): <span id="current-ruble-rate">-</span></p>
-            <p>Курс юаня (CNY): <span id="current-yuan-rate">-</span></p>
+
+    <div class="calculator">
+        <h2 class="mb-4 text-center">Калькулятор доставки</h2>
+
+        <!-- Текущие курсы валют -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Курс рубля к доллару (RUB/USD):</label>
+                <input type="text" class="form-control" name="current_rate_ruble" readonly>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Курс юаня к доллару (CNY/USD):</label>
+                <input type="text" class="form-control" name="current_rate_yuan" readonly>
+            </div>
+        </div>
+
+        <form>
+            <!-- Страховка -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="insurance" id="insurance">
+                <label class="form-check-label" for="insurance"><strong>Страховка</strong></label>
+            </div>
+
+
+
+            <!-- Общий объем -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <label class="form-label">Общий объем (м³):</label>
+                    <input type="text" class="form-control" name="total_volume" value="0.1" required>
+                </div>
+            </div>
+            <!-- Переключатель -->
+            <div class="form-check mb-3 d-none">
+                <input class="form-check-input" type="checkbox" name="weight_volume_change" id="weight_volume_change" checked>
+                <label class="form-check-label" for="weight_volume_change"><strong>Использовать длину * ширину * высоту</strong></label>
+            </div>
+            <div class="row mb-4 d-none">
+                <div class="col-md-4">
+                    <label class="form-label">Длина (см):</label>
+                    <input type="text" class="form-control" name="volume_lenght" placeholder="см" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Ширина (см):</label>
+                    <input type="text" class="form-control" name="volume_width" placeholder="см" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Высота (см):</label>
+                    <input type="text" class="form-control" name="volume_height" placeholder="см" required>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Рассчитанный объем (м³):</label>
+                    <input type="text" class="form-control" name="total_volume_calculated" readonly>
+                </div>
+            </div>
+
+            <!-- Общий вес -->
+            <div class="mb-3">
+                <label class="form-label">Общий вес (кг):</label>
+                <input type="text" class="form-control" name="total_weight" required>
+            </div>
+
+            <!-- Количество мест -->
+            <div class="mb-3">
+                <label class="form-label">Количество мест:</label>
+                <input type="number" class="form-control" name="quantity" value="1" required>
+            </div>
+
+            <!-- Общая стоимость -->
+            <div class="mb-3">
+                <label class="form-label">Общая стоимость ($):</label>
+                <input type="text" class="form-control" name="total_cost" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label d-block">Выбор валюты:</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="total_currecy" id="currency_dollar" value="dollar" checked>
+                    <label class="form-check-label" for="currency_dollar">Доллары</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="total_currecy" id="currency_ruble" value="ruble">
+                    <label class="form-check-label" for="currency_ruble">Рубли</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="total_currecy" id="currency_yuan" value="yuan">
+                    <label class="form-check-label" for="currency_yuan">Юани</label>
+                </div>
+            </div>
+
+            <!-- Категории -->
+            <h4 class="mb-3">Категории</h4>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="category" id="category_clothes" value="clothes" required>
+                        <label class="form-check-label" for="category_clothes">Одежда</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="category" id="category_shoes" value="shoes">
+                        <label class="form-check-label" for="category_shoes">Обувь</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="category" id="category_products" value="products">
+                        <label class="form-check-label" for="category_products">Продукты</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="category" id="category_consumer_electronics" value="consumer_electronics">
+                        <label class="form-check-label" for="category_consumer_electronics">Бытовая электроника</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="category" id="category_household_goods" value="household_goods">
+                        <label class="form-check-label" for="category_household_goods">Товары для дома</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="category" id="category_household_products" value="household_products">
+                        <label class="form-check-label" for="category_household_products">Хоз. товары</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="category" id="category_accessory" value="accessory">
+                        <label class="form-check-label" for="category_accessory">Аксессуары</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Упаковка -->
+            <h4 class="mb-3">Упаковка</h4>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="packing-type" id="packing_std_pack" value="std_pack" checked>
+                        <label class="form-check-label" for="packing_std_pack">Стандартная упаковка</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="packing-type" id="packing_pack_corner" value="pack_corner">
+                        <label class="form-check-label" for="packing_pack_corner">Упаковка с углами</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="packing-type" id="packing_wood_crate" value="wood_crate">
+                        <label class="form-check-label" for="packing_wood_crate">Деревянная обрешетка</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="packing-type" id="packing_tri_frame" value="tri_frame">
+                        <label class="form-check-label" for="packing_tri_frame">Треугольная деревянная рама</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="packing-type" id="packing_wood_pallet" value="wood_pallet">
+                        <label class="form-check-label" for="packing_wood_pallet">Деревянный поддон</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="packing-type" id="packing_pallet_water" value="pallet_water">
+                        <label class="form-check-label" for="packing_pallet_water">Поддон с водонепроницаемой упаковкой</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="packing-type" id="packing_wood_boxes" value="wood_boxes">
+                        <label class="form-check-label" for="packing_wood_boxes">Деревянные коробки</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка расчета -->
+            <button class="btn btn-primary w-100 js-calculate-result" type="button" data-scroll-to="js-calc-table">РАСЧИТАТЬ ОНЛАЙН</button>
+        </form>
+
+        <!-- Блок результатов -->
+        <div class="calc-result mt-4">
+            <h4 class="mb-3">Результаты</h4>
+            <div class="mb-3">
+                <span>Стоимость доставки:</span>
+                <span class="calculate-result__ship"></span>
+            </div>
+            <div class="mb-3">
+                <span>Стоимость упаковки:</span>
+                <span class="calculate-result__package"></span>
+            </div>
+            <div class="mb-3">
+                <span>Страховка:</span>
+                <span class="calculate-result__insurance"></span>
+            </div>
+            <div class="mb-3">
+                <span>Общая стоимость (USD):</span>
+                <span class="calculate-result__dollar"></span>
+            </div>
+            <div class="mb-3">
+                <span>Общая стоимость (RUB):</span>
+                <span class="calculate-result__ruble"></span>
+            </div>
+            <div class="mb-3">
+                <span>Общая стоимость (CNY):</span>
+                <span class="calculate-result__cny"></span>
+            </div>
         </div>
     </div>
 
-    <div class="calculator">
-        <h1 class="calculator-title">Калькулятор стоимости доставки</h1>
-        <form class="calculator-form" id="calculator-form">
-            <!-- Страховка -->
-            <div class="field">
-                <label>
-                    <input type="checkbox" name="insurance">
-                    Страховка
-                </label>
-            </div>
-            <!-- Переключатель объема -->
-            <div class="field">
-                <label>
-                    <input type="checkbox" name="weight_volume_change" checked>
-                    Использовать объем напрямую
-                </label>
-            </div>
-            <!-- Общий объем -->
-            <div class="field">
-                <label for="total_volume">Общий объём (м³):</label>
-                <input type="text" name="total_volume" id="total_volume" value="0.1" placeholder="Введите объём">
-                <span class="error-message"></span>
-            </div>
-            <!-- Длина, ширина, высота -->
-            <div class="field dimensions-group">
-                <label for="volume_lenght">Длина:</label>
-                <input type="text" name="volume_lenght" id="volume_lenght" placeholder="см" required>
-                <label for="volume_width">Ширина:</label>
-                <input type="text" name="volume_width" id="volume_width" placeholder="см" required>
-                <label for="volume_height">Высота:</label>
-                <input type="text" name="volume_height" id="volume_height" placeholder="см" required>
-                <span class="error-message"></span>
-                <input type="text" name="total_volume_calculated" class="volume-total__result" readonly placeholder="Рассчитанный объём">
-            </div>
-            <!-- Общий вес -->
-            <div class="field">
-                <label for="total_weight">Общий вес (кг):</label>
-                <input type="text" name="total_weight" id="total_weight" required placeholder="Введите вес">
-                <span class="error-message"></span>
-            </div>
-            <!-- Количество мест -->
-            <div class="field">
-                <label for="quantity">Количество мест:</label>
-                <input type="number" name="quantity" id="quantity" value="1" min="1" required>
-                <span class="error-message"></span>
-            </div>
-            <!-- Общая стоимость -->
-            <div class="field">
-                <label for="total_cost">Общая стоимость (USD):</label>
-                <input type="text" name="total_cost" id="total_cost" required placeholder="Введите стоимость">
-                <div class="currency-selector">
-                    <label><input type="radio" name="total_currency" value="dollar" checked> USD</label>
-                    <label><input type="radio" name="total_currency" value="ruble"> RUB</label>
-                    <label><input type="radio" name="total_currency" value="yuan"> CNY</label>
-                </div>
-                <span class="error-message"></span>
-            </div>
-            <button type="button" class="js-calculate-result">Рассчитать</button>
-        </form>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Подключение JS -->
-    <script src="js/modules/validation.js"></script>
     <script src="js/modules/currency-loader.js"></script>
+    <script src="js/modules/validation.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

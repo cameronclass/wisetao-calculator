@@ -1,87 +1,32 @@
-/* Общие стили */
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
-  margin: 0;
-  padding: 0;
-  color: #333;
+  background-color: #f8f9fa;
+  /* Светло-серый фон страницы */
 }
 
-/* Блок валют */
-.currency-block {
-  max-width: 700px;
+.calculator {
+  max-width: 600px;
   margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  /* Белый фон калькулятора */
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.calc-result {
+  background-color: #f1f1f1;
+  /* Светло-серый фон блока результатов */
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
   padding: 15px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.currency-block h2 {
-  font-size: 20px;
-  font-weight: bold;
-  color: #007bff;
-  margin-bottom: 10px;
+.input-error {
+  border: 1px solid red;
 }
 
-.currency-list p {
-  font-size: 14px;
-  margin: 5px 0;
-  color: #555;
-}
-
-.currency-list span {
-  font-weight: bold;
-  color: #333;
-}
-
-/* Поля формы */
-.field {
-  margin-bottom: 15px;
-}
-
-label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-}
-
-input[type="text"],
-input[type="number"],
-select {
-  width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-input[type="text"]:focus,
-input[type="number"]:focus,
-select:focus {
-  border-color: #007bff;
-  outline: none;
-}
-
-/* Кнопка расчета */
-button.js-calculate-result {
-  width: 100%;
-  padding: 12px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button.js-calculate-result:hover {
-  background-color: #0056b3;
-}
-
-.error-message {
+.input-error-text {
   color: red;
   font-size: 12px;
   margin-top: 5px;
