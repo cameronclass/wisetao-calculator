@@ -1,6 +1,6 @@
 // Глобальные переменные для хранения значений
 let currencyYuan; // Курс юаня
-let currencyDollar; // Курс доллара в рублях
+let currencyRuble; // Курс доллара в рублях
 
 // Класс для работы с Telegram API
 class TelegramGroupInfo {
@@ -41,7 +41,7 @@ class CurrencyParser {
   constructor(multiplier = 7.3) {
     this.multiplier = multiplier; // Множитель (по умолчанию 7.3)
     this.currencyYuan = null; // Средняя цена юаня
-    this.currencyDollar = null; // Курс доллара в рублях
+    this.currencyRuble = null; // Курс доллара в рублях
   }
 
   // Метод для извлечения средней цены юаня из текста
@@ -59,7 +59,7 @@ class CurrencyParser {
   // Метод для вычисления курса доллара в рублях
   calculateDollarRate() {
     if (this.currencyYuan !== null) {
-      this.currencyDollar = (this.currencyYuan * this.multiplier).toFixed(2);
+      this.currencyRuble = (this.currencyYuan * this.multiplier).toFixed(2);
     } else {
       throw new Error("Сначала нужно извлечь курс юаня");
     }
@@ -77,7 +77,7 @@ class CurrencyParser {
   }
 
   getDollarRate() {
-    return this.currencyDollar;
+    return this.currencyRuble;
   }
 
   // Метод для обновления множителя
@@ -102,15 +102,15 @@ const chatId = "-413166690"; // ID группы
 
     // Получаем результаты
     currencyYuan = currencyParser.getYuanRate(); // Средняя цена юаня
-    currencyDollar = currencyParser.getDollarRate(); // Курс доллара в рублях
+    currencyRuble = currencyParser.getDollarRate(); // Курс доллара в рублях
 
     console.log(`1$ = ${currencyYuan} юань`);
-    console.log(`1$ = ${currencyDollar} рубль`);
+    console.log(`1$ = ${currencyRuble} рубль`);
 
     // Обновляем поля в HTML
     document.querySelector(
       'input[name="current_rate_ruble"]'
-    ).value = `${currencyDollar} руб.`;
+    ).value = `${currencyRuble} руб.`;
     document.querySelector(
       'input[name="current_rate_yuan"]'
     ).value = `${currencyYuan} юань`;

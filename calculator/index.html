@@ -27,40 +27,48 @@
         <form>
             <!-- Страховка -->
             <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" name="insurance" id="insurance">
+                <input class="form-check-input" type="checkbox" name="insurance" id="insurance" checked>
                 <label class="form-check-label" for="insurance"><strong>Страховка</strong></label>
             </div>
 
+            <!-- Страховка -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="brand" id="brand">
+                <label class="form-check-label" for="brand"><strong>Бренд</strong></label>
+            </div>
 
 
-            <!-- Общий объем -->
+
+            <!-- Переключатель -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="weight_volume_change" id="weight_volume_change" checked>
+                <label class="form-check-label" for="weight_volume_change">
+                    <strong>Использовать общий объем</strong>
+                </label>
+            </div>
+            <!-- Поля -->
             <div class="row mb-4">
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label class="form-label">Общий объем (м³):</label>
                     <input type="text" class="form-control" name="total_volume" value="0.1" required>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">Рассчитанный объем (м³):</label>
+                    <input type="text" class="form-control" name="total_volume_calculated" readonly>
+                </div>
             </div>
-            <!-- Переключатель -->
-            <div class="form-check mb-3 d-none">
-                <input class="form-check-input" type="checkbox" name="weight_volume_change" id="weight_volume_change" checked>
-                <label class="form-check-label" for="weight_volume_change"><strong>Использовать длину * ширину * высоту</strong></label>
-            </div>
-            <div class="row mb-4 d-none">
+            <div class="row mb-4">
                 <div class="col-md-4">
                     <label class="form-label">Длина (см):</label>
-                    <input type="text" class="form-control" name="volume_lenght" placeholder="см" required>
+                    <input type="text" class="form-control" name="volume_lenght" placeholder="см" required disabled>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Ширина (см):</label>
-                    <input type="text" class="form-control" name="volume_width" placeholder="см" required>
+                    <input type="text" class="form-control" name="volume_width" placeholder="см" required disabled>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Высота (см):</label>
-                    <input type="text" class="form-control" name="volume_height" placeholder="см" required>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label">Рассчитанный объем (м³):</label>
-                    <input type="text" class="form-control" name="total_volume_calculated" readonly>
+                    <input type="text" class="form-control" name="volume_height" placeholder="см" required disabled>
                 </div>
             </div>
 
@@ -96,6 +104,8 @@
                     <label class="form-check-label" for="currency_yuan">Юани</label>
                 </div>
             </div>
+
+
 
             <!-- Категории -->
             <h4 class="mb-3">Категории</h4>
@@ -133,6 +143,8 @@
                     </div>
                 </div>
             </div>
+
+
 
             <!-- Упаковка -->
             <h4 class="mb-3">Упаковка</h4>

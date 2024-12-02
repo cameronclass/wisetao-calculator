@@ -26,10 +26,95 @@ class JsonDataLoader {
 
 // Основной класс калькулятора
 class DeliveryCalculator {
-  constructor(jsonLoader, currencyDollar, currencyYuan) {
+  constructor(jsonLoader, currencyRuble, currencyYuan) {
     this.jsonLoader = jsonLoader;
-    this.currencyDollar = currencyDollar;
+    this.currencyRuble = currencyRuble;
     this.currencyYuan = currencyYuan;
+
+    // Переменные для полей ввода
+    this.fields = {
+      totalCost: document.querySelector('input[name="total_cost"]'),
+      totalWeight: document.querySelector('input[name="total_weight"]'),
+      totalVolume: document.querySelector('input[name="total_volume"]'),
+      totalVolumeCalculated: document.querySelector(
+        'input[name="total_volume_calculated"]'
+      ),
+      volumeLength: document.querySelector('input[name="volume_lenght"]'),
+      volumeWidth: document.querySelector('input[name="volume_width"]'),
+      volumeHeight: document.querySelector('input[name="volume_height"]'),
+      weightVolumeChange: document.querySelector(
+        'input[name="weight_volume_change"]'
+      ),
+      quantity: document.querySelector('input[name="quantity"]'),
+      category: document.querySelectorAll('input[name="category"]'),
+      packingType: document.querySelectorAll('input[name="packing-type"]'),
+      insurance: document.querySelector('input[name="insurance"]'),
+      currency: document.querySelectorAll('input[name="total_currecy"]'),
+      brand: document.querySelector('input[name="brand"]'),
+    };
+
+    this.initEventListeners();
+  }
+
+  // Инициализация событий
+  initEventListeners() {
+    const { weightVolumeChange, volumeLength, volumeWidth, volumeHeight } =
+      this.fields;
+
+    // Обработчик переключателя
+    weightVolumeChange.addEventListener("change", () => {
+      const { totalVolume, totalVolumeCalculated } = this.fields;
+
+      if (weightVolumeChange.checked) {
+        // Если включен режим ввода общего объема
+        totalVolume.disabled = false;
+        volumeLength.disabled = true;
+        volumeWidth.disabled = true;
+        volumeHeight.disabled = true;
+        totalVolumeCalculated.value = ""; // Сбрасываем расчетное значение
+        totalVolumeCalculated.disabled = true;
+      } else {
+        // Если включен режим ввода габаритов
+        totalVolume.disabled = true;
+        volumeLength.disabled = false;
+        volumeWidth.disabled = false;
+        volumeHeight.disabled = false;
+        totalVolumeCalculated.disabled = true; // Поле для результата неактивно, но обновляется
+      }
+    });
+
+    // Обработчики изменения длины, ширины и высоты
+    [volumeLength, volumeWidth, volumeHeight].forEach((field) => {
+      field.addEventListener("input", () => {
+        this.calculateVolume();
+      });
+    });
+  }
+
+  // Вычисление объема
+  calculateVolume() {
+    const { volumeLength, volumeWidth, volumeHeight, totalVolumeCalculated } =
+      this.fields;
+
+    const length = parseFloat(volumeLength.value) || 0;
+    const width = parseFloat(volumeWidth.value) || 0;
+    const height = parseFloat(volumeHeight.value) || 0;
+
+    const calculatedVolume = ((length * width * height) / 1000000).toFixed(2); // Перевод в м³
+    totalVolumeCalculated.value = calculatedVolume;
+  }
+
+  // Конвертация в доллары
+  convertToDollar(totalCost, selectedCurrency) {
+    let convertedCost = totalCost;
+
+    if (selectedCurrency === "ruble") {
+      convertedCost = totalCost / this.currencyRuble;
+    } else if (selectedCurrency === "yuan") {
+      convertedCost = totalCost / this.currencyYuan;
+    }
+
+    return convertedCost.toFixed(2);
   }
 
   // Вычисление плотности
@@ -41,7 +126,7 @@ class DeliveryCalculator {
     return null;
   }
 
-  // Расчет стоимости доставки
+  // Расчет стоимости доставки с учетом бренда
   calculateShippingCost(categoryKey, density, totalWeight, totalVolume) {
     const categoryData = this.jsonLoader.getCategoryData(categoryKey);
     if (!categoryData) {
@@ -64,6 +149,16 @@ class DeliveryCalculator {
         "Не удалось найти подходящий тариф для указанной плотности"
       );
       return 0;
+    }
+
+    // Учет бренда
+    const isBrandChecked = this.fields.brand.checked; // Поле "brand"
+    if (isBrandChecked) {
+      if (density >= 100) {
+        pricePerKg += 0.5; // Для плотности >= 100
+      } else {
+        pricePerKg += 50; // Для плотности < 100
+      }
     }
 
     return density >= 100 ? totalWeight * pricePerKg : totalVolume * pricePerKg;
@@ -107,7 +202,7 @@ class DeliveryCalculator {
     document.querySelector(".calculate-result__dollar").textContent =
       totalCost.toFixed(2);
     document.querySelector(".calculate-result__ruble").textContent = (
-      totalCost * this.currencyDollar
+      totalCost * this.currencyRuble
     ).toFixed(2);
     document.querySelector(".calculate-result__cny").textContent = (
       totalCost * this.currencyYuan
@@ -116,29 +211,41 @@ class DeliveryCalculator {
 
   // Основной расчет
   async calculate() {
-    // Проверка валидации
     if (!validateFields()) {
       console.error("Ошибка валидации");
       return;
     }
 
-    // Получение данных из полей
-    const totalWeight = parseFloat(
-      document.querySelector('input[name="total_weight"]').value
-    );
-    const totalVolumeField = document.querySelector(
-      'input[name="total_volume"]'
-    );
-    const totalVolumeCalculatedField = document.querySelector(
-      'input[name="total_volume_calculated"]'
-    );
-    const isVolumeCalculated = !document.querySelector(
-      'input[name="weight_volume_change"]'
-    ).checked;
+    const {
+      totalCost,
+      currency,
+      totalWeight,
+      totalVolume,
+      totalVolumeCalculated,
+      weightVolumeChange,
+      quantity,
+      insurance,
+    } = this.fields;
 
-    const totalVolume = isVolumeCalculated
-      ? parseFloat(totalVolumeCalculatedField.value)
-      : parseFloat(totalVolumeField.value);
+    const costValue = parseFloat(totalCost.value);
+    const selectedCurrency = document.querySelector(
+      'input[name="total_currecy"]:checked'
+    ).value;
+
+    const totalCostInDollars = parseFloat(
+      this.convertToDollar(costValue, selectedCurrency)
+    );
+    console.log(`Общая стоимость в долларах: ${totalCostInDollars}`);
+
+    const totalVolumeValue = weightVolumeChange.checked
+      ? parseFloat(totalVolume.value)
+      : parseFloat(totalVolumeCalculated.value);
+
+    const density = this.calculateDensity(
+      parseFloat(totalWeight.value),
+      totalVolumeValue
+    );
+    if (!density) return;
 
     const categoryKey = document.querySelector(
       'input[name="category"]:checked'
@@ -146,50 +253,35 @@ class DeliveryCalculator {
     const packingType = document.querySelector(
       'input[name="packing-type"]:checked'
     ).value;
-    const quantity = parseInt(
-      document.querySelector('input[name="quantity"]').value,
-      10
-    );
-    const totalCostField = parseFloat(
-      document.querySelector('input[name="total_cost"]').value
-    );
-    const isInsured = document.querySelector('input[name="insurance"]').checked;
 
-    // Вычисление плотности
-    const density = this.calculateDensity(totalWeight, totalVolume);
-    if (!density) return;
-
-    // Расчет стоимости доставки
     const shippingCost = this.calculateShippingCost(
       categoryKey,
       density,
-      totalWeight,
-      totalVolume
+      parseFloat(totalWeight.value),
+      totalVolumeValue
     );
-
-    // Расчет стоимости упаковки
     const packagingCost = this.calculatePackagingCost(
       packingType,
-      totalVolume,
-      quantity
+      totalVolumeValue,
+      parseInt(quantity.value, 10)
     );
-
-    // Расчет страховки
     const insuranceCost = this.calculateInsuranceCost(
       shippingCost,
-      totalCostField,
-      isInsured
+      totalCostInDollars,
+      insurance.checked
     );
 
-    // Итоговая стоимость
-    const totalCost = this.calculateTotalCost(
+    const totalCostFinal = this.calculateTotalCost(
       shippingCost,
       packagingCost,
       insuranceCost
     );
-
-    // Обновление интерфейса
-    this.updateResults(shippingCost, packagingCost, insuranceCost, totalCost);
+    this.updateResults(
+      shippingCost,
+      packagingCost,
+      insuranceCost,
+      totalCostFinal
+    );
   }
 }
 
@@ -200,7 +292,7 @@ class DeliveryCalculator {
 
   const calculator = new DeliveryCalculator(
     jsonLoader,
-    currencyDollar,
+    currencyRuble,
     currencyYuan
   );
 
