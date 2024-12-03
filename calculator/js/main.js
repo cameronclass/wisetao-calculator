@@ -2,6 +2,9 @@
 let currencyYuan; // Курс юаня
 let currencyRuble; // Курс доллара в рублях
 
+const botToken = "7077778313:AAGQu7UV0XiNs0z8aGDyQiCwaqzOEgZLnbQ"; // Ваш токен
+const chatId = "-413166690"; // ID группы
+
 // Класс для работы с Telegram API
 class TelegramGroupInfo {
   constructor(botToken, chatId) {
@@ -87,163 +90,171 @@ class CurrencyParser {
   }
 }
 
-// Использование
-const botToken = "7077778313:AAGQu7UV0XiNs0z8aGDyQiCwaqzOEgZLnbQ"; // Ваш токен
-const chatId = "-413166690"; // ID группы
-
-(async () => {
-  // 1. Получаем имя группы через Telegram API
-  const groupInfo = new TelegramGroupInfo(botToken, chatId);
-  const groupName = await groupInfo.getGroupName();
-
-  if (groupName) {
-    const currencyParser = new CurrencyParser(); // Создаём объект парсера
-    currencyParser.parseAndCalculate(groupName); // Парсим имя группы
-
-    // Получаем результаты
-    currencyYuan = currencyParser.getYuanRate(); // Средняя цена юаня
-    currencyRuble = currencyParser.getDollarRate(); // Курс доллара в рублях
-
-    console.log(`1$ = ${currencyYuan} юань`);
-    console.log(`1$ = ${currencyRuble} рубль`);
-
-    // Обновляем поля в HTML
-    document.querySelector(
-      'input[name="current_rate_ruble"]'
-    ).value = `${currencyRuble} руб.`;
-    document.querySelector(
-      'input[name="current_rate_yuan"]'
-    ).value = `${currencyYuan} юань`;
-  } else {
-    console.error("Не удалось получить имя группы.");
-  }
-})();
-
-// Функция для проверки числового поля
-function validateNumberField(field, options = {}) {
-  const value = field.value.trim();
-  const {
-    min = null,
-    max = null,
-    decimalPlaces = 2,
-    required = false,
-  } = options;
-
-  // Проверка на обязательность
-  if (required && value === "") {
-    return "Поле обязательно для заполнения";
+// Валидация
+class Validation {
+  constructor(fields) {
+    this.fields = fields; // Поля для валидации
+    this.errors = {}; // Список ошибок
+    this.setupInputRestrictions(); // Ограничение ввода
   }
 
-  // Проверка на число и допустимые знаки после точки
-  const regex = new RegExp(`^\\d+(\\.\\d{0,${decimalPlaces}})?$`);
-  if (value !== "" && !regex.test(value)) {
-    return `Введите корректное число с не более чем ${decimalPlaces} знаками после точки`;
+  // Ограничение ввода для числовых полей
+  setupInputRestrictions() {
+    Object.values(this.fields).forEach((field) => {
+      if (field) {
+        field.addEventListener("input", () => {
+          // Удаляем недопустимые символы
+          field.value = field.value.replace(/[^0-9.]/g, "");
+          // Удаляем лишние точки
+          if ((field.value.match(/\./g) || []).length > 1) {
+            field.value = field.value.replace(/\.+$/, "");
+          }
+          // Ограничиваем до двух знаков после точки
+          const parts = field.value.split(".");
+          if (parts[1]?.length > 2) {
+            field.value = `${parts[0]}.${parts[1].substring(0, 2)}`;
+          }
+        });
+      }
+    });
   }
 
-  // Преобразуем в число для дальнейших проверок
-  const numericValue = parseFloat(value);
-  if (!isNaN(numericValue)) {
-    if (min !== null && numericValue < min) {
-      return `Значение должно быть не менее ${min}`;
+  // Проверка числового поля
+  validateNumber(fieldName, options = {}) {
+    const field = this.fields[fieldName];
+    if (!field) return true; // Поле не существует, пропускаем
+
+    const value = field.value.trim();
+    const {
+      required = false,
+      min = null,
+      max = null,
+      decimalPlaces = 2,
+    } = options;
+
+    if (required && value === "") {
+      this.addError(fieldName, "Поле обязательно для заполнения");
+      return false;
     }
-    if (max !== null && numericValue > max) {
-      return `Значение должно быть не более ${max}`;
+
+    const regex = new RegExp(`^\\d+(\\.\\d{0,${decimalPlaces}})?$`);
+    if (value !== "" && !regex.test(value)) {
+      this.addError(
+        fieldName,
+        `Введите число с не более ${decimalPlaces} знаками после точки`
+      );
+      return false;
     }
+
+    const numericValue = parseFloat(value);
+    if (!isNaN(numericValue)) {
+      if (min !== null && numericValue < min) {
+        this.addError(fieldName, `Значение должно быть не менее ${min}`);
+        return false;
+      }
+      if (max !== null && numericValue > max) {
+        this.addError(fieldName, `Значение должно быть не более ${max}`);
+        return false;
+      }
+    }
+
+    return true; // Нет ошибок
   }
 
-  return null; // Нет ошибок
+  // Проверка радиокнопок
+  validateRadio(fieldName) {
+    const fields = document.querySelectorAll(`input[name="${fieldName}"]`);
+    const isChecked = Array.from(fields).some((field) => field.checked);
+
+    if (!isChecked) {
+      this.addError(fieldName, "Необходимо выбрать один из вариантов");
+      return false;
+    }
+    return true;
+  }
+
+  // Проверка длины, ширины и высоты
+  validateDimensions() {
+    const { volumeLength, volumeWidth, volumeHeight } = this.fields;
+    let isValid = true;
+
+    [volumeLength, volumeWidth, volumeHeight].forEach((field) => {
+      const value = parseFloat(field.value.trim());
+      if (isNaN(value) || value <= 0) {
+        this.addError(field.name, "Поле должно быть больше 0");
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  }
+
+  // Добавление ошибки
+  addError(fieldName, message) {
+    this.errors[fieldName] = message;
+  }
+
+  // Очистка ошибок
+  clearErrors() {
+    this.errors = {};
+    document
+      .querySelectorAll(".input-error")
+      .forEach((el) => el.classList.remove("input-error"));
+    document.querySelectorAll(".input-error-text").forEach((el) => el.remove());
+  }
+
+  // Отображение ошибок
+  showErrors() {
+    Object.keys(this.errors).forEach((fieldName) => {
+      const field =
+        this.fields[fieldName] ||
+        document.querySelector(`input[name="${fieldName}"]`);
+      if (!field) return;
+
+      const parent = field.closest(".form-group") || field.parentElement;
+      field.classList.add("input-error");
+
+      const errorText = document.createElement("div");
+      errorText.className = "input-error-text";
+      errorText.textContent = this.errors[fieldName];
+
+      parent.appendChild(errorText);
+    });
+  }
+
+  clearFields(fields) {
+    fields.forEach((field) => {
+      if (field) field.value = ""; // Сбрасываем значение
+    });
+  }
+
+  // Общая проверка всех полей
+  validateAll() {
+    this.clearErrors(); // Очищаем предыдущие ошибки
+
+    const { weightVolumeChange, totalVolume } = this.fields;
+
+    const isValid = [
+      // Валидируем поле "общий объем", только если переключатель включен
+      weightVolumeChange.checked
+        ? this.validateNumber("totalVolume", {
+            required: true,
+            decimalPlaces: 2,
+          })
+        : true,
+      this.validateNumber("totalWeight", { required: true, min: 5 }),
+      this.validateNumber("quantity", { required: true, min: 1 }),
+      this.validateNumber("totalCost", { required: true, decimalPlaces: 2 }),
+      this.validateRadio("total_currecy"),
+      this.validateRadio("category"),
+      this.validateRadio("packing-type"),
+      // Если переключатель выключен, проверяем длину, ширину и высоту
+      !weightVolumeChange.checked ? this.validateDimensions() : true,
+    ].every((result) => result);
+
+    return isValid;
+  }
 }
-
-// Функция для проверки радиокнопок
-function validateRadioField(fieldName) {
-  const fields = document.querySelectorAll(`input[name="${fieldName}"]`);
-  const isChecked = Array.from(fields).some((field) => field.checked);
-
-  if (!isChecked) {
-    return "Необходимо выбрать один из вариантов";
-  }
-
-  return null; // Нет ошибок
-}
-
-// Основная функция валидации
-function validateFields() {
-  let isValid = true;
-
-  // Очистка предыдущих ошибок
-  document
-    .querySelectorAll(".input-error")
-    .forEach((el) => el.classList.remove("input-error"));
-  document.querySelectorAll(".input-error-text").forEach((el) => el.remove());
-
-  // Поля для проверки
-  const fieldsToValidate = [
-    {
-      field: document.querySelector('input[name="total_volume"]'),
-      options: { required: true, decimalPlaces: 2 },
-    },
-    {
-      field: document.querySelector('input[name="total_weight"]'),
-      options: { required: true, min: 5 },
-    },
-    {
-      field: document.querySelector('input[name="quantity"]'),
-      options: { required: true, min: 1 },
-    },
-    {
-      field: document.querySelector('input[name="total_cost"]'),
-      options: { required: true, decimalPlaces: 2 },
-    },
-  ];
-
-  fieldsToValidate.forEach(({ field, options }) => {
-    const errorMessage = validateNumberField(field, options);
-    if (errorMessage) {
-      isValid = false;
-      showValidationError(field, errorMessage);
-    }
-  });
-
-  // Валидация радиокнопок
-  const radioFields = ["total_currecy", "category", "packing-type"];
-  radioFields.forEach((fieldName) => {
-    const errorMessage = validateRadioField(fieldName);
-    if (errorMessage) {
-      isValid = false;
-      const firstField = document.querySelector(`input[name="${fieldName}"]`);
-      showValidationError(firstField, errorMessage);
-    }
-  });
-
-  return isValid;
-}
-
-// Функция для отображения ошибки
-function showValidationError(field, message) {
-  const parent = field.closest(".form-group") || field.parentElement;
-  field.classList.add("input-error");
-
-  const errorText = document.createElement("div");
-  errorText.className = "input-error-text";
-  errorText.textContent = message;
-
-  parent.appendChild(errorText);
-}
-
-// Обработчик события на кнопку "Рассчитать"
-document
-  .querySelector(".js-calculate-result")
-  .addEventListener("click", (e) => {
-    e.preventDefault();
-
-    const isValid = validateFields();
-    if (isValid) {
-      console.log("Валидация успешна, можно продолжить расчеты");
-      // Здесь будет вызов функции для расчета
-    } else {
-      console.log("Валидация не прошла, исправьте ошибки");
-    }
-  });
 
 // Класс для работы с JSON-данными
 class JsonDataLoader {
@@ -557,7 +568,36 @@ class DeliveryCalculator {
   }
 }
 
-// Инициализация
+/* Курсы */
+(async () => {
+  // 1. Получаем имя группы через Telegram API
+  const groupInfo = new TelegramGroupInfo(botToken, chatId);
+  const groupName = await groupInfo.getGroupName();
+
+  if (groupName) {
+    const currencyParser = new CurrencyParser(); // Создаём объект парсера
+    currencyParser.parseAndCalculate(groupName); // Парсим имя группы
+
+    // Получаем результаты
+    currencyYuan = currencyParser.getYuanRate(); // Средняя цена юаня
+    currencyRuble = currencyParser.getDollarRate(); // Курс доллара в рублях
+
+    console.log(`1$ = ${currencyYuan} юань`);
+    console.log(`1$ = ${currencyRuble} рубль`);
+
+    // Обновляем поля в HTML
+    document.querySelector(
+      'input[name="current_rate_ruble"]'
+    ).value = `${currencyRuble} руб.`;
+    document.querySelector(
+      'input[name="current_rate_yuan"]'
+    ).value = `${currencyYuan} юань`;
+  } else {
+    console.error("Не удалось получить имя группы.");
+  }
+})();
+
+// Калькулятор
 (async () => {
   const jsonLoader = new JsonDataLoader("../rates.json");
   await jsonLoader.load();
@@ -591,3 +631,62 @@ class DeliveryCalculator {
       calculator.calculate();
     });
 })();
+
+// Поля для валидации
+const fields = {
+  totalVolume: document.querySelector('input[name="total_volume"]'),
+  totalWeight: document.querySelector('input[name="total_weight"]'),
+  quantity: document.querySelector('input[name="quantity"]'),
+  totalCost: document.querySelector('input[name="total_cost"]'),
+  volumeLength: document.querySelector('input[name="volume_lenght"]'),
+  volumeWidth: document.querySelector('input[name="volume_width"]'),
+  volumeHeight: document.querySelector('input[name="volume_height"]'),
+  weightVolumeChange: document.querySelector(
+    'input[name="weight_volume_change"]'
+  ),
+};
+
+// Экземпляр валидации
+const validation = new Validation(fields);
+
+// Обновленный обработчик переключателя
+fields.weightVolumeChange.addEventListener("change", () => {
+  if (fields.weightVolumeChange.checked) {
+    // Режим общего объема
+    fields.totalVolume.disabled = false;
+    fields.volumeLength.disabled = true;
+    fields.volumeWidth.disabled = true;
+    fields.volumeHeight.disabled = true;
+
+    // Очистка полей длины, ширины и высоты
+    validation.clearFields([
+      fields.volumeLength,
+      fields.volumeWidth,
+      fields.volumeHeight,
+    ]);
+  } else {
+    // Режим ввода габаритов
+    fields.totalVolume.disabled = true;
+    fields.volumeLength.disabled = false;
+    fields.volumeWidth.disabled = false;
+    fields.volumeHeight.disabled = false;
+
+    // Очистка поля общего объема
+    validation.clearFields([fields.totalVolume]);
+  }
+});
+
+// Обработчик события на кнопку "Рассчитать"
+document
+  .querySelector(".js-calculate-result")
+  .addEventListener("click", (e) => {
+    e.preventDefault();
+
+    if (validation.validateAll()) {
+      console.log("Валидация успешна. Можно продолжить расчет.");
+      // Запуск расчета
+    } else {
+      validation.showErrors();
+      console.log("Валидация не пройдена. Исправьте ошибки.");
+    }
+  });
