@@ -1,125 +1,92 @@
-// Функция для проверки числового поля
-function validateNumberField(field, options = {}) {
-  const value = field.value.trim();
-  const {
-    min = null,
-    max = null,
-    decimalPlaces = 2,
-    required = false,
-  } = options;
-
-  // Проверка на обязательность
-  if (required && value === "") {
-    return "Поле обязательно для заполнения";
+class Validation {
+  constructor(fields) {
+    this.fields = fields;
+    this.errors = {};
+    this.setupInputRestrictions();
   }
 
-  // Проверка на число и допустимые знаки после точки
-  const regex = new RegExp(`^\\d+(\\.\\d{0,${decimalPlaces}})?$`);
-  if (value !== "" && !regex.test(value)) {
-    return `Введите корректное число с не более чем ${decimalPlaces} знаками после точки`;
+  setupInputRestrictions() {
+    const numericFields = [
+      "totalWeight",
+      "totalVolume",
+      "totalVolumeCalculated",
+      "quantity",
+      "totalCost",
+    ];
+    numericFields.forEach((fieldName) => {
+      const field = this.fields[fieldName];
+      if (field) {
+        field.addEventListener("input", () => {
+          field.value = field.value.replace(/[^0-9.]/g, "");
+          if ((field.value.match(/\./g) || []).length > 1) {
+            field.value = field.value.replace(/\.+$/, "");
+          }
+          const parts = field.value.split(".");
+          if (parts[1]?.length > 2) {
+            field.value = `${parts[0]}.${parts[1].substring(0, 2)}`;
+          }
+        });
+      }
+    });
   }
 
-  // Преобразуем в число для дальнейших проверок
-  const numericValue = parseFloat(value);
-  if (!isNaN(numericValue)) {
-    if (min !== null && numericValue < min) {
-      return `Значение должно быть не менее ${min}`;
+  validateRequired(fieldName) {
+    const value = this.fields[fieldName]?.value.trim();
+    if (!value) {
+      this.addError(fieldName, "Поле обязательно для заполнения");
+      return false;
     }
-    if (max !== null && numericValue > max) {
-      return `Значение должно быть не более ${max}`;
-    }
+    return true;
   }
 
-  return null; // Нет ошибок
-}
-
-// Функция для проверки радиокнопок
-function validateRadioField(fieldName) {
-  const fields = document.querySelectorAll(`input[name="${fieldName}"]`);
-  const isChecked = Array.from(fields).some((field) => field.checked);
-
-  if (!isChecked) {
-    return "Необходимо выбрать один из вариантов";
+  validateNumber(fieldName, options = {}) {
+    const { min, decimalPlaces = 2 } = options;
+    const value = this.fields[fieldName]?.value.trim();
+    const regex = new RegExp(`^\\d+(\\.\\d{0,${decimalPlaces}})?$`);
+    if (!value || !regex.test(value)) {
+      this.addError(
+        fieldName,
+        `Введите корректное число с не более чем ${decimalPlaces} знаками после точки`
+      );
+      return false;
+    }
+    const numericValue = parseFloat(value);
+    if (min !== undefined && numericValue < min) {
+      this.addError(fieldName, `Значение должно быть не менее ${min}`);
+      return false;
+    }
+    return true;
   }
 
-  return null; // Нет ошибок
+  addError(fieldName, message) {
+    this.errors[fieldName] = message;
+  }
+
+  clearErrors() {
+    document
+      .querySelectorAll(".input-error")
+      .forEach((el) => el.classList.remove("input-error"));
+    document.querySelectorAll(".input-error-text").forEach((el) => el.remove());
+  }
+
+  showErrors() {
+    Object.keys(this.errors).forEach((fieldName) => {
+      const field = this.fields[fieldName];
+      const parent = field.closest(".form-group") || field.parentElement;
+      field.classList.add("input-error");
+      const errorText = document.createElement("div");
+      errorText.className = "input-error-text";
+      errorText.textContent = this.errors[fieldName];
+      parent.appendChild(errorText);
+    });
+  }
+
+  validateAll() {
+    this.clearErrors();
+    this.validateRequired("totalWeight");
+    this.validateNumber("totalWeight", { min: 5 });
+    return Object.keys(this.errors).length === 0;
+  }
 }
 
-// Основная функция валидации
-function validateFields() {
-  let isValid = true;
-
-  // Очистка предыдущих ошибок
-  document
-    .querySelectorAll(".input-error")
-    .forEach((el) => el.classList.remove("input-error"));
-  document.querySelectorAll(".input-error-text").forEach((el) => el.remove());
-
-  // Поля для проверки
-  const fieldsToValidate = [
-    {
-      field: document.querySelector('input[name="total_volume"]'),
-      options: { required: true, decimalPlaces: 2 },
-    },
-    {
-      field: document.querySelector('input[name="total_weight"]'),
-      options: { required: true, min: 5 },
-    },
-    {
-      field: document.querySelector('input[name="quantity"]'),
-      options: { required: true, min: 1 },
-    },
-    {
-      field: document.querySelector('input[name="total_cost"]'),
-      options: { required: true, decimalPlaces: 2 },
-    },
-  ];
-
-  fieldsToValidate.forEach(({ field, options }) => {
-    const errorMessage = validateNumberField(field, options);
-    if (errorMessage) {
-      isValid = false;
-      showValidationError(field, errorMessage);
-    }
-  });
-
-  // Валидация радиокнопок
-  const radioFields = ["total_currecy", "category", "packing-type"];
-  radioFields.forEach((fieldName) => {
-    const errorMessage = validateRadioField(fieldName);
-    if (errorMessage) {
-      isValid = false;
-      const firstField = document.querySelector(`input[name="${fieldName}"]`);
-      showValidationError(firstField, errorMessage);
-    }
-  });
-
-  return isValid;
-}
-
-// Функция для отображения ошибки
-function showValidationError(field, message) {
-  const parent = field.closest(".form-group") || field.parentElement;
-  field.classList.add("input-error");
-
-  const errorText = document.createElement("div");
-  errorText.className = "input-error-text";
-  errorText.textContent = message;
-
-  parent.appendChild(errorText);
-}
-
-// Обработчик события на кнопку "Рассчитать"
-document
-  .querySelector(".js-calculate-result")
-  .addEventListener("click", (e) => {
-    e.preventDefault();
-
-    const isValid = validateFields();
-    if (isValid) {
-      console.log("Валидация успешна, можно продолжить расчеты");
-      // Здесь будет вызов функции для расчета
-    } else {
-      console.log("Валидация не прошла, исправьте ошибки");
-    }
-  });
+window.Validation = Validation;
