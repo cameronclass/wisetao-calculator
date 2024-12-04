@@ -588,10 +588,10 @@ class DeliveryCalculator {
     // Обновляем поля в HTML
     document.querySelector(
       'input[name="current_rate_ruble"]'
-    ).value = `${currencyRuble} руб.`;
+    ).value = `${currencyRuble}`;
     document.querySelector(
       'input[name="current_rate_yuan"]'
-    ).value = `${currencyYuan} юань`;
+    ).value = `${currencyYuan}`;
   } else {
     console.error("Не удалось получить имя группы.");
   }
