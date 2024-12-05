@@ -212,6 +212,27 @@ class CalculatorValidation {
     return isValid;
   }
 
+  // Проверка радиокнопок категории
+  validateCategory() {
+    const radios = document.querySelectorAll('input[name="category"]');
+    const isChecked = Array.from(radios).some((radio) => radio.checked);
+
+    const errorSpan = document.querySelector(".error-message-category");
+    const errorBlock = document.querySelector(".js-error-category");
+
+    if (!isChecked) {
+      if (errorSpan) errorSpan.textContent = "Необходимо выбрать категорию";
+      if (errorBlock) errorBlock.classList.add("active");
+      return false;
+    }
+
+    // Очищаем ошибки, если категория выбрана
+    if (errorSpan) errorSpan.textContent = "";
+    if (errorBlock) errorBlock.classList.remove("active");
+
+    return true;
+  }
+
   // Добавление ошибки
   addError(field, message) {
     const parent = field.closest(".form-group") || field.parentElement;
@@ -248,7 +269,7 @@ class CalculatorValidation {
       this.validateNumber("quantity", { required: true }),
       this.validateNumber("totalCost", { required: true, maxDecimals: 2 }),
       this.validateRadio("total_currecy"),
-      this.validateRadio("category"),
+      this.validateCategory(), // Добавлена проверка категории
       this.validateRadio("packing-type"),
     ].every((result) => result);
 
@@ -522,19 +543,7 @@ class DeliveryCalculator {
     const categoryKeyElement = Array.from(this.fields.category).find(
       (field) => field.checked
     );
-    if (!categoryKeyElement) {
-      const errorSpan = document.querySelector(".error-message-category");
-      const errorBlock = document.querySelector(".js-error-category");
 
-      if (!errorSpan || !errorBlock) {
-        console.error("Элементы для отображения ошибки категории не найдены");
-        return;
-      }
-
-      errorSpan.textContent = "Необходимо выбрать категорию";
-      errorBlock.classList.add("active");
-      return;
-    }
     const categoryKey = categoryKeyElement.value;
 
     const packingType = document.querySelector(
@@ -676,6 +685,7 @@ class DeliveryCalculator {
       e.preventDefault();
       if (validation.validateAll()) {
         calculator.calculate();
+        document.querySelector(".main-calc-result").classList.add("active");
       } else {
         console.error("Валидация не пройдена.");
       }
