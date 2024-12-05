@@ -386,19 +386,14 @@ class DeliveryCalculator {
     console.log(`Плотность: ${density}, Данные категории:`, categoryData);
 
     const rangeData = categoryData.data.find((range) => {
-      const [min, max] = range.weight_range
-        .split("-")
-        .map((val) =>
-          val.includes("+") || val === "" ? Infinity : parseFloat(val) || 0
-        );
+      const rangeParts = range.weight_range.split("-");
+      const min = parseFloat(rangeParts[0]) || 0;
+      const max =
+        rangeParts.length > 1
+          ? parseFloat(rangeParts[1]) || Infinity
+          : Infinity; // Если только одно значение, то верхняя граница бесконечна
 
-      // Если диапазон состоит только из одного числа
-      if (!range.weight_range.includes("-")) {
-        return density >= min;
-      }
-
-      // Обычная проверка диапазонов
-      return density > min && density <= max;
+      return density >= min && density <= max;
     });
 
     if (!rangeData) {
@@ -417,21 +412,12 @@ class DeliveryCalculator {
 
     console.log(
       `Тариф найден: ${pricePerKg}, Расчет ${
-        density === 100 ? "по объему" : density >= 100 ? "по весу" : "по объему"
+        density >= 100 ? "по весу" : "по объему"
       }`
     );
 
     // Расчет стоимости
-    if (density === 100) {
-      console.log(`Расчет по объему: ${volume} * ${pricePerKg}`);
-      return volume * pricePerKg;
-    } else if (density > 100) {
-      console.log(`Расчет по весу: ${weight} * ${pricePerKg}`);
-      return weight * pricePerKg;
-    } else {
-      console.log(`Расчет по объему: ${volume} * ${pricePerKg}`);
-      return volume * pricePerKg;
-    }
+    return density >= 100 ? weight * pricePerKg : volume * pricePerKg;
   }
 
   // Расчет стоимости упаковки
@@ -624,7 +610,7 @@ class DeliveryCalculator {
     console.error("Не удалось получить имя группы.");
   }
 
-  const jsonLoader = new JsonDataLoader("../rates.json");
+  const jsonLoader = new JsonDataLoader("rates.json");
   await jsonLoader.load();
 
   const fields = {

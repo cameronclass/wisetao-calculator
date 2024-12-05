@@ -255,7 +255,7 @@ body {
 .main-calc-parametr__main {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 30px 20px;
   height: auto;
   position: relative;
   z-index: 2;
@@ -676,6 +676,7 @@ body {
   display: flex;
   align-items: flex-end;
   gap: 10px;
+  position: relative;
 }
 .group-input__inputs.volume .volume-total__result {
   font-weight: bold;
@@ -1122,6 +1123,152 @@ body {
   .main-calc-result__price_text {
   color: white;
 }
+/* Custom Select */
+.calc-select {
+  position: relative;
+  width: 100%;
+}
+
+.calc-select__selected {
+  cursor: pointer;
+  width: 100%;
+  background-color: #2f3743;
+  border-radius: 10px;
+  color: white;
+  padding: 10px 30px 10px 15px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.calc-select__selected span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.calc-select__selected_icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.calc-select__options {
+  display: none; /* Скрываем опции по умолчанию */
+  background-color: #2f3743;
+  border-radius: 0 0 10px 10px;
+  flex-direction: column;
+  width: 100%;
+  position: absolute;
+  top: calc(100% - 10px);
+  padding-top: 10px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  height: 140px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 2;
+}
+.calc-select__options::-webkit-scrollbar {
+  width: 5px;
+  border-radius: 5px;
+}
+
+/* Track */
+.calc-select__options::-webkit-scrollbar-track {
+  background: #2f3743;
+}
+
+/* Handle */
+.calc-select__options::-webkit-scrollbar-thumb {
+  background: #f09123;
+}
+
+.calc-select__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 30px 10px 15px;
+  cursor: pointer;
+}
+
+.calc-select__label > .tooltip {
+  right: 10px;
+}
+.calc-select__label .calc-tooltip {
+  left: calc(100% + 5px);
+  top: 0;
+}
+
+.selected-tooltip {
+  right: 10px;
+}
+
+.calc-select__input {
+  display: none;
+}
+
+/* Currency Select */
+.currency-select {
+  position: absolute;
+  right: 1px;
+  width: 60px;
+  top: 1px;
+}
+
+.currency-select__list {
+  display: none;
+  background-color: #5a667d;
+  position: absolute;
+  z-index: 1000;
+  width: 100%;
+  top: calc(100% - 10px);
+  padding-top: 10px;
+  border-radius: 0 0 9px 9px;
+}
+
+.currency-select__selected {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 2px 15px;
+  border-radius: 0 9px 9px 0;
+  background-color: #5a667d;
+  color: #f09123;
+  font-size: 18px;
+  font-weight: bold;
+  gap: 10px;
+}
+
+.custom-select__label {
+  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 9px;
+  background-color: #5a667d;
+  color: #f09123;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.custom-select__label:hover {
+  background: #f09123;
+  color: white;
+}
+
+.custom-select__input {
+  display: none;
+}
 
 /*Tooltip*/
 .tooltip {
@@ -1191,29 +1338,7 @@ body {
   opacity: 1;
 }
 
-.help .calc-tooltip {
-  top: -5px;
-  left: calc(100% + 10px);
-  min-width: 300px;
-}
-
-.yuan-help .calc-tooltip {
-  min-width: max-content;
-  left: calc(100% + 5px);
-}
-
-.type-of-goods-dropdown-toggle .help .calc-tooltip,
-.type-of-goods-dropdown-list .help .calc-tooltip {
-  bottom: calc(100% + 10px);
-  top: initial;
-  left: inherit;
-  right: 0;
-  min-width: 220px;
-}
-
-.main-calc-parametr .calc-tooltip,
-.order-data-dimensions .calc-tooltip,
-.order-data-general .calc-tooltip {
+.main-calc-parametr .calc-tooltip {
   bottom: calc(100% + 10px);
   top: initial;
   left: inherit;
@@ -1224,6 +1349,19 @@ body {
 .calc-by-custom {
   grid-column-start: 1;
   grid-column-end: 3;
+}
+
+/* Error */
+.error-message{
+  position: absolute;
+  bottom: -18px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #de4646;
+}
+
+.group-input__input input.error-input{
+  border: 1px solid #de4646;
 }
 
 /* Mobile */
@@ -1352,152 +1490,4 @@ body {
   .main-calc-result__currency {
     flex-direction: column;
   }
-}
-
-/* Custom Select */
-.calc-select {
-  position: relative;
-  width: 100%;
-}
-
-.calc-select__selected {
-  cursor: pointer;
-  width: 100%;
-  background-color: #2f3743;
-  border-radius: 10px;
-  color: white;
-  padding: 10px 30px 10px 15px;
-  font-family: "Inter", sans-serif;
-  font-weight: 600;
-  font-size: 15px;
-  box-sizing: border-box;
-  border: 1px solid transparent;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  z-index: 2;
-}
-
-.calc-select__selected span:first-child {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.calc-select__selected_icon {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.calc-select__options {
-  display: none; /* Скрываем опции по умолчанию */
-  background-color: #2f3743;
-  border-radius: 0 0 10px 10px;
-  flex-direction: column;
-  width: 100%;
-  position: absolute;
-  top: calc(100% - 10px);
-  padding-top: 10px;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  height: 140px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 2;
-}
-.calc-select__options::-webkit-scrollbar {
-  width: 5px;
-  border-radius: 5px;
-}
-
-/* Track */
-.calc-select__options::-webkit-scrollbar-track {
-  background: #2f3743;
-}
-
-/* Handle */
-.calc-select__options::-webkit-scrollbar-thumb {
-  background: #f09123;
-}
-
-.calc-select__label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 30px 10px 15px;
-  cursor: pointer;
-}
-
-.calc-select__label > .tooltip {
-  right: 10px;
-}
-.calc-select__label .calc-tooltip {
-  left: calc(100% + 5px);
-  top: 0;
-}
-
-.selected-tooltip {
-  right: 10px;
-}
-
-.calc-select__input {
-  display: none;
-}
-
-/* Currency Select */
-
-.currency-select {
-  position: absolute;
-  right: 1px;
-  width: 60px;
-  top: 1px;
-}
-
-.currency-select__list {
-  display: none; /* Скрываем список по умолчанию */
-  background-color: #5a667d;
-  position: absolute;
-  z-index: 1000;
-  width: 100%;
-  top: calc(100% - 10px);
-  padding-top: 10px;
-  border-radius: 0 0 9px 9px;
-}
-
-.currency-select__selected {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
-  padding: 2px 15px;
-  border-radius: 0 9px 9px 0;
-  background-color: #5a667d;
-  color: #f09123;
-  font-size: 18px;
-  font-weight: bold;
-  gap: 10px;
-}
-
-.custom-select__label {
-  display: block;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 9px;
-  background-color: #5a667d;
-  color: #f09123;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.custom-select__label:hover {
-  background: #f09123;
-  color: white;
-}
-
-.custom-select__input {
-  display: none;
 }

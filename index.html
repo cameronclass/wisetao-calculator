@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор</title>
     <link rel="stylesheet" href="css/old.css">
-    <!-- <script src="js/old-calc.js"></script> -->
     <link rel="stylesheet" href="css/new.css">
-    <script src="js/calc/dataAtributesUi.js"></script>
-    <script src="calculator/js/main.js"></script>
+
+    <!--     <script src="js/currency.js"></script>
+    <script src="js/json-parser.js"></script> -->
+    <script src="js/data-atributes-ui.js"></script>
+    <script src="js/main.js"></script>
 </head>
 <body>
 
@@ -155,8 +157,9 @@
                             <div id="calc-by-info" class="group-input hidden active">
                                 <div class="group-input__title">Общий объём</div>
                                 <div class="group-input__input">
-                                    <input type="text" name="total_volume" value="0.1" class="" required="">
+                                    <input type="text" name="total_volume" class="" required="">
                                     <span class="group-input__param">м³</span>
+                                    <span class="error-message"></span>
                                 </div>
                             </div>
                             <!--  По габаритам  -->
@@ -172,15 +175,18 @@
                                     <div class="volume-total">
                                         <input type="text" name="total_volume_calculated" class="volume-total__result">
                                         <span class="volume-total__m3">м³</span>
+                                        <span class="error-message"></span>
                                     </div>
+
                                 </div>
                             </div>
 
                             <div class="group-input active">
                                 <div class="group-input__title">Общий вес</div>
                                 <div class="group-input__input">
-                                    <input type="text" name="total_weight" class="" required="">
+                                    <input type="text" name="total_weight" class="" required>
                                     <span class="group-input__param">кг</span>
+                                    <span class="error-message"></span>
                                 </div>
                             </div>
 
@@ -190,6 +196,7 @@
                                     <span class="group-input-increment__minus initialized">-</span>
                                     <input type="number" name="quantity" value="1" class="" required="">
                                     <span class="group-input-increment__plus initialized">+</span>
+                                    <span class="error-message"></span>
                                 </div>
                             </div>
 
@@ -197,6 +204,7 @@
                                 <div class="group-input__title">Общая стоимость</div>
                                 <div class="group-input__input">
                                     <input type="number" name="total_cost" class="" required>
+                                    <span class="error-message"></span>
                                     <div class="currency-select">
                                         <div class="currency-select__selected">
                                             <span class="currency-select__selected_name">$</span>
@@ -231,7 +239,7 @@
                                 <div class="group-input__title">Категория груза</div>
                                 <div class="group-input__input">
                                     <div class="calc-select">
-                                        <div class="calc-select__selected">
+                                        <div class="calc-select__selected js-error-category">
                                             <span class="calc-select__selected_name">Выберите категорию</span>
                                             <span class="calc-select__selected_icon">
                                                 <svg class="dropdown-list-currency-arrow" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="32.38141722065728" height="22.59489123485507" viewBox="110.22394056737565 250.64901537709036 32.38141722065728 22.59489123485507" xml:space="preserve">
@@ -241,6 +249,7 @@
                                                     </g>
                                                 </svg>
                                             </span>
+                                            <span class="error-message-category"></span>
                                         </div>
                                         <div class="calc-select__options">
                                             <label class="calc-select__label">
@@ -568,12 +577,28 @@
                                                 <span class="calculate-result__ship"></span>
                                                 <span class="main-calc-result__currency_sign">$</span>
                                             </div>
+                                            <div>
+                                                <span class="calculate-result__ship_ruble"></span>
+                                                <span class="main-calc-result__currency_sign">₽</span>
+                                            </div>
+                                            <div>
+                                                <span class="calculate-result__ship_yuan"></span>
+                                                <span class="main-calc-result__currency_sign">¥</span>
+                                            </div>
                                         </div>
                                         <div class="main-calc-result__all_cell">
                                             <span>Стоимость упаковки:</span>
                                             <div>
                                                 <span class="calculate-result__package"></span>
                                                 <span class="main-calc-result__currency_sign">$</span>
+                                            </div>
+                                            <div>
+                                                <span class="calculate-result__package_ruble"></span>
+                                                <span class="main-calc-result__currency_sign">₽</span>
+                                            </div>
+                                            <div>
+                                                <span class="calculate-result__package_yuan"></span>
+                                                <span class="main-calc-result__currency_sign">¥</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result__all_cell">
@@ -582,23 +607,25 @@
                                                 <span class="calculate-result__insurance"></span>
                                                 <span class="main-calc-result__currency_sign">$</span>
                                             </div>
+                                            <div>
+                                                <span class="calculate-result__insurance_ruble"></span>
+                                                <span class="main-calc-result__currency_sign">₽</span>
+                                            </div>
+                                            <div>
+                                                <span class="calculate-result__insurance_yuan"></span>
+                                                <span class="main-calc-result__currency_sign">¥</span>
+                                            </div>
                                         </div>
                                         <div class="main-calc-result__all_cell">
-                                            <span>Общая стоимость (USD):</span>
+                                            <span>Общая стоимость:</span>
                                             <div>
                                                 <span class="calculate-result__dollar"></span>
                                                 <span class="main-calc-result__currency_sign">$</span>
                                             </div>
-                                        </div>
-                                        <div class="main-calc-result__all_cell">
-                                            <span>Общая стоимость (RUB):</span>
                                             <div>
                                                 <span class="calculate-result__ruble"></span>
                                                 <span class="main-calc-result__currency_sign">₽</span>
                                             </div>
-                                        </div>
-                                        <div class="main-calc-result__all_cell">
-                                            <span>Общая стоимость (CNY):</span>
                                             <div>
                                                 <span class="calculate-result__cny"></span>
                                                 <span class="main-calc-result__currency_sign">¥</span>
