@@ -166,12 +166,15 @@
                             <div id="calc-by-custom" class="group-input calc-by-custom hidden">
                                 <div class="group-input__title">Габариты (Длина * Ширина * Высота) см</div>
                                 <div class="group-input__inputs volume">
-                                    <input type="text" name="volume_lenght" placeholder="см" required>
-                                    <div class="volume-cross">✖</div>
-                                    <input type="text" name="volume_width" placeholder="см" required>
-                                    <div class="volume-cross">✖</div>
-                                    <input type="text" name="volume_height" placeholder="см" required>
-                                    <span class="volume-equals">=</span>
+                                    <div class="volume-block">
+                                        <input type="text" name="volume_lenght" placeholder="см" required>
+                                        <div class="volume-cross">✖</div>
+                                        <input type="text" name="volume_width" placeholder="см" required>
+                                        <div class="volume-cross">✖</div>
+                                        <input type="text" name="volume_height" placeholder="см" required>
+                                        <span class="volume-equals">=</span>
+                                    </div>
+
                                     <div class="volume-total">
                                         <input type="text" name="total_volume_calculated" class="volume-total__result" readonly>
                                         <span class="volume-total__m3">м³</span>
@@ -572,64 +575,76 @@
                                     <!-- <input class="main-calc-result__price_input" type="radio" value="10" name="total-price"> -->
                                     <div class="main-calc-result__price_block">
                                         <div class="main-calc-result__all_cell">
-                                            <span>Стоимость доставки:</span>
+                                            <span class="main-calc-result__all_title">Стоимость доставки:</span>
                                             <div>
-                                                <span class="calculate-result__ship"></span>
-                                                <span class="main-calc-result__currency_sign">$</span>
+                                                <div>
+                                                    <span class="calculate-result__ship"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__ship_ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__ship_yuan"></span>
+                                                    <span class="main-calc-result__currency_sign">¥</span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span class="calculate-result__ship_ruble"></span>
-                                                <span class="main-calc-result__currency_sign">₽</span>
-                                            </div>
-                                            <div>
-                                                <span class="calculate-result__ship_yuan"></span>
-                                                <span class="main-calc-result__currency_sign">¥</span>
-                                            </div>
+
                                         </div>
                                         <div class="main-calc-result__all_cell">
-                                            <span>Стоимость упаковки:</span>
+                                            <span class="main-calc-result__all_title">Стоимость упаковки:</span>
                                             <div>
-                                                <span class="calculate-result__package"></span>
-                                                <span class="main-calc-result__currency_sign">$</span>
+                                                <div>
+                                                    <span class="calculate-result__package"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__package_ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__package_yuan"></span>
+                                                    <span class="main-calc-result__currency_sign">¥</span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span class="calculate-result__package_ruble"></span>
-                                                <span class="main-calc-result__currency_sign">₽</span>
-                                            </div>
-                                            <div>
-                                                <span class="calculate-result__package_yuan"></span>
-                                                <span class="main-calc-result__currency_sign">¥</span>
-                                            </div>
+
                                         </div>
                                         <div class="main-calc-result__all_cell">
-                                            <span>Страховка:</span>
+                                            <span class="main-calc-result__all_title">Страховка:</span>
                                             <div>
-                                                <span class="calculate-result__insurance"></span>
-                                                <span class="main-calc-result__currency_sign">$</span>
+                                                <div>
+                                                    <span class="calculate-result__insurance"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__insurance_ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__insurance_yuan"></span>
+                                                    <span class="main-calc-result__currency_sign">¥</span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span class="calculate-result__insurance_ruble"></span>
-                                                <span class="main-calc-result__currency_sign">₽</span>
-                                            </div>
-                                            <div>
-                                                <span class="calculate-result__insurance_yuan"></span>
-                                                <span class="main-calc-result__currency_sign">¥</span>
-                                            </div>
+
                                         </div>
-                                        <div class="main-calc-result__all_cell">
-                                            <span>Общая стоимость:</span>
+                                        <div class="main-calc-result__all_cell main-calc-result__all_cell_end">
+                                            <span class="main-calc-result__all_title_end">Общая стоимость:</span>
                                             <div>
-                                                <span class="calculate-result__dollar"></span>
-                                                <span class="main-calc-result__currency_sign">$</span>
+                                                <div>
+                                                    <span class="calculate-result__dollar"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__cny"></span>
+                                                    <span class="main-calc-result__currency_sign">¥</span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span class="calculate-result__ruble"></span>
-                                                <span class="main-calc-result__currency_sign">₽</span>
-                                            </div>
-                                            <div>
-                                                <span class="calculate-result__cny"></span>
-                                                <span class="main-calc-result__currency_sign">¥</span>
-                                            </div>
+
                                         </div>
 
                                         <!-- <div class="main-calc-result__price_kg">
