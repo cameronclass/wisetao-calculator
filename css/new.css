@@ -974,9 +974,8 @@ body {
   background: #2f3743;
   padding: 10px;
   border-radius: 15px;
-
   display: grid;
-  grid-template-columns: 250px 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 10px;
 }
 .main-calc-result__column {
