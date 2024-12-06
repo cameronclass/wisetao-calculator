@@ -401,7 +401,7 @@ class DeliveryCalculator {
     const categoryData = this.jsonLoader.getCategoryData(categoryKey);
     if (!categoryData) {
       console.error("Категория не найдена");
-      return 0;
+      return { cost: 0, pricePerKg: 0, calculationMode: null };
     }
 
     console.log(`Плотность: ${density}, Данные категории:`, categoryData);
@@ -412,8 +412,7 @@ class DeliveryCalculator {
       const max =
         rangeParts.length > 1
           ? parseFloat(rangeParts[1]) || Infinity
-          : Infinity; // Если только одно значение, то верхняя граница бесконечна
-
+          : Infinity;
       return density >= min && density <= max;
     });
 
@@ -421,7 +420,7 @@ class DeliveryCalculator {
       console.error(
         `Не удалось найти подходящий тариф для указанной плотности (${density}). Проверьте JSON-данные.`
       );
-      return 0;
+      return { cost: 0, pricePerKg: 0, calculationMode: null };
     }
 
     let pricePerKg = rangeData.price_kg;
@@ -431,14 +430,17 @@ class DeliveryCalculator {
       pricePerKg += density >= 100 ? 0.5 : 50;
     }
 
+    const calculationMode = density >= 100 ? "weight" : "volume";
+    const cost =
+      calculationMode === "weight" ? weight * pricePerKg : volume * pricePerKg;
+
     console.log(
       `Тариф найден: ${pricePerKg}, Расчет ${
-        density >= 100 ? "по весу" : "по объему"
+        calculationMode === "weight" ? "по весу" : "по объему"
       }`
     );
 
-    // Расчет стоимости
-    return density >= 100 ? weight * pricePerKg : volume * pricePerKg;
+    return { cost, pricePerKg, calculationMode };
   }
 
   // Расчет стоимости упаковки
@@ -484,49 +486,40 @@ class DeliveryCalculator {
   }
 
   // Обновление результатов в интерфейсе
-  updateResults(shippingCost, packagingCost, insuranceCost, totalCost) {
-    // Результаты в долларах
-    document.querySelector(".calculate-result__ship").textContent =
-      shippingCost.toFixed(2);
-    document.querySelector(".calculate-result__package").textContent =
-      packagingCost.toFixed(2);
-    document.querySelector(".calculate-result__insurance").textContent =
-      insuranceCost.toFixed(2);
+  updateResults(
+    shippingCost,
+    packagingCost,
+    insuranceCost,
+    totalCost,
+    pricePerKg,
+    calculationMode
+  ) {
+    const totalCostRuble = totalCost * this.currencyRuble;
+
+    // Общая стоимость в долларах и рублях
     document.querySelector(".calculate-result__dollar").textContent =
       totalCost.toFixed(2);
-
-    // Конвертация в рубли и юани
-    const shipCostRuble = shippingCost * this.currencyRuble;
-    const shipCostYuan = shippingCost * this.currencyYuan;
-
-    const packageCostRuble = packagingCost * this.currencyRuble;
-    const packageCostYuan = packagingCost * this.currencyYuan;
-
-    const insuranceCostRuble = insuranceCost * this.currencyRuble;
-    const insuranceCostYuan = insuranceCost * this.currencyYuan;
-
-    const totalCostRuble = totalCost * this.currencyRuble;
-    const totalCostYuan = totalCost * this.currencyYuan;
-
-    // Обновляем блоки для рублей
-    document.querySelector(".calculate-result__ship_ruble").textContent =
-      shipCostRuble.toFixed(2);
-    document.querySelector(".calculate-result__package_ruble").textContent =
-      packageCostRuble.toFixed(2);
-    document.querySelector(".calculate-result__insurance_ruble").textContent =
-      insuranceCostRuble.toFixed(2);
     document.querySelector(".calculate-result__ruble").textContent =
       totalCostRuble.toFixed(2);
 
-    // Обновляем блоки для юаней
-    document.querySelector(".calculate-result__ship_yuan").textContent =
-      shipCostYuan.toFixed(2);
-    document.querySelector(".calculate-result__package_yuan").textContent =
-      packageCostYuan.toFixed(2);
-    document.querySelector(".calculate-result__insurance_yuan").textContent =
-      insuranceCostYuan.toFixed(2);
-    document.querySelector(".calculate-result__cny").textContent =
-      totalCostYuan.toFixed(2);
+    // Тариф за кг или за м³
+    document.querySelector(".calculate-result__kg").textContent =
+      pricePerKg.toFixed(2);
+    document.querySelector(".calculate-result__kg_ruble").textContent = (
+      pricePerKg * this.currencyRuble
+    ).toFixed(2);
+
+    // Тип тарифа
+    const titleTariff = document.querySelector(
+      ".calculate-result__title_tarif"
+    );
+    if (calculationMode === "weight") {
+      titleTariff.textContent = "За КГ:";
+    } else if (calculationMode === "volume") {
+      titleTariff.textContent = "За м/3:";
+    } else {
+      titleTariff.textContent = "";
+    }
   }
 
   // Основной метод расчета
@@ -560,12 +553,17 @@ class DeliveryCalculator {
     );
     const density = this.calculateDensity(totalWeight, totalVolume);
 
-    const shippingCost = this.calculateShippingCost(
+    const {
+      cost: shippingCost,
+      pricePerKg,
+      calculationMode,
+    } = this.calculateShippingCost(
       categoryKey,
       density,
       totalWeight,
       totalVolume
     );
+
     const packagingCost = this.calculatePackagingCost(
       packingType,
       totalVolume,
@@ -586,7 +584,9 @@ class DeliveryCalculator {
       shippingCost,
       packagingCost,
       insuranceCost,
-      totalCostFinal
+      totalCostFinal,
+      pricePerKg,
+      calculationMode
     );
   }
 }
