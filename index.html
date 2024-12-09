@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="css/old.css">
     <link rel="stylesheet" href="css/new.css">
 
-    <!--     <script src="js/currency.js"></script>
-    <script src="js/json-parser.js"></script> -->
+    <script src="js/currency.js"></script>
+    <!--  <script src="js/json-parser.js"></script> -->
     <script src="js/data-atributes-ui.js"></script>
     <script src="js/main.js"></script>
 </head>
@@ -103,7 +103,7 @@
                     <div class="main-calc__from-to_to group-input">
                         <div class="group-input__title">Куда</div>
                         <div class="group-input__input">
-                            <input type="text" placeholder="Москва" disabled="">
+                            <input type="text" placeholder="Россия / Москва" disabled="">
                             <svg class="group-input__input_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="6" y="10" width="12" height="8" rx="2" fill="#91969b"></rect>
                                 <path d="M9 10V9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9V10" stroke="#91969b" stroke-width="2"></path>
@@ -442,7 +442,7 @@
                 </div>
 
                 <!-- Закончено -->
-                <div class="main-calc-result ">
+                <div class="main-calc-result">
                     <h4 class="main-calc__title _small label-text active">
                         <span class="main-calc__title_icon"></span>
                         <span class="main-calc__title_text label-text active">Расценки по видам доставки</span>
@@ -527,8 +527,8 @@
                             </div>
                             <div class="main-calc-result__cell price-cell">
                                 <label class="main-calc-result__price">
-                                    <input class="main-calc-result__price_input" type="radio" name="total-price">
-                                    <div class="main-calc-result__price_block">
+                                    <input class="main-calc-result__price_input" type="radio" name="all-price" value="price_auto">
+                                    <div class="main-calc-result__price_block price-auto">
                                         <div class="main-calc-result__all_cell">
                                             <span class="main-calc-result__all_title calculate-result__title_tarif"></span>
                                             <div>
@@ -590,7 +590,40 @@
                                     <span class="delivery-item-label delivery-item__time active">35-50 дней</span>
                                 </div>
                             </div>
-                            <div class="main-calc-result__cell"></div>
+                            <div class="main-calc-result__cell price-cell">
+                                <label class="main-calc-result__price">
+                                    <input class="main-calc-result__price_input" type="radio" name="all-price" value="price_train">
+                                    <div class="main-calc-result__price_block price-train">
+                                        <div class="main-calc-result__all_cell">
+                                            <span class="main-calc-result__all_title calculate-result__title_tarif"></span>
+                                            <div>
+                                                <div>
+                                                    <span class="calculate-result__kg"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <span>-</span>
+                                                <div>
+                                                    <span class="calculate-result__kg_ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="main-calc-result__all_cell main-calc-result__all_cell_end">
+                                            <span class="main-calc-result__all_title_end">Сумма:</span>
+                                            <div class="main-calc-result__all_cell_end_block">
+                                                <div>
+                                                    <span class="calculate-result__dollar"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Авиа -->
@@ -626,7 +659,40 @@
                                     <span class="delivery-item-label delivery-item__time active">5-15 дней</span>
                                 </div>
                             </div>
-                            <div class="main-calc-result__cell"></div>
+                            <div class="main-calc-result__cell price-cell">
+                                <label class="main-calc-result__price">
+                                    <input class="main-calc-result__price_input" type="radio" name="all-price" value="price_avia">
+                                    <div class="main-calc-result__price_block price-avia">
+                                        <div class="main-calc-result__all_cell">
+                                            <span class="main-calc-result__all_title calculate-result__title_tarif"></span>
+                                            <div>
+                                                <div>
+                                                    <span class="calculate-result__kg"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <span>-</span>
+                                                <div>
+                                                    <span class="calculate-result__kg_ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="main-calc-result__all_cell main-calc-result__all_cell_end">
+                                            <span class="main-calc-result__all_title_end">Сумма:</span>
+                                            <div class="main-calc-result__all_cell_end_block">
+                                                <div>
+                                                    <span class="calculate-result__dollar"></span>
+                                                    <span class="main-calc-result__currency_sign">$</span>
+                                                </div>
+                                                <div>
+                                                    <span class="calculate-result__ruble"></span>
+                                                    <span class="main-calc-result__currency_sign">₽</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
                     </div>

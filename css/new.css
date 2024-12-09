@@ -1094,7 +1094,7 @@ body {
   align-items: flex-start;
   gap: 10px;
 }
-.main-calc-result__all_cell_end_block{
+.main-calc-result__all_cell_end_block {
   justify-content: space-between;
   width: 100%;
 }
@@ -1149,6 +1149,14 @@ body {
 }
 .main-calc-result__price_input:checked ~ .main-calc-result__price_block {
   background-color: #f09123;
+  color: white;
+}
+.main-calc-result__price_input:checked
+  ~ .main-calc-result__price_block
+  .main-calc-result__all_title_end,
+.main-calc-result__price_input:checked
+  ~ .main-calc-result__price_block
+  .main-calc-result__all_title {
   color: white;
 }
 

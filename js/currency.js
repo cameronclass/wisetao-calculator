@@ -89,32 +89,3 @@ class CurrencyParser {
     this.calculateDollarRate();
   }
 }
-
-/* Курсы */
-(async () => {
-  // 1. Получаем имя группы через Telegram API
-  const groupInfo = new TelegramGroupInfo(botToken, chatId);
-  const groupName = await groupInfo.getGroupName();
-
-  if (groupName) {
-    const currencyParser = new CurrencyParser(); // Создаём объект парсера
-    currencyParser.parseAndCalculate(groupName); // Парсим имя группы
-
-    // Получаем результаты
-    currencyYuan = currencyParser.getYuanRate(); // Средняя цена юаня
-    currencyRuble = currencyParser.getDollarRate(); // Курс доллара в рублях
-
-    console.log(`1$ = ${currencyYuan} юань`);
-    console.log(`1$ = ${currencyRuble} рубль`);
-
-    // Обновляем поля в HTML
-    document.querySelector(
-      'input[name="current_rate_ruble"]'
-    ).value = `${currencyRuble}`;
-    document.querySelector(
-      'input[name="current_rate_yuan"]'
-    ).value = `${currencyYuan}`;
-  } else {
-    console.error("Не удалось получить имя группы.");
-  }
-})();
