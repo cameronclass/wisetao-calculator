@@ -86,7 +86,7 @@
                     <div class="main-calc__from-to_from group-input">
                         <div class="group-input__title">Откуда</div>
                         <div class="group-input__input">
-                            <input type="text" placeholder="Хэйхэ" disabled="">
+                            <input type="text" placeholder="Фошань" disabled="">
                             <svg class="group-input__input_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="6" y="10" width="12" height="8" rx="2" fill="#91969b"></rect>
                                 <path d="M9 10V9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9V10" stroke="#91969b" stroke-width="2"></path>
@@ -157,7 +157,7 @@
                             <div id="calc-by-info" class="group-input hidden active">
                                 <div class="group-input__title">Общий объём</div>
                                 <div class="group-input__input">
-                                    <input type="text" name="total_volume" class="" required="">
+                                    <input type="text" name="total_volume" class="" value="1" required="">
                                     <span class="group-input__param">м³</span>
                                     <span class="error-message"></span>
                                 </div>
@@ -187,7 +187,7 @@
                             <div class="group-input active">
                                 <div class="group-input__title">Общий вес</div>
                                 <div class="group-input__input">
-                                    <input type="text" name="total_weight" class="" required>
+                                    <input type="text" name="total_weight" value="50" class="" required>
                                     <span class="group-input__param">кг</span>
                                     <span class="error-message"></span>
                                 </div>
@@ -206,7 +206,7 @@
                             <div class="group-input active">
                                 <div class="group-input__title">Общая стоимость</div>
                                 <div class="group-input__input">
-                                    <input type="number" name="total_cost" class="" required>
+                                    <input type="number" name="total_cost" value="100" class="" required>
                                     <span class="error-message"></span>
                                     <div class="currency-select">
                                         <div class="currency-select__selected">
@@ -256,7 +256,7 @@
                                         </div>
                                         <div class="calc-select__options">
                                             <label class="calc-select__label">
-                                                <input type="radio" name="category" value="clothes" class="calc-select__input">
+                                                <input type="radio" name="category" value="clothes" class="calc-select__input" checked>
                                                 <span class="calc-select__name">Одежда</span>
                                                 <span class="tooltip">
                                                     <span class="tooltip-icon">?</span>

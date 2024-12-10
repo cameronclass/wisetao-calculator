@@ -1160,6 +1160,10 @@ body {
   color: white;
 }
 
+.main-calc-result__price_input:checked ~ .main-calc-result__price_block .main-calc-result__currency_sign{
+  color: white;
+}
+
 .main-calc-result__price_block:hover .main-calc-result__price_currency ._dollar,
 .main-calc-result__price_block:hover .main-calc-result__price_text,
 .main-calc-result__price_input:checked

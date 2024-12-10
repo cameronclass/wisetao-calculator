@@ -218,30 +218,42 @@ class CalculatorValidation {
 // Основной класс калькулятора
 class DeliveryCalculator {
   constructor(jsonLoader, currencyRuble, currencyYuan, fields) {
-    this.jsonLoader = jsonLoader;
-    this.currencyRuble = currencyRuble;
-    this.currencyYuan = currencyYuan;
-    this.fields = fields;
+    this.jsonLoader = jsonLoader; // Загрузчик JSON данных
+    this.currencyRuble = currencyRuble; // Курс рубля
+    this.currencyYuan = currencyYuan; // Курс юаня
+    this.fields = fields; // Поля калькулятора
 
-    this.initEventListeners();
-    this.setupNumericInputRestrictions();
+    this.initEventListeners(); // Инициализация событий
+    this.setupNumericInputRestrictions(); // Ограничение ввода в числовые поля
   }
 
+  // Инициализация событий
   initEventListeners() {
     const { weightVolumeChange, volumeLength, volumeWidth, volumeHeight } =
       this.fields;
 
+    console.log("Инициализация событий для переключателя и ввода размеров...");
     weightVolumeChange.addEventListener("change", () => {
+      console.log(
+        "Переключение режима объема:",
+        weightVolumeChange.checked ? "Общий объем" : "Длина/Ширина/Высота"
+      );
       this.toggleVolumeMode();
     });
 
     [volumeLength, volumeWidth, volumeHeight].forEach((field) => {
       field.addEventListener("input", () => {
+        console.log("Изменение размеров:", {
+          length: volumeLength.value,
+          width: volumeWidth.value,
+          height: volumeHeight.value,
+        });
         this.calculateVolume();
       });
     });
   }
 
+  // Ограничение ввода в числовые поля
   setupNumericInputRestrictions() {
     const numericFields = [
       this.fields.volumeLength,
@@ -263,8 +275,10 @@ class DeliveryCalculator {
         }
       });
     });
+    console.log("Ограничение ввода в числовые поля настроено.");
   }
 
+  // Переключение режима объема
   toggleVolumeMode() {
     const {
       weightVolumeChange,
@@ -276,6 +290,7 @@ class DeliveryCalculator {
     } = this.fields;
 
     if (weightVolumeChange.checked) {
+      console.log("Активирован режим ввода общего объема.");
       totalVolume.disabled = false;
       volumeLength.disabled = true;
       volumeWidth.disabled = true;
@@ -283,6 +298,7 @@ class DeliveryCalculator {
       totalVolumeCalculated.value = "";
       totalVolumeCalculated.disabled = true;
     } else {
+      console.log("Активирован режим ввода размеров (Длина/Ширина/Высота).");
       totalVolume.disabled = true;
       volumeLength.disabled = false;
       volumeWidth.disabled = false;
@@ -291,6 +307,7 @@ class DeliveryCalculator {
     }
   }
 
+  // Вычисление объема
   calculateVolume() {
     const { volumeLength, volumeWidth, volumeHeight, totalVolumeCalculated } =
       this.fields;
@@ -301,8 +318,10 @@ class DeliveryCalculator {
 
     const calculatedVolume = ((length * width * height) / 1000000).toFixed(4);
     totalVolumeCalculated.value = calculatedVolume > 0 ? calculatedVolume : "";
+    console.log("Рассчитанный объем:", calculatedVolume);
   }
 
+  // Вычисление плотности
   calculateDensity(totalWeight, totalVolume) {
     if (totalVolume > 0) {
       const density = (totalWeight / totalVolume).toFixed(2);
@@ -313,6 +332,51 @@ class DeliveryCalculator {
     return null;
   }
 
+  // Расчет стоимости упаковки
+  calculatePackagingCost(packingType, volume, quantity) {
+    const packaging = this.jsonLoader.getPackagingData(packingType);
+    if (!packaging) {
+      console.error(`Данные для упаковки типа "${packingType}" отсутствуют.`);
+      return 0;
+    }
+
+    const cost =
+      packaging.which === "place"
+        ? quantity * packaging.price
+        : volume * packaging.price;
+    console.log(`Стоимость упаковки: ${cost}`);
+    return cost;
+  }
+
+  // Расчет страховки
+  calculateInsuranceCost(shippingCost, totalCost) {
+    const insuranceChecked = this.fields.insurance.checked;
+    const insuranceCost = insuranceChecked
+      ? (shippingCost + totalCost) * 0.02
+      : 0;
+    console.log(
+      `Стоимость страховки: ${insuranceCost} (страховка ${
+        insuranceChecked ? "включена" : "отключена"
+      })`
+    );
+    return insuranceCost;
+  }
+
+  // Расчет добавки за бренд
+  calculateBrandMarkup(density, pricePerKg) {
+    const brandChecked = this.fields.brand.checked;
+    if (!brandChecked) return 0;
+
+    const markup = density >= 100 ? 0.5 : 50;
+    console.log(
+      `Добавка за бренд: ${markup} (плотность ${
+        density >= 100 ? ">= 100" : "< 100"
+      })`
+    );
+    return density >= 100 ? markup : markup / pricePerKg;
+  }
+
+  // Расчет стоимости доставки для направления
   calculateShippingCostForDirection(
     direction,
     categoryKey,
@@ -327,66 +391,69 @@ class DeliveryCalculator {
       return { cost: 0, pricePerKg: 0, calculationMode: null };
     }
 
-    let calculationMode = null;
-    let rangeData = null;
+    console.log(`Начало расчета стоимости для направления: ${direction}.`);
+    console.log(
+      `Плотность: ${density}, Вес: ${weight}, Объем: ${volume}, Категория: ${categoryKey}`
+    );
 
-    if (direction === "train") {
+    let rangeData = null;
+    let calculationMode = density >= 100 ? "weight" : "volume";
+
+    if (direction === "avia" || direction === "auto") {
+      const categoryData = directionData.find(
+        (cat) =>
+          cat.category_key === categoryKey || cat.category_key === "others"
+      );
+
+      rangeData = categoryData?.data?.find((range) => {
+        const [min, max] = range.weight_range
+          .split("-")
+          .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
+        return density >= min && density <= max;
+      });
+    } else if (direction === "train") {
       rangeData = directionData.find((range) => {
         const [min, max] = range.weight_range
           .split("-")
           .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
         return density >= min && density <= max;
       });
-
       calculationMode = density >= 200 ? "weight" : "volume";
-    } else if (direction === "avia") {
-      const categoryData =
-        directionData.find((cat) => cat.category_key === categoryKey) ||
-        directionData.find((cat) => cat.category_key === "others");
-
-      rangeData = categoryData?.data?.find((range) => {
-        const [min, max] = range.weight_range
-          .split("-")
-          .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
-        return density >= min && density <= max;
-      });
-
-      calculationMode = density >= 100 ? "weight" : "volume";
-    } else {
-      const categoryData = directionData.find(
-        (cat) => cat.category_key === categoryKey
-      );
-
-      rangeData = categoryData?.data?.find((range) => {
-        const [min, max] = range.weight_range
-          .split("-")
-          .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
-        return density >= min && density <= max;
-      });
-
-      calculationMode = density >= 100 ? "weight" : "volume";
     }
 
     if (!rangeData) {
       console.error(
-        `Не удалось найти подходящий тариф для направления ${direction} и плотности ${density}.`
+        `Не удалось найти подходящий тариф для направления ${direction}.`
       );
       return { cost: 0, pricePerKg: 0, calculationMode: null };
     }
 
-    const cost =
+    const baseCost =
       calculationMode === "weight"
         ? weight * rangeData.price_kg
         : volume * rangeData.price_kg;
 
+    const brandMarkup = this.calculateBrandMarkup(density, rangeData.price_kg);
+    const cost = baseCost + brandMarkup;
+
+    console.log(
+      `Тариф найден: ${rangeData.price_kg}. Расчет ${
+        calculationMode === "weight" ? "по весу" : "по объему"
+      }. Итоговая стоимость с учетом бренда: ${cost}`
+    );
+
     return { cost, pricePerKg: rangeData.price_kg, calculationMode };
   }
 
+  // Обновление результатов
   updateResults(result, priceBlockName, calculationMode) {
     const { cost, pricePerKg } = result;
 
     const priceBlock = document.querySelector(`.${priceBlockName}`);
-    if (!priceBlock) return;
+    if (!priceBlock) {
+      console.error(`Не найден блок для ${priceBlockName}`);
+      return;
+    }
 
     priceBlock.querySelector(".calculate-result__kg").textContent =
       pricePerKg.toFixed(2);
@@ -407,91 +474,69 @@ class DeliveryCalculator {
       titleTarifElement.textContent =
         calculationMode === "weight" ? "За КГ:" : "За м³:";
     }
+    console.log(`Результаты для ${priceBlockName} обновлены.`);
   }
 
+  // Основной метод расчета
   async calculate() {
-    try {
-      const totalCost = parseFloat(this.fields.totalCost.value) || 0;
-      const totalWeight = parseFloat(this.fields.totalWeight.value) || 0;
-      const totalVolume = this.fields.weightVolumeChange.checked
-        ? parseFloat(this.fields.totalVolume.value) || 0
-        : parseFloat(this.fields.totalVolumeCalculated.value) || 0;
+    console.log("Начало общего расчета...");
 
-      // Находим категорию
-      const categoryKeyElement = Array.from(this.fields.category).find(
-        (field) => field.checked
-      );
-      if (!categoryKeyElement) {
-        console.error("Категория не выбрана!");
-        const errorSpan = document.querySelector(".error-message-category");
-        const errorBlock = document.querySelector(".js-error-category");
+    const totalCost = parseFloat(this.fields.totalCost.value) || 0;
+    const totalWeight = parseFloat(this.fields.totalWeight.value) || 0;
+    const totalVolume = this.fields.weightVolumeChange.checked
+      ? parseFloat(this.fields.totalVolume.value) || 0
+      : parseFloat(this.fields.totalVolumeCalculated.value) || 0;
 
-        if (errorSpan && errorBlock) {
-          errorSpan.textContent = "Необходимо выбрать категорию";
-          errorBlock.classList.add("active");
-        }
-        return;
-      }
-
-      const categoryKey = categoryKeyElement.value;
-
-      // Рассчитываем плотность
-      const density = this.calculateDensity(totalWeight, totalVolume);
-      if (!density) {
-        console.error("Невозможно рассчитать плотность!");
-        return;
-      }
-
-      // Расчёт стоимости по направлениям
-      const resultAuto = this.calculateShippingCostForDirection(
-        "auto",
-        categoryKey,
-        density,
-        totalWeight,
-        totalVolume
-      );
-      if (resultAuto) {
-        this.updateResults(
-          resultAuto,
-          "price-auto",
-          resultAuto.calculationMode
-        );
-      }
-
-      const resultTrain = this.calculateShippingCostForDirection(
-        "train",
-        categoryKey,
-        density,
-        totalWeight,
-        totalVolume
-      );
-      if (resultTrain) {
-        this.updateResults(
-          resultTrain,
-          "price-train",
-          resultTrain.calculationMode
-        );
-      }
-
-      const resultAvia = this.calculateShippingCostForDirection(
-        "avia",
-        categoryKey,
-        density,
-        totalWeight,
-        totalVolume
-      );
-      if (resultAvia) {
-        this.updateResults(
-          resultAvia,
-          "price-avia",
-          resultAvia.calculationMode
-        );
-      }
-    } catch (error) {
-      console.error("Ошибка в методе calculate:", error);
+    const categoryKeyElement = Array.from(this.fields.category).find(
+      (field) => field.checked
+    );
+    if (!categoryKeyElement) {
+      console.error("Категория не выбрана!");
+      return;
     }
+    const categoryKey = categoryKeyElement.value;
+
+    const density = this.calculateDensity(totalWeight, totalVolume);
+    if (!density) {
+      console.error("Невозможно рассчитать плотность!");
+      return;
+    }
+
+    const directions = ["auto", "train", "avia"];
+    directions.forEach((direction) => {
+      const result = this.calculateShippingCostForDirection(
+        direction,
+        categoryKey,
+        density,
+        totalWeight,
+        totalVolume
+      );
+
+      if (result) {
+        this.updateResults(
+          result,
+          `price-${direction}`,
+          result.calculationMode
+        );
+      }
+    });
+
+    // Расчет упаковки и страховки
+    const packingType = this.fields.packingType.value;
+    const packagingCost = this.calculatePackagingCost(
+      packingType,
+      totalVolume,
+      parseInt(this.fields.quantity.value, 10)
+    );
+    const insuranceCost = this.calculateInsuranceCost(totalCost, packagingCost);
+    const totalFinalCost = totalCost + packagingCost + insuranceCost;
+
+    console.log(
+      `Итоговая стоимость с учетом упаковки и страховки: ${totalFinalCost}`
+    );
   }
 }
+
 
 // Основной код калькулятора
 (async () => {
