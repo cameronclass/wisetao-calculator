@@ -113,31 +113,39 @@ import { State } from "./data/State.js";
     });
 })();
 
-// Здесь предположим, что у вас уже есть:
-// currencyYuan, currencyRuble, costInDollar, totalCostFinalDollar, totalCostFinalRuble,
-// totalVolume, totalWeight, quantity, pricePerKgDollar, pricePerKgRuble, packingTypeValue,
-// packagingCost, insuranceCostDollar – полученные после расчётов
-
-// Функции для подготовки данных и отправки на сервер (уже были описаны)
-function prepareOfferData(directionKey, {
-  currencyYuan,
-  currencyRuble,
-  costInDollar,
-  totalCostFinalDollar,
-  totalCostFinalRuble,
-  totalVolume,
-  totalWeight,
-  quantity,
-  pricePerKgDollar,
-  pricePerKgRuble,
-  packingTypeValue,
-  packagingCost,
-  insuranceCostDollar
-}) {
+function prepareOfferData(
+  directionKey,
+  {
+    currencyYuan,
+    currencyRuble,
+    costInDollar,
+    totalCostFinalDollar,
+    totalCostFinalRuble,
+    totalVolume,
+    totalWeight,
+    quantity,
+    pricePerKgDollar,
+    pricePerKgRuble,
+    packingTypeValue,
+    packagingCost,
+    insuranceCostDollar,
+  }
+) {
   const directionRusMap = {
     price_auto: "Авто",
     price_train: "ЖД",
-    price_avia: "Авиа"
+    price_avia: "Авиа",
+  };
+
+  // Карта для отображения понятных названий упаковки:
+  const packingTypeMap = {
+    std_pack: "Стандартная упаковка",
+    pack_corner: "Упаковка с углами",
+    wood_crate: "Деревянная обрешетка",
+    tri_frame: "Треугольная деревянная рама",
+    wood_pallet: "Деревянный поддон",
+    pallet_water: "Поддон с водонепроницаемой упаковкой",
+    wood_boxes: "Деревянные коробки",
   };
 
   const directionRus = directionRusMap[directionKey];
@@ -146,6 +154,8 @@ function prepareOfferData(directionKey, {
     return null;
   }
 
+  const packingTypeDisplay =
+    packingTypeMap[packingTypeValue] || "Неизвестная упаковка";
   const goodsCostRuble = costInDollar * currencyRuble;
   const commissionPriceRub = goodsCostRuble * 0.05;
   const commissionPriceDollar = commissionPriceRub / currencyRuble;
@@ -157,48 +167,59 @@ function prepareOfferData(directionKey, {
     ExchangeRateYuan: "Курс юаня SAIDE: " + currencyYuan + "₽",
     ExchangeRateDollar: "Курс доллара SAIDE: " + currencyRuble + "₽",
     TOTAL:
-      "ИТОГО: " +
-      totalCostFinalDollar.toFixed(2) + "$; " +
-      totalCostFinalRuble.toFixed(2) + "₽",
+      "Стоимость до г. Москва (ТК «Южные ворота»): " +
+      totalCostFinalDollar.toFixed(2) +
+      "$; " +
+      totalCostFinalRuble.toFixed(2) +
+      "₽",
     GoodsCost: "Стоимость товара: " + goodsCostRuble.toFixed(2) + "₽",
     Weight: "Вес: " + totalWeight + "кг",
-    Volume:
-      "Объем: " +
-      totalVolume.toFixed(3) + "м³",
+    Volume: "Объем: " + totalVolume.toFixed(3) + "м³",
     Count: "Количество: " + quantity,
+    RedeemCommissionFirst: "Комиссия SAIDE 5%",
     RedeemCommission:
-      "Комиссия SAIDE 5% от стоимости товара: " +
-      commissionPriceDollar.toFixed(2) + "$; " +
-      commissionPriceRub.toFixed(2) + "₽",
-    PackageType: "Упаковка: " + packingTypeValue,
+      "от стоимости товара: " +
+      commissionPriceDollar.toFixed(2) +
+      "$; " +
+      commissionPriceRub.toFixed(2) +
+      "₽",
+    PackageType: "Упаковка: " + packingTypeDisplay,
     PackageCost: "За упаковку: " + packageCostRub + "₽",
     Insurance:
       "Страховка: " +
-      insuranceCostDollar.toFixed(2) + "$; " +
-      insuranceCostRub + "₽",
-    Kg:
-      "За кг: " +
-      pricePerKgDollar + "$; " +
-      pricePerKgRuble + "₽",
+      insuranceCostDollar.toFixed(2) +
+      "$; " +
+      insuranceCostRub +
+      "₽",
+    Kg: "За кг: " + pricePerKgDollar + "$; " + pricePerKgRuble + "₽",
     Sum:
-      "Сумма: " +
-      totalCostFinalDollar.toFixed(2) + "$; " +
-      totalCostFinalRuble.toFixed(2) + "₽",
+      "Стоимость до г. Москва: " +
+      totalCostFinalDollar.toFixed(2) +
+      "$; " +
+      totalCostFinalRuble.toFixed(2) +
+      "₽",
   };
 
   return offerDataCargoRequest;
 }
 
 async function sendOfferData(offerDataCargoRequest) {
-  const formData = new FormData();
+  // Отправка в формате application/x-www-form-urlencoded
+  const params = new URLSearchParams();
   for (let key in offerDataCargoRequest) {
-    formData.append(key, offerDataCargoRequest[key]);
+    params.append(key, offerDataCargoRequest[key]);
   }
 
-  const response = await fetch("https://api-calc.wisetao.com:4343/api/get-offer", {
-    method: "POST",
-    body: formData
-  });
+  const response = await fetch(
+    "https://api-calc.wisetao.com:4343/api/get-offer",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+      body: params.toString(),
+    }
+  );
 
   if (!response.ok) {
     console.error("Ошибка сервера:", response.statusText);
@@ -209,22 +230,34 @@ async function sendOfferData(offerDataCargoRequest) {
   const url = URL.createObjectURL(blob);
 
   // Открываем PDF в новой вкладке
-  window.open(url, "_blank");
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  // Если нужно скачать сразу:
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = "Коммерческое предложение.pdf";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+
   URL.revokeObjectURL(url);
 }
 
-// После того, как вы выполнили DeliveryCalculator.calculate() и вызвали UIController.showResults(),
-// данные уже в State. Теперь повесим обработчик на кнопку PDF:
-
 document.querySelector(".js-get-pdf").addEventListener("click", () => {
-  const checkedRadio = document.querySelector('input[name="all-price"]:checked');
+  const checkedRadio = document.querySelector(
+    'input[name="all-price"]:checked'
+  );
   if (!checkedRadio) {
     console.error("Не выбрано направление для генерации PDF");
     return;
   }
 
-  // например, checkedRadio.value = "price_auto"
-  const directionKey = checkedRadio.value;
+  const directionKey = checkedRadio.value; // например: "price_auto"
   const direction = directionKey.replace("price_", ""); // "auto", "train", "avia"
 
   const directionData = State.getDirectionData(direction);
@@ -238,4 +271,3 @@ document.querySelector(".js-get-pdf").addEventListener("click", () => {
 
   sendOfferData(offerData);
 });
-

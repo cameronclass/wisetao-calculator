@@ -278,6 +278,7 @@ export class DeliveryCalculator {
         density,
         categoryKey,
         packagingCost,
+        currencyYuan: this.currencyYuan,
         currencyRuble: this.currencyRuble,
         brandIncluded: this.fields.brand?.checked,
         packingTypeValue: packingType,
