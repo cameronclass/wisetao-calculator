@@ -1,7 +1,6 @@
 // uiController.js
 export class UIController {
   static showError(message) {
-    // Предположим, есть div с классом error-box
     const errorBox = document.querySelector(".error-box");
     if (errorBox) {
       errorBox.textContent = message;
@@ -39,7 +38,7 @@ export class UIController {
   ) {
     const directionKeys = ["auto", "train", "avia"];
     results.forEach((res, idx) => {
-      const directionName = directionKeys[idx];
+      const directionName = directionKeys[idx]; // 'auto', 'train' или 'avia'
       const calculationMode =
         res?.calculationMode === "weight" ? "по килограммам" : "по объему";
 
@@ -69,8 +68,7 @@ export class UIController {
       const totalCostFinalDollar = totalCostFinal.toFixed(2);
       const totalCostFinalRuble = (totalCostFinal * currencyRuble).toFixed(2);
 
-      // Здесь просто выводим в консоль таблицу,
-      // но можно также обновить элементы в интерфейсе по вашему желанию
+      // Вывод в консоль (как было ранее)
       console.table({
         Направление: directionName,
         "Cтоимость товара": `${totalCost} ${
@@ -96,9 +94,47 @@ export class UIController {
         "Стоимость страховки": `${insuranceCostDollar} $`,
         "Общая стоимость": `${totalCostFinalDollar} $ | ${totalCostFinalRuble} ₽`,
       });
+
+      // Дополнительное обновление HTML
+      // Находим нужный блок по направлению: .price-auto, .price-train, .price-avia
+      const priceBlock = document.querySelector(`.price-${directionName}`);
+      if (priceBlock) {
+        // Обновляем текст "Стоимость за КГ"
+        const titleTarif = priceBlock.querySelector(
+          ".calculate-result__title_tarif"
+        );
+        if (titleTarif) {
+          titleTarif.textContent = "За КГ:";
+        }
+
+        // Обновляем стоимость за КГ в долларах
+        const kgDollarEl = priceBlock.querySelector(".calculate-result__kg");
+        if (kgDollarEl) {
+          kgDollarEl.textContent = pricePerKgDollar;
+        }
+
+        // Обновляем стоимость за КГ в рублях
+        const kgRubleEl = priceBlock.querySelector(
+          ".calculate-result__kg_ruble"
+        );
+        if (kgRubleEl) {
+          kgRubleEl.textContent = pricePerKgRuble;
+        }
+
+        // Обновляем общую стоимость в долларах
+        const dollarEl = priceBlock.querySelector(".calculate-result__dollar");
+        if (dollarEl) {
+          dollarEl.textContent = totalCostFinalDollar;
+        }
+
+        // Обновляем общую стоимость в рублях
+        const rubleEl = priceBlock.querySelector(".calculate-result__ruble");
+        if (rubleEl) {
+          rubleEl.textContent = totalCostFinalRuble;
+        }
+      }
     });
 
-    // Можно также добавить логику обновления интерфейса, например:
     const resultBlock = document.querySelector(".main-calc-result");
     if (resultBlock) resultBlock.classList.add("active");
   }
