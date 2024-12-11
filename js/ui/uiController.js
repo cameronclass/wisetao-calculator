@@ -1,3 +1,5 @@
+import { State } from "../data/State.js";
+
 // uiController.js
 export class UIController {
   static showError(message) {
@@ -29,6 +31,7 @@ export class UIController {
       density,
       categoryKey,
       packagingCost,
+      currencyYuan, 
       currencyRuble,
       brandIncluded,
       packingTypeValue,
@@ -67,6 +70,23 @@ export class UIController {
       );
       const totalCostFinalDollar = totalCostFinal.toFixed(2);
       const totalCostFinalRuble = (totalCostFinal * currencyRuble).toFixed(2);
+
+      // Сохраняем данные в State
+      State.setDirectionData(directionName, {
+        currencyYuan: currencyYuan, // Передаем реальное значение yuan
+        currencyRuble: currencyRuble,
+        costInDollar: costInDollar,
+        totalCostFinalDollar: parseFloat(totalCostFinalDollar),
+        totalCostFinalRuble: parseFloat(totalCostFinalRuble),
+        totalVolume: totalVolume,
+        totalWeight: totalWeight,
+        quantity: quantity,
+        pricePerKgDollar: pricePerKgDollar,
+        pricePerKgRuble: pricePerKgRuble,
+        packingTypeValue: packingTypeValue,
+        packagingCost: packagingCost, // в долларах
+        insuranceCostDollar: parseFloat(insuranceCostDollar),
+      });
 
       // Вывод в консоль (как было ранее)
       console.table({

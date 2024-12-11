@@ -6,6 +6,7 @@ import { JsonDataLoader } from "./data/JsonDataLoader.js";
 import { CalculatorValidation } from "./calculations/CalculatorValidation.js";
 import { DeliveryCalculator } from "./calculations/DeliveryCalculator.js";
 import { UIController } from "./ui/UIController.js";
+import { State } from "./data/State.js";
 
 (async () => {
   const groupInfo = new TelegramGroupInfo(CONFIG.botToken, CONFIG.chatId);
@@ -111,3 +112,130 @@ import { UIController } from "./ui/UIController.js";
       }
     });
 })();
+
+// Здесь предположим, что у вас уже есть:
+// currencyYuan, currencyRuble, costInDollar, totalCostFinalDollar, totalCostFinalRuble,
+// totalVolume, totalWeight, quantity, pricePerKgDollar, pricePerKgRuble, packingTypeValue,
+// packagingCost, insuranceCostDollar – полученные после расчётов
+
+// Функции для подготовки данных и отправки на сервер (уже были описаны)
+function prepareOfferData(directionKey, {
+  currencyYuan,
+  currencyRuble,
+  costInDollar,
+  totalCostFinalDollar,
+  totalCostFinalRuble,
+  totalVolume,
+  totalWeight,
+  quantity,
+  pricePerKgDollar,
+  pricePerKgRuble,
+  packingTypeValue,
+  packagingCost,
+  insuranceCostDollar
+}) {
+  const directionRusMap = {
+    price_auto: "Авто",
+    price_train: "ЖД",
+    price_avia: "Авиа"
+  };
+
+  const directionRus = directionRusMap[directionKey];
+  if (!directionRus) {
+    console.error("Не найден рус. перевод для", directionKey);
+    return null;
+  }
+
+  const goodsCostRuble = costInDollar * currencyRuble;
+  const commissionPriceRub = goodsCostRuble * 0.05;
+  const commissionPriceDollar = commissionPriceRub / currencyRuble;
+  const packageCostRub = (packagingCost * currencyRuble).toFixed(2);
+  const insuranceCostRub = (insuranceCostDollar * currencyRuble).toFixed(2);
+
+  let offerDataCargoRequest = {
+    DeliveryType: "Тип доставки: " + directionRus,
+    ExchangeRateYuan: "Курс юаня SAIDE: " + currencyYuan + "₽",
+    ExchangeRateDollar: "Курс доллара SAIDE: " + currencyRuble + "₽",
+    TOTAL:
+      "ИТОГО: " +
+      totalCostFinalDollar.toFixed(2) + "$; " +
+      totalCostFinalRuble.toFixed(2) + "₽",
+    GoodsCost: "Стоимость товара: " + goodsCostRuble.toFixed(2) + "₽",
+    Weight: "Вес: " + totalWeight + "кг",
+    Volume:
+      "Объем: " +
+      totalVolume.toFixed(3) + "м³",
+    Count: "Количество: " + quantity,
+    RedeemCommission:
+      "Комиссия SAIDE 5% от стоимости товара: " +
+      commissionPriceDollar.toFixed(2) + "$; " +
+      commissionPriceRub.toFixed(2) + "₽",
+    PackageType: "Упаковка: " + packingTypeValue,
+    PackageCost: "За упаковку: " + packageCostRub + "₽",
+    Insurance:
+      "Страховка: " +
+      insuranceCostDollar.toFixed(2) + "$; " +
+      insuranceCostRub + "₽",
+    Kg:
+      "За кг: " +
+      pricePerKgDollar + "$; " +
+      pricePerKgRuble + "₽",
+    Sum:
+      "Сумма: " +
+      totalCostFinalDollar.toFixed(2) + "$; " +
+      totalCostFinalRuble.toFixed(2) + "₽",
+  };
+
+  return offerDataCargoRequest;
+}
+
+async function sendOfferData(offerDataCargoRequest) {
+  const formData = new FormData();
+  for (let key in offerDataCargoRequest) {
+    formData.append(key, offerDataCargoRequest[key]);
+  }
+
+  const response = await fetch("https://api-calc.wisetao.com:4343/api/get-offer", {
+    method: "POST",
+    body: formData
+  });
+
+  if (!response.ok) {
+    console.error("Ошибка сервера:", response.statusText);
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+
+  // Открываем PDF в новой вкладке
+  window.open(url, "_blank");
+  URL.revokeObjectURL(url);
+}
+
+// После того, как вы выполнили DeliveryCalculator.calculate() и вызвали UIController.showResults(),
+// данные уже в State. Теперь повесим обработчик на кнопку PDF:
+
+document.querySelector(".js-get-pdf").addEventListener("click", () => {
+  const checkedRadio = document.querySelector('input[name="all-price"]:checked');
+  if (!checkedRadio) {
+    console.error("Не выбрано направление для генерации PDF");
+    return;
+  }
+
+  // например, checkedRadio.value = "price_auto"
+  const directionKey = checkedRadio.value;
+  const direction = directionKey.replace("price_", ""); // "auto", "train", "avia"
+
+  const directionData = State.getDirectionData(direction);
+  if (!directionData) {
+    console.error("Нет данных для выбранного направления:", direction);
+    return;
+  }
+
+  const offerData = prepareOfferData(directionKey, directionData);
+  if (!offerData) return;
+
+  sendOfferData(offerData);
+});
+
