@@ -226,7 +226,8 @@
         "category_key": "others",
         "data": [
           { "weight_range": "0-100", "price_kg": 700 },
-          { "weight_range": "100", "price_kg": 7 }
+          { "weight_range": "100-500", "price_kg": 7 },
+          { "weight_range": "500", "price_kg": 7 }
         ]
       }
     ]

@@ -1160,7 +1160,9 @@ body {
   color: white;
 }
 
-.main-calc-result__price_input:checked ~ .main-calc-result__price_block .main-calc-result__currency_sign{
+.main-calc-result__price_input:checked
+  ~ .main-calc-result__price_block
+  .main-calc-result__currency_sign {
   color: white;
 }
 

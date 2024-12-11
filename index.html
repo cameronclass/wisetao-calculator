@@ -7,18 +7,21 @@
     <link rel="stylesheet" href="css/old.css">
     <link rel="stylesheet" href="css/new.css">
 
-    <script src="js/currency.js"></script>
-    <!--  <script src="js/json-parser.js"></script> -->
     <script src="js/data-atributes-ui.js"></script>
-    <script src="js/main.js"></script>
+
+    <script type="module" src="js/api/TelegramGroupInfo.js"></script>
+    <script type="module" src="js/calculations/CurrencyParser.js"></script>
+    <script type="module" src="js/data/JsonDataLoader.js"></script>
+    <script type="module" src="js/calculations/CalculatorValidation.js"></script>
+    <script type="module" src="js/calculations/DeliveryCalculator.js"></script>
+    <script type="module" src="js/ui/uiController.js"></script>
+    <script type="module" src="js/script.js"></script>
 </head>
 <body>
-
 
     <div class="main-calc">
         <form method="post" name="main-calc__form">
 
-            <!-- Закончено -->
             <div class="main-calc-select">
                 <label class="main-calc-select__label">
                     <input class="main-calc-select__input" type="radio" value="calc-cargo" name="calc-type" checked>
@@ -41,7 +44,6 @@
                     </span>
                 </label> -->
             </div>
-            <!-- Закончено -->
 
             <div class="main-calc__wrapper">
 
@@ -86,7 +88,7 @@
                     <div class="main-calc__from-to_from group-input">
                         <div class="group-input__title">Откуда</div>
                         <div class="group-input__input">
-                            <input type="text" placeholder="Фошань" disabled="">
+                            <input type="text" placeholder="Хэйхэ" disabled="">
                             <svg class="group-input__input_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="6" y="10" width="12" height="8" rx="2" fill="#91969b"></rect>
                                 <path d="M9 10V9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9V10" stroke="#91969b" stroke-width="2"></path>
@@ -103,7 +105,7 @@
                     <div class="main-calc__from-to_to group-input">
                         <div class="group-input__title">Куда</div>
                         <div class="group-input__input">
-                            <input type="text" placeholder="Россия / Москва" disabled="">
+                            <input type="text" placeholder="Москва" disabled="">
                             <svg class="group-input__input_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="6" y="10" width="12" height="8" rx="2" fill="#91969b"></rect>
                                 <path d="M9 10V9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9V10" stroke="#91969b" stroke-width="2"></path>
@@ -184,15 +186,17 @@
                                 </div>
                             </div>
 
+                            <!-- Общий вес -->
                             <div class="group-input active">
                                 <div class="group-input__title">Общий вес</div>
                                 <div class="group-input__input">
-                                    <input type="text" name="total_weight" value="50" class="" required>
+                                    <input type="text" name="total_weight" class="" value="10" required>
                                     <span class="group-input__param">кг</span>
                                     <span class="error-message"></span>
                                 </div>
                             </div>
 
+                            <!-- Кол-во мест -->
                             <div class="group-input active">
                                 <div class="group-input__title">Кол-во мест</div>
                                 <div class="group-input-increment">
@@ -203,10 +207,11 @@
                                 </div>
                             </div>
 
+                            <!-- Общая стоимость -->
                             <div class="group-input active">
                                 <div class="group-input__title">Общая стоимость</div>
                                 <div class="group-input__input">
-                                    <input type="number" name="total_cost" value="100" class="" required>
+                                    <input type="number" name="total_cost" value="1000" class="" required>
                                     <span class="error-message"></span>
                                     <div class="currency-select">
                                         <div class="currency-select__selected">
@@ -238,6 +243,7 @@
                                 </div>
                             </div>
 
+                            <!-- Категория груза -->
                             <div class="group-input active">
                                 <div class="group-input__title">Категория груза</div>
                                 <div class="group-input__input">
@@ -256,7 +262,7 @@
                                         </div>
                                         <div class="calc-select__options">
                                             <label class="calc-select__label">
-                                                <input type="radio" name="category" value="clothes" class="calc-select__input" checked>
+                                                <input type="radio" name="category" value="clothes" checked class="calc-select__input">
                                                 <span class="calc-select__name">Одежда</span>
                                                 <span class="tooltip">
                                                     <span class="tooltip-icon">?</span>
@@ -337,6 +343,7 @@
                                 </div>
                             </div>
 
+                            <!-- Бренд -->
                             <label class="main-calc-checkbox main-calc-checkbox__form active">
                                 <input type="checkbox" name="brand" class="main-calc-checkbox__input">
                                 <span class="main-calc-checkbox__mark"></span>
@@ -351,7 +358,7 @@
                     </div>
                 </div>
 
-                <!-- Вроде бы все -->
+                <!-- Упаковка -->
                 <div class="main-calc-packing">
                     <div class="main-calc-packing__header js-add-class-btn" data-addclass-target="main-calc-packing__content" data-addclass-class="active">
                         <span class="main-calc-packing__header_title">Упаковка (дополнительная услуга)</span>
@@ -436,12 +443,12 @@
                     </div>
                 </div>
 
-                <!-- Закончено -->
+                <!-- Кнопка РАСЧИТАТЬ -->
                 <div class="main-calc-parametr__main_btn">
                     <button class="main-calc-button js-calculate-result" type="button" data-scroll-to="js-calc-table">РАСЧИТАТЬ ОНЛАЙН</button>
                 </div>
 
-                <!-- Закончено -->
+                <!-- Результат -->
                 <div class="main-calc-result">
                     <h4 class="main-calc__title _small label-text active">
                         <span class="main-calc__title_icon"></span>
@@ -697,12 +704,11 @@
 
                     </div>
 
-                    <!--                     <div class="main-calc-result__getblock">
+                    <!-- <div class="main-calc-result__getblock">
                         <button class="main-calc-result__btn" disabled="">ПОЛУЧИТЬ РАСЧЕТ В PDF</button>
                     </div> -->
 
                 </div>
-                <!-- Закончено -->
 
             </div>
 
