@@ -31,7 +31,7 @@ export class UIController {
       density,
       categoryKey,
       packagingCost,
-      currencyYuan, 
+      currencyYuan,
       currencyRuble,
       brandIncluded,
       packingTypeValue,
