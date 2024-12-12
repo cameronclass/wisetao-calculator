@@ -79,7 +79,7 @@ export class CalculatorValidation {
     [volumeLength, volumeWidth, volumeHeight].forEach((field) => {
       const value = parseFloat(field.value.trim());
       if (isNaN(value) || value <= 0) {
-        this.addError(field, "Поле должно быть больше 0");
+        this.addError(field, "Поля обязательны для заполнения");
         isValid = false;
       }
     });
