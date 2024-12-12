@@ -128,7 +128,7 @@ export class DeliveryCalculator {
           .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
         return density >= min && density <= max;
       });
-      calculationMode = density >= 200 ? "weight" : "volume";
+      calculationMode = density > 200 ? "weight" : "volume";
     } else if (direction === "avia") {
       const categoryData =
         directionData.find((cat) => cat.category_key === categoryKey) ||
@@ -140,7 +140,7 @@ export class DeliveryCalculator {
           .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
         return density >= min && density <= max;
       });
-      calculationMode = density >= 100 ? "weight" : "volume";
+      calculationMode = density > 100 ? "weight" : "volume";
     } else {
       const categoryData = directionData.find(
         (cat) => cat.category_key === categoryKey
@@ -151,7 +151,7 @@ export class DeliveryCalculator {
           .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
         return density >= min && density <= max;
       });
-      calculationMode = density >= 100 ? "weight" : "volume";
+      calculationMode = density > 100 ? "weight" : "volume";
     }
 
     if (!rangeData) {
@@ -163,7 +163,7 @@ export class DeliveryCalculator {
 
     let pricePerKg = rangeData.price_kg;
     if (this.fields.brand && this.fields.brand.checked) {
-      pricePerKg += density >= 100 ? 0.5 : 50;
+      pricePerKg += density > 100 ? 0.5 : 50;
     }
 
     const cost =

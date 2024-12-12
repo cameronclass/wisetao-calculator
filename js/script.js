@@ -271,3 +271,85 @@ document.querySelector(".js-get-pdf").addEventListener("click", () => {
 
   sendOfferData(offerData);
 });
+
+// Предполагаем, что у нас уже есть функции prepareOfferData, sendOfferData и т.д.
+
+// Ссылки на элементы
+const overlayCalc = document.querySelector(".main-calc__over");
+const overlayMessageCalc = overlayCalc.querySelector(".main-calc__over_pdf span:first-child");
+const overlayCountdownCalc = overlayCalc.querySelector(".main-calc__over_pdf_count");
+
+let countdownTimer = null;
+
+// Функция для запуска обратного отсчёта
+function startCountdown(seconds = 10) {
+  overlayCountdownCalc.textContent = seconds;
+  countdownTimer = setInterval(() => {
+    seconds--;
+    if (seconds <= 0) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      // Когда время истекло, но ответа нет, можно оставить так
+      // либо добавить какой-то обработчик
+    } else {
+      overlayCountdownCalc.textContent = seconds;
+    }
+  }, 1000);
+}
+
+// Функция для остановки и сброса обратного отсчёта
+function stopCountdown() {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+}
+
+// Обработчик при нажатии на оверлей для его скрытия после успеха
+overlayCalc.addEventListener("click", (event) => {
+  // Проверим, есть ли в тексте слово "Успешно" - чтобы не закрыть до ответа.
+  if (overlayMessageCalc.textContent.includes("Успешно получено")) {
+    overlayCalc.classList.remove("active");
+  }
+});
+
+document.querySelector(".js-get-pdf").addEventListener("click", async () => {
+  const checkedRadio = document.querySelector('input[name="all-price"]:checked');
+  if (!checkedRadio) {
+    console.error("Не выбрано направление для генерации PDF");
+    return;
+  }
+
+  const directionKey = checkedRadio.value;
+  const direction = directionKey.replace("price_", "");
+
+  const directionData = State.getDirectionData(direction);
+  if (!directionData) {
+    console.error("Нет данных для выбранного направления:", direction);
+    return;
+  }
+
+  const offerData = prepareOfferData(directionKey, directionData);
+  if (!offerData) return;
+
+  // Показать оверлей и запустить обратный отсчет
+  overlayCalc.classList.add("active");
+  overlayMessageCalc.innerHTML = `Идёт передача данных менеджеру <br> пожалуйста, подождите...`;
+  startCountdown(20);
+
+  // Отправить запрос
+  try {
+    await sendOfferData(offerData);
+    // Если успешно - обновляем текст
+    stopCountdown();
+    overlayMessageCalc.textContent = "Успешно получено. Нажмите на экран чтобы закрыть окно";
+    // Счётчик уберём, можно очистить текст или оставить в предыдущем состоянии
+    overlayCountdownCalc.textContent = "";
+  } catch (error) {
+    console.error("Ошибка при получении PDF:", error);
+    stopCountdown();
+    overlayMessageCalc.textContent = "Произошла ошибка при получении PDF";
+    overlayCountdownCalc.textContent = "";
+  }
+});
+
