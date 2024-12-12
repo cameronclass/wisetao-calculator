@@ -20,7 +20,7 @@
           { "weight_range": "250-300", "price_kg": 3.3 },
           { "weight_range": "300-350", "price_kg": 3.2 },
           { "weight_range": "350-400", "price_kg": 3.1 },
-          { "weight_range": "400", "price_kg": 3.0 }
+          { "weight_range": "400-10000", "price_kg": 3.0 }
         ]
       },
       {
@@ -37,7 +37,7 @@
           { "weight_range": "160-170", "price_kg": 2.4 },
           { "weight_range": "170-180", "price_kg": 2.3 },
           { "weight_range": "180-190", "price_kg": 2.2 },
-          { "weight_range": "190", "price_kg": 2.1 }
+          { "weight_range": "190-10000", "price_kg": 2.1 }
         ]
       },
       {
@@ -57,7 +57,7 @@
           { "weight_range": "190-200", "price_kg": 1.8 },
           { "weight_range": "200-250", "price_kg": 1.7 },
           { "weight_range": "250-300", "price_kg": 1.6 },
-          { "weight_range": "300", "price_kg": 1.5 }
+          { "weight_range": "300-10000", "price_kg": 1.5 }
         ]
       },
       {
@@ -74,7 +74,7 @@
           { "weight_range": "300-350", "price_kg": 1.5 },
           { "weight_range": "350-400", "price_kg": 1.4 },
           { "weight_range": "400-600", "price_kg": 1.3 },
-          { "weight_range": "600", "price_kg": 1.2 }
+          { "weight_range": "600-10000", "price_kg": 1.2 }
         ]
       },
       {
@@ -91,7 +91,7 @@
           { "weight_range": "300-350", "price_kg": 1.4 },
           { "weight_range": "350-400", "price_kg": 1.3 },
           { "weight_range": "400-600", "price_kg": 1.2 },
-          { "weight_range": "600", "price_kg": 1.1 }
+          { "weight_range": "600-10000", "price_kg": 1.1 }
         ]
       },
       {
@@ -108,7 +108,7 @@
           { "weight_range": "300-350", "price_kg": 1.3 },
           { "weight_range": "350-400", "price_kg": 1.2 },
           { "weight_range": "400-600", "price_kg": 1.1 },
-          { "weight_range": "600", "price_kg": 1.0 }
+          { "weight_range": "600-10000", "price_kg": 1.0 }
         ]
       },
       {
@@ -133,7 +133,7 @@
           { "weight_range": "400-500", "price_kg": 2.2 },
           { "weight_range": "500-700", "price_kg": 2.1 },
           { "weight_range": "700-1000", "price_kg": 2.0 },
-          { "weight_range": "1000", "price_kg": 1.9 }
+          { "weight_range": "1000-10000", "price_kg": 1.9 }
         ]
       }
     ],
@@ -149,7 +149,7 @@
       { "weight_range": "340-360", "price_kg": 2.4 },
       { "weight_range": "360-380", "price_kg": 2.3 },
       { "weight_range": "380-400", "price_kg": 2.2 },
-      { "weight_range": "400", "price_kg": 2.1 }
+      { "weight_range": "400-10000", "price_kg": 2.1 }
     ],
     "avia": [
       {
@@ -172,7 +172,7 @@
           { "weight_range": "300-350", "price_kg": 5.2 },
           { "weight_range": "350-400", "price_kg": 5.1 },
           { "weight_range": "400-500", "price_kg": 5.0 },
-          { "weight_range": "500", "price_kg": 4.9 }
+          { "weight_range": "500-10000", "price_kg": 4.9 }
         ]
       },
       {
@@ -195,7 +195,7 @@
           { "weight_range": "300-350", "price_kg": 4.2 },
           { "weight_range": "350-400", "price_kg": 4.1 },
           { "weight_range": "400-500", "price_kg": 4.0 },
-          { "weight_range": "500", "price_kg": 3.9 }
+          { "weight_range": "500-10000", "price_kg": 3.9 }
         ]
       },
       {
@@ -218,7 +218,7 @@
           { "weight_range": "300-350", "price_kg": 3.3 },
           { "weight_range": "350-400", "price_kg": 3.2 },
           { "weight_range": "400-500", "price_kg": 3.1 },
-          { "weight_range": "500", "price_kg": 3 }
+          { "weight_range": "500-10000", "price_kg": 3 }
         ]
       },
       {
@@ -227,7 +227,7 @@
         "data": [
           { "weight_range": "0-100", "price_kg": 700 },
           { "weight_range": "100-500", "price_kg": 7 },
-          { "weight_range": "500", "price_kg": 7 }
+          { "weight_range": "500-10000", "price_kg": 7 }
         ]
       }
     ]
