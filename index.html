@@ -89,7 +89,7 @@
                     <div class="main-calc__from-to_from group-input">
                         <div class="group-input__title">Откуда</div>
                         <div class="group-input__input">
-                            <input type="text" placeholder="Фушань" disabled="">
+                            <input type="text" placeholder="Foshan" disabled="">
                             <svg class="group-input__input_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="6" y="10" width="12" height="8" rx="2" fill="#91969b"></rect>
                                 <path d="M9 10V9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9V10" stroke="#91969b" stroke-width="2"></path>
@@ -457,7 +457,7 @@
                 </div>
 
                 <!-- Результат -->
-                <div class="main-calc-result">
+                <div class="main-calc-result active">
                     <h4 class="main-calc__title _small label-text active">
                         <span class="main-calc__title_icon"></span>
                         <span class="main-calc__title_text label-text active">Расценки по видам доставки</span>
@@ -712,13 +712,10 @@
 
                     </div>
 
-                    <!-- <div class="main-calc-result__getblock">
-                        <button class="main-calc-result__btn" disabled="">ПОЛУЧИТЬ РАСЧЕТ В PDF</button>
-                    </div> -->
 
                     <!-- Кнопка PDF -->
                     <div class="main-calc-result__getblock">
-                        <button class="main-calc-button js-get-pdf" type="button">ПОЛУЧИТЬ РАСЧЕТ В PDF</button>
+                        <button class="main-calc-button js-get-pdf" disabled type="button">ПОЛУЧИТЬ РАСЧЕТ В PDF</button>
                     </div>
 
                 </div>
@@ -726,7 +723,27 @@
             </div>
 
         </form>
+        <div class="main-calc__over">
+            <span class="main-calc__over_pdf">
+                <!-- <span>Идёт передача данных менеджеру <br> пожалуйста, подождите...</span> -->
+                <span>Успешно отправлено.</span>
+                <span class="main-calc__over_pdf_count"></span>
+            </span>
+        </div>
     </div>
+
+    <!--
+    Отлично, все прекрано работает, теперь нужно кое что еще добавить, так как на сервер запрос идет и получаем, оно длиться какое то время, чтобы показать клиенту что идет запрос давай еще настроим в дизайне такой момент
+
+<div class="main-calc__over active">
+            <span class="main-calc__over_pdf">
+                <span>Идёт передача данных менеджеру <br> пожалуйста, подождите...</span>
+                <span class="main-calc__over_pdf_count">20</span>
+            </span>
+        </div>
+
+Когда нажали генерировать pdf то к элементу main-calc__over добавляем класс active и где main-calc__over_pdf_count начинаем считать обратно, от 20, когда
+ -->
 
 </body>
 </html>

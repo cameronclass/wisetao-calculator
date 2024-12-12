@@ -156,4 +156,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  /*  */
+  // Находим все радио-кнопки и кнопку
+  const radioButtonsAllPrice = document.querySelectorAll('input[name="all-price"]');
+  const pdfButtonAllPrice = document.querySelector(".js-get-pdf");
+
+  // Функция для активации кнопки, если радио выбрано
+  const updateButtonState = () => {
+    const isChecked = Array.from(radioButtonsAllPrice).some((radio) => radio.checked);
+    pdfButtonAllPrice.disabled = !isChecked; // Активируем кнопку, если выбрано одно из радио
+  };
+
+  // Навешиваем событие на каждое радио
+  radioButtonsAllPrice.forEach((radio) => {
+    radio.addEventListener("change", updateButtonState);
+  });
+
+  // Инициализация состояния кнопки
+  updateButtonState();
 });
