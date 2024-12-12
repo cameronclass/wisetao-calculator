@@ -5,7 +5,7 @@ import { CurrencyParser } from "./calculations/CurrencyParser.js";
 import { JsonDataLoader } from "./data/JsonDataLoader.js";
 import { CalculatorValidation } from "./calculations/CalculatorValidation.js";
 import { DeliveryCalculator } from "./calculations/DeliveryCalculator.js";
-import { UIController } from "./ui/UIController.js";
+import { UIController } from "./ui/ui-controller.js";
 import { State } from "./data/State.js";
 
 (async () => {

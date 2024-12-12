@@ -1,6 +1,6 @@
 // DeliveryCalculator.js
 import { CONFIG } from "../config.js";
-import { UIController } from "../ui/UIController.js";
+import { UIController } from "../ui/ui-controller.js";
 
 export class DeliveryCalculator {
   constructor(jsonLoader, currencyRuble, currencyYuan, fields) {
