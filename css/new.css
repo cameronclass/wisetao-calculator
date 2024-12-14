@@ -1418,6 +1418,7 @@ input[type="number"] {
 .tooltip {
   position: absolute;
   z-index: 5;
+  border: none;
 }
 .tooltip-icon {
   display: flex;

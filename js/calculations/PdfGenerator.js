@@ -62,14 +62,16 @@ function prepareOfferData(
     GoodsCost: "Стоимость товара: " + goodsCostRuble.toFixed(2) + "₽",
     Weight: "Вес: " + totalWeight + "кг",
     Volume: "Объем: " + totalVolume.toFixed(3) + "м³",
-    Count: "Количество: " + quantity,
-    RedeemCommissionFirst: "Комиссия SAIDE 5%",
-    RedeemCommission:
+    Count: "Количество мест: " + quantity,
+    RedeemCommissionFirst: "",
+    /* RedeemCommissionFirst: "Комиссия SAIDE 5%", */
+    RedeemCommission: "",
+    /* RedeemCommission:
       "от стоимости товара: " +
       commissionPriceDollar.toFixed(2) +
       "$; " +
       commissionPriceRub.toFixed(2) +
-      "₽",
+      "₽", */
     PackageType: "Упаковка: " + packingTypeDisplay,
     PackageCost: "За упаковку: " + packageCostRub + "₽",
     Insurance:
