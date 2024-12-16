@@ -415,6 +415,7 @@ input[type="number"] {
   gap: 10px;
   cursor: pointer;
   position: relative;
+  min-width: 100%;
 }
 .main-calc-packing__item_radio {
   display: none;
@@ -1111,6 +1112,7 @@ input[type="number"] {
 }
 .main-calc-result__currency_tooltip .calc-tooltip {
   min-width: max-content;
+  max-width: max-content;
   top: 0;
   left: calc(100% + 5px);
 }
@@ -1277,10 +1279,9 @@ input[type="number"] {
   justify-content: flex-end;
 }
 .calc-select__selected .calc-tooltip {
-  min-width: 200px;
-  max-width: 220px;
-  left: initial;
-  right: 0;
+  min-width: 100%;
+  top: -50px;
+  left: calc(100% + 5px);
 }
 
 .calc-select__selected.active {
@@ -1345,9 +1346,19 @@ input[type="number"] {
   right: 10px;
   display: none;
 }
+
+.calc-select__label .tooltip {
+  width: calc(100% - 10px);
+  display: flex;
+  justify-content: flex-end;
+  display: none;
+}
 .calc-select__label .calc-tooltip {
   left: calc(100% + 5px);
-  top: 0;
+  top: -100px;
+  width: calc(100% + 10px);
+  min-width: 80%;
+  display: none;
 }
 
 .selected-tooltip {
@@ -1356,6 +1367,16 @@ input[type="number"] {
 
 .calc-select__input {
   display: none;
+}
+
+.overflow-tooltip.active .calc-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+.overflow-tooltip {
+  position: absolute;
+  right: 0;
+  top: -50px;
 }
 
 /* Currency Select */

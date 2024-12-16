@@ -76,6 +76,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedOption = selectBlock.querySelector(".calc-select__selected");
     const optionsContainer = selectBlock.querySelector(".calc-select__options");
     const options = selectBlock.querySelectorAll(".calc-select__input");
+    const overflowTooltip = selectBlock.querySelector(".overflow-tooltip");
+    const overflowTitle = overflowTooltip.querySelector(".calc-tooltip__title");
+    const overflowText = overflowTooltip.querySelector(".calc-tooltip__text");
 
     // Открытие/закрытие выпадающего списка
     selectedOption.addEventListener("click", () => {
@@ -98,17 +101,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Обновляем текст и tooltip в выбранной опции
         selectedOption.innerHTML = `
-                <span>${optionName}</span>
-                <span class="tooltip selected-tooltip">
-                    <span class="tooltip-icon">?</span>
-                    <span class="calc-tooltip">
-                        <span class="calc-tooltip__title">${tooltipTitle}</span>
-                        <span class="calc-tooltip__text">${tooltipText}</span>
-                    </span>
-                </span>
-            `;
+        <span>${optionName}</span>
+        <span class="tooltip selected-tooltip">
+          <span class="tooltip-icon">?</span>
+          <span class="calc-tooltip">
+            <span class="calc-tooltip__title">${tooltipTitle}</span>
+            <span class="calc-tooltip__text">${tooltipText}</span>
+          </span>
+        </span>
+      `;
 
         optionsContainer.style.display = "none"; // Закрыть список
+      });
+    });
+
+    // Наведение на опцию
+    selectBlock.querySelectorAll(".calc-select__label").forEach((label) => {
+      label.addEventListener("mouseenter", () => {
+        const tooltipTitle = label.querySelector(
+          ".calc-tooltip__title"
+        ).textContent;
+        const tooltipText = label.querySelector(
+          ".calc-tooltip__text"
+        ).textContent;
+
+        // Обновляем содержимое overflow-tooltip
+        overflowTitle.textContent = tooltipTitle;
+        overflowText.textContent = tooltipText;
+
+        // Добавляем класс active
+        overflowTooltip.classList.add("active");
+      });
+
+      label.addEventListener("mouseleave", () => {
+        // Убираем класс active
+        overflowTooltip.classList.remove("active");
       });
     });
 
@@ -159,12 +186,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /*  */
   // Находим все радио-кнопки и кнопку
-  const radioButtonsAllPrice = document.querySelectorAll('input[name="all-price"]');
+  const radioButtonsAllPrice = document.querySelectorAll(
+    'input[name="all-price"]'
+  );
   const pdfButtonAllPrice = document.querySelector(".js-get-pdf");
 
   // Функция для активации кнопки, если радио выбрано
   const updateButtonState = () => {
-    const isChecked = Array.from(radioButtonsAllPrice).some((radio) => radio.checked);
+    const isChecked = Array.from(radioButtonsAllPrice).some(
+      (radio) => radio.checked
+    );
     pdfButtonAllPrice.disabled = !isChecked; // Активируем кнопку, если выбрано одно из радио
   };
 
