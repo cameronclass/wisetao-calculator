@@ -1811,11 +1811,11 @@ input[type="number"] {
   background-color: #a56418;
 }
 .main-calc-result-tooltip__row ._number {
-  color: #f09224;
+  color: #e3851a;
   margin-right: 10px;
 }
 .main-calc-result-tooltip__row ._text {
-  color: #f09224;
+  color: #e3851a;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
