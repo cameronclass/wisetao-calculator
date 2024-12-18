@@ -29,7 +29,8 @@ export class JsonDataLoader {
       }
 
       this.data = await response.json();
-      console.log("Данные успешно загружены с сервера:", this.data);
+      /* console.log("Данные успешно загружены с сервера:", this.data); */
+      console.log("Данные успешно загружены с сервера");
 
       // Сохраняем в кэш
       localStorage.setItem(
