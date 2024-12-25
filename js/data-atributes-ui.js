@@ -206,4 +206,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Инициализация состояния кнопки
   updateButtonState();
+
+  /* Cacl-Type  */
+  // Получаем все радиокнопки с name="calc-type"
+  let calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
+
+  // Для каждой радиокнопки навешиваем обработчик события "change"
+  calcTypeRadios.forEach(function (radio) {
+    radio.addEventListener("change", function () {
+      // Проверяем, что выбрано значение "calc-customs"
+      if (radio.value === "calc-customs" && radio.checked) {
+        document.querySelector(".white-cargo").classList.add("active");
+
+        // Добавляем класс hidden к этим блокам
+        document
+          .querySelectorAll(".js-calc-category, .js-calc-brand")
+          .forEach(function (elem) {
+            elem.classList.add("hidden");
+          });
+      } else {
+        // Иначе убираем классы
+        document.querySelector(".white-cargo").classList.remove("active");
+        document
+          .querySelectorAll(".js-calc-category, .js-calc-brand")
+          .forEach(function (elem) {
+            elem.classList.remove("hidden");
+          });
+      }
+    });
+  });
 });
+

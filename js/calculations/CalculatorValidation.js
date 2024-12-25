@@ -126,6 +126,12 @@ export class CalculatorValidation {
   validateAll() {
     this.clearErrors();
 
+    // Определить режим
+    const calcTypeRadio = document.querySelector(
+      'input[name="calc-type"]:checked'
+    );
+    const calcType = calcTypeRadio ? calcTypeRadio.value : "calc-cargo";
+
     const { weightVolumeChange } = this.fields;
     const isValid = [
       weightVolumeChange.checked
@@ -139,7 +145,8 @@ export class CalculatorValidation {
       this.validateNumber("quantity", { required: true }),
       this.validateNumber("totalCost", { required: true, maxDecimals: 2 }),
       this.validateRadio("total_currecy"),
-      this.validateCategory(),
+      // Если calc-cargo, тогда validateCategory()
+      calcType === "calc-cargo" ? this.validateCategory() : true,
       this.validateRadio("packing-type"),
     ].every((result) => result);
 

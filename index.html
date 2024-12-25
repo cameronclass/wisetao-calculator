@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор</title>
-    <!-- <link rel="stylesheet" href="css/old.css"> -->
     <link rel="stylesheet" href="css/new.css">
 
     <script src="js/data-atributes-ui.js"></script>
@@ -19,6 +18,7 @@
     <script type="module" src="js/script.js"></script>
     <script type="module" src="js/calculations/PdfGenerator.js"></script>
     <script type="module" src="js/ui/result-tooltip.js"></script>
+    <script type="module" src="js/calculations/GetTnvedCode.js"></script>
 </head>
 <body>
 
@@ -33,13 +33,13 @@
                         <span class="main-calc-select__btn_subtitle">от 0,8$/кг</span>
                     </span>
                 </label>
-                <!-- <label class="main-calc-select__label">
+                <label class="main-calc-select__label">
                     <input class="main-calc-select__input" type="radio" value="calc-customs" name="calc-type">
                     <span class="main-calc-select__btn">
                         <span class="main-calc-select__btn_title">Таможенный</span>
                         <span class="main-calc-select__btn_subtitle">от 0,25$/кг</span>
                     </span>
-                </label> -->
+                </label>
                 <!-- <label class="main-calc-select__label">
                     <input class="main-calc-select__input" type="radio" value="calc-compare" name="calc-type">
                     <span class="main-calc-select__btn">
@@ -141,7 +141,55 @@
                     </div>
                 </div>
 
-                <div class="main-calc-container">
+                <!-- Белая -->
+                <div class="main-calc-container white-cargo hidden">
+
+                    <h4 class="main-calc__title _small">
+                        <span class="main-calc__title_icon"></span>
+                        <span class="main-calc__title_text">Коды ТН ВЭД</span>
+                    </h4>
+                    <span class="main-calc__subtitle">Внимание! Могут действовать ограничения на 84, 85 и 90 группу, возможен индивидуальный просчет</span>
+
+                    <div class="main-calc-bordered white-cargo__block">
+
+                        <div class="group-input tnved-input-block">
+                            <div class="group-input__title">Подобрать код по наименованию</div>
+                            <div class="group-input__input">
+                                <input type="text" name="tnved_input" class="tnved-input" required placeholder="Введите наименование или код для подсказок" />
+                                <div class="suggestion"></div>
+
+<!--                                 <div class="overlay"></div>
+                                <div class="tnved-tree-container">
+                                    <div class="tnved-tree-close-button">X</div>
+                                    <ul class="tnved-tree-list"></ul>
+                                </div> -->
+                            </div>
+                        </div>
+
+
+
+                        <div class="white-cargo__justinfo hidden active">
+                            <!-- Поля для ввода имени и кода -->
+                            <div class="group-input">
+                                <div class="group-input__title">Имя товара:</div>
+                                <div class="group-input__input">
+                                    <input type="text" class="tnved-name-input" disabled placeholder="" />
+                                </div>
+                            </div>
+                            <div class="group-input">
+                                <div class="group-input__title">Код товара:</div>
+                                <div class="group-input__input">
+                                    <input type="text" class="tnved-code-input" disabled placeholder="" />
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <!-- Карго -->
+                <div class="main-calc-container grey-cargo">
                     <h4 class="main-calc__title _small">
                         <span class="main-calc__title_icon"></span>
                         <span class="main-calc__title_text label-text active">Параметры груза</span>
@@ -190,7 +238,7 @@
                             </div>
 
                             <!-- Общий вес -->
-                            <div class="group-input active">
+                            <div class="group-input">
                                 <div class="group-input__title">Общий вес</div>
                                 <div class="group-input__input">
                                     <input type="text" name="total_weight" class="" value="" required>
@@ -200,7 +248,7 @@
                             </div>
 
                             <!-- Кол-во мест -->
-                            <div class="group-input active">
+                            <div class="group-input">
                                 <div class="group-input__title">Кол-во мест</div>
                                 <div class="group-input-increment">
                                     <span class="group-input-increment__minus initialized">-</span>
@@ -211,7 +259,7 @@
                             </div>
 
                             <!-- Общая стоимость -->
-                            <div class="group-input active">
+                            <div class="group-input">
                                 <div class="group-input__title">Общая стоимость</div>
                                 <div class="group-input__input">
                                     <input type="number" name="total_cost" value="" class="" required>
@@ -247,7 +295,7 @@
                             </div>
 
                             <!-- Категория груза -->
-                            <div class="group-input active">
+                            <div class="group-input js-calc-category">
                                 <div class="group-input__title">Категория груза</div>
                                 <div class="group-input__input">
                                     <div class="calc-select">
@@ -368,7 +416,7 @@
                             </div>
 
                             <!-- Бренд -->
-                            <label class="main-calc-checkbox main-calc-checkbox__form active">
+                            <label class="main-calc-checkbox main-calc-checkbox__form js-calc-brand">
                                 <input type="checkbox" name="brand" class="main-calc-checkbox__input">
                                 <span class="main-calc-checkbox__mark"></span>
                                 <span class="main-calc-checkbox__title">Бренд</span>
