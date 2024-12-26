@@ -156,30 +156,33 @@
                             <div class="group-input__title">Подобрать код по наименованию</div>
                             <div class="group-input__input">
                                 <input type="text" name="tnved_input" class="tnved-input" required placeholder="Введите наименование или код для подсказок" />
+                                <div class="after-tnved">Идет Поиск</div>
                                 <div class="suggestion"></div>
-
-<!--                                 <div class="overlay"></div>
-                                <div class="tnved-tree-container">
-                                    <div class="tnved-tree-close-button">X</div>
-                                    <ul class="tnved-tree-list"></ul>
-                                </div> -->
                             </div>
+                        </div>
+
+                        <div class="overlay"></div>
+                        <div class="tnved-tree-container">
+                            <div class="tnved-tree-close-button">X</div>
+                            <ul class="tnved-tree-list"></ul>
                         </div>
 
 
 
-                        <div class="white-cargo__justinfo hidden active">
+                        <div class="white-cargo__justinfo name-code-container hidden">
                             <!-- Поля для ввода имени и кода -->
                             <div class="group-input">
                                 <div class="group-input__title">Имя товара:</div>
                                 <div class="group-input__input">
-                                    <input type="text" class="tnved-name-input" disabled placeholder="" />
+                                    <span class="tnved-name-input"></span>
+                                    <!--                                     <input type="text" class="tnved-name-input" disabled placeholder="" /> -->
                                 </div>
                             </div>
                             <div class="group-input">
                                 <div class="group-input__title">Код товара:</div>
                                 <div class="group-input__input">
-                                    <input type="text" class="tnved-code-input" disabled placeholder="" />
+                                    <span class="tnved-code-input"></span>
+                                    <!--  <input type="text" class="tnved-code-input" disabled placeholder="" /> -->
                                 </div>
                             </div>
                         </div>

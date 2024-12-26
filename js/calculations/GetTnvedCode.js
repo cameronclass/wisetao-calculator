@@ -14,15 +14,24 @@ class SuggestionsService {
 }
 
 class SuggestionsUI {
-  constructor({ inputField, suggestionContainer, nameInput, codeInput }) {
+  constructor({
+    inputField, // tnved-input
+    suggestionContainer, // блок с выпадающим списком
+    nameInput, // tnved-name-input
+    codeInput, // tnved-code-input
+    nameCodeContainer, // сам блок .name-code-container
+  }) {
     this.inputField = inputField;
     this.suggestionContainer = suggestionContainer;
     this.nameInput = nameInput;
     this.codeInput = codeInput;
+    this.nameCodeContainer = nameCodeContainer;
+
     this.debounceTimer = null;
     this.DEBOUNCE_DELAY = 2000;
-    this.suggestionsService = null; // Будет установлено извне
-    this.onItemSelect = null; // Колбэк, вызываемый при выборе элемента
+    this.suggestionsService = null; // будет установлено извне
+    this.onItemSelect = null; // колбэк при выборе элемента (если нужно)
+    this.onTreeOpen = null; // колбэк при открытии дерева (клик по стрелке)
   }
 
   init() {
@@ -31,10 +40,22 @@ class SuggestionsUI {
 
   handleInput() {
     const query = this.inputField.value.trim();
+
+    // Если пользователь начинает печатать заново,
+    // убираем .active у блока name-code-container
+    if (this.nameCodeContainer.classList.contains("active")) {
+      this.nameCodeContainer.classList.remove("active");
+      // Очистим поля
+      this.nameInput.textContent = "";
+      this.codeInput.textContent = "";
+    }
+
     if (query.length < 3) {
       this.hideSuggestions();
       return;
     }
+    // Запускаем анимацию загрузки
+    this.startLoadingAnimation();
 
     clearTimeout(this.debounceTimer);
     this.debounceTimer = setTimeout(async () => {
@@ -45,9 +66,11 @@ class SuggestionsUI {
   async loadSuggestions(query) {
     try {
       const data = await this.suggestionsService.fetchSuggestions(query);
+      this.stopLoadingAnimation();
       this.renderSuggestions(data);
     } catch (e) {
       console.error(e);
+      this.stopLoadingAnimation();
       this.renderNoSuggestions();
     }
   }
@@ -80,14 +103,23 @@ class SuggestionsUI {
       const codeEl = document.createElement("div");
       codeEl.textContent = `Код: ${item.CODE}`;
 
-      // При клике по элементу устанавливаем значения в поля
+      // Клик по самому suggestionItem — выбираем подсказку
       suggestionItem.addEventListener("click", () => {
-        this.nameInput.value = item.KR_NAIM;
-        this.codeInput.value = item.CODE;
-        // Выводим данные выбранного товара в консоль в виде таблицы
+        // Устанавливаем значения
+        this.nameInput.textContent = item.KR_NAIM;
+        this.codeInput.textContent = item.CODE;
+
+        // Добавляем класс .active, чтобы показать блок с name/code
+        this.nameCodeContainer.classList.add("active");
+
+        // Очищаем поле tnved-input
+        /* this.inputField.value = ""; */
+        this.inputField.value = this.codeInput.textContent;
+
+        // Выводим в консоль в виде таблицы
         console.table(item);
 
-        // Если есть колбэк выбора элемента (например для дерева), вызываем
+        // Если есть колбэк выбора (необязательно)
         if (typeof this.onItemSelect === "function") {
           this.onItemSelect(item);
         }
@@ -95,10 +127,25 @@ class SuggestionsUI {
         this.hideSuggestions();
       });
 
+      // Стрелка/ссылка (справа), открывающая дерево
+      const arrowEl = document.createElement("span");
+      arrowEl.className = "open-tree-arrow";
+      arrowEl.textContent = "➔";
+      // Остановим всплытие, чтобы клик именно по стрелке не выбирал подсказку
+      arrowEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        // Вызываем колбэк открытия дерева
+        if (typeof this.onTreeOpen === "function") {
+          this.onTreeOpen(item);
+        }
+      });
+
       suggestionItem.appendChild(nameEl);
       suggestionItem.appendChild(codeEl);
+      suggestionItem.appendChild(arrowEl);
 
       this.suggestionContainer.appendChild(suggestionItem);
+
       if (index < data.length - 1) {
         const divider = document.createElement("div");
         divider.className = "suggestion-divider";
@@ -114,6 +161,16 @@ class SuggestionsUI {
 
   hideSuggestions() {
     this.suggestionContainer.style.display = "none";
+  }
+
+  // Запустить анимацию загрузки на поле ввода
+  startLoadingAnimation() {
+    this.inputField.classList.add("loading");
+  }
+
+  // Остановить анимацию загрузки
+  stopLoadingAnimation() {
+    this.inputField.classList.remove("loading");
   }
 }
 
@@ -202,7 +259,7 @@ class TnvedTreeUI {
       e.target.classList.toggle("expanded");
       this.correctLineHeights(subTree);
     } else {
-      // Загружаем динамически
+      // Догружаем поддерево
       const dataId = parentItem.getAttribute("data-id");
       const children = await this.treeService.loadChildren(dataId);
       if (children.length > 0) {
@@ -237,7 +294,7 @@ class TnvedTreeUI {
         codeSpan.textContent = it.code;
         codeSpan.addEventListener("click", () => {
           console.table(it);
-          // Дополнительная логика, если нужно
+          // Дополнительная логика при выборе кода (если нужно)
           this.close();
         });
         li.appendChild(line);
@@ -255,7 +312,7 @@ class TnvedTreeUI {
 
       container.appendChild(li);
     });
-    // Добавляем пустой элемент для линии
+    // Добавляем пустой элемент для визуального оформления линии
     const emptyLi = document.createElement("li");
     emptyLi.className = "tnved-tree-item";
     emptyLi.style.height = "0";
@@ -284,33 +341,43 @@ class TnvedTreeUI {
 
 document.addEventListener("DOMContentLoaded", () => {
   const apiBase = "https://api-calc.wisetao.com:4343/api";
+
   const nameInput = document.querySelector(".tnved-name-input");
   const codeInput = document.querySelector(".tnved-code-input");
   const tnvedInput = document.querySelector(".tnved-input");
   const suggestionContainer = document.querySelector(".suggestion");
+  const nameCodeContainer = document.querySelector(".name-code-container");
 
+  // Дерево
   const treeContainer = document.querySelector(".tnved-tree-container");
   const overlay = document.querySelector(".overlay");
   const closeButton = document.querySelector(".tnved-tree-close-button");
   const treeList = document.querySelector(".tnved-tree-list");
 
+  // Инициализация сервисов
   const suggestionsService = new SuggestionsService(apiBase);
+  const tnvedTreeService = new TnvedTreeService(apiBase);
+
+  // Инициализация UI
   const suggestionsUI = new SuggestionsUI({
     inputField: tnvedInput,
     suggestionContainer: suggestionContainer,
     nameInput: nameInput,
     codeInput: codeInput,
+    nameCodeContainer: nameCodeContainer,
   });
   suggestionsUI.suggestionsService = suggestionsService;
 
-  // При выборе элемента из подсказок открываем дерево
-  suggestionsUI.onItemSelect = async (item) => {
-    // Открываем дерево при выборе подсказки, если нужно
-    // Если нужно показывать дерево при выборе, раскомментируйте
-    // await tnvedTreeUI.open();
+  // Колбэк открытия дерева при клике на стрелку в подсказке
+  suggestionsUI.onTreeOpen = async (item) => {
+    // item — это выбранный объект с KR_NAIM, CODE и т.д.
+    // Можно при открытии дерева что-то делать с item,
+    // например, вывести в консоль
+    console.log("Открыть дерево для:", item);
+    await tnvedTreeUI.open();
   };
 
-  const tnvedTreeService = new TnvedTreeService(apiBase);
+  // Инициализация дерева
   const tnvedTreeUI = new TnvedTreeUI({
     treeContainer: treeContainer,
     overlay: overlay,
@@ -319,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   tnvedTreeUI.treeService = tnvedTreeService;
 
-  // Инициализация
+  // Запуск
   suggestionsUI.init();
   tnvedTreeUI.init();
 });

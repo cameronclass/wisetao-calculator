@@ -9,18 +9,63 @@
             font-family: Arial, sans-serif;
         }
 
+        /* Общие стили для контейнеров */
         .input-container {
             position: relative;
             margin-bottom: 20px;
         }
 
-        .tnved-input,
+        /* Блок, где "Поля для ввода имени и кода" */
+        .name-code-container {
+            transition: opacity 0.3s ease;
+        }
+
+        /* Когда этот блок неактивен, можно скрыть его, например так: */
+        .name-code-container:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+            /* чтобы не кликалось */
+        }
+
         .tnved-name-input,
-        .tnved-code-input {
+        .tnved-code-input,
+        .tnved-input {
             width: 200px;
             padding: 6px 8px;
             margin-right: 10px;
         }
+
+        /* Анимация загрузки — условная точка, которая крутится (пример) */
+        .tnved-input.loading {
+            position: relative;
+        }
+
+        .after {
+            content: "Идет запрос";
+            display: none;
+            color: black;
+            /* или используйте base64 svg, spinner и т.д. */
+            position: absolute;
+            left: 0;
+            top: 120%;
+            transform: translateY(-50%);
+            animation: spin 1s linear infinite;
+            z-index: 100;
+        }
+
+        .tnved-input.loading~.after {
+            display: flex;
+        }
+
+/*         @keyframes spin {
+            from {
+                transform: translateY(-50%) rotate(0deg);
+            }
+
+            to {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        } */
 
         .suggestion {
             display: none;
@@ -36,6 +81,7 @@
         .suggestion-item {
             padding: 8px;
             cursor: pointer;
+            position: relative;
         }
 
         .suggestion-item:hover {
@@ -44,6 +90,13 @@
 
         .suggestion-divider {
             border-bottom: 1px solid #ccc;
+        }
+
+        /* Стрелка (ссылка) на дерево */
+        .open-tree-arrow {
+            float: right;
+            cursor: pointer;
+            color: #666;
         }
 
         .overlay {
@@ -110,18 +163,21 @@
     </style>
 </head>
 <body>
-    <!-- Поля для ввода имени и кода -->
-    <div class="input-container">
-        <input type="text" class="tnved-name-input" disabled placeholder="Имя товара" />
-        <input type="text" class="tnved-code-input" disabled placeholder="Код товара" />
+
+    <!-- Блок, где "Поля для ввода имени и кода" -->
+    <div class="input-container name-code-container">
+        <input type="text" class="tnved-name-input" placeholder="Имя товара" />
+        <input type="text" class="tnved-code-input" placeholder="Код товара" />
     </div>
 
     <!-- Поле для ввода, в котором ищем подсказки -->
     <div class="input-container">
         <input type="text" class="tnved-input" placeholder="Введите наименование для подсказок" />
+        <div class="after">Идет Поиск</div>
         <div class="suggestion"></div>
     </div>
 
+    <!-- Модальное окно с деревом -->
     <div class="overlay"></div>
     <div class="tnved-tree-container">
         <div class="tnved-tree-close-button">X</div>
@@ -143,15 +199,24 @@
         }
 
         class SuggestionsUI {
-            constructor({ inputField, suggestionContainer, nameInput, codeInput }) {
+            constructor({
+                inputField,            // tnved-input
+                suggestionContainer,   // блок с выпадающим списком
+                nameInput,             // tnved-name-input
+                codeInput,             // tnved-code-input
+                nameCodeContainer      // сам блок .name-code-container
+            }) {
                 this.inputField = inputField;
                 this.suggestionContainer = suggestionContainer;
                 this.nameInput = nameInput;
                 this.codeInput = codeInput;
+                this.nameCodeContainer = nameCodeContainer;
+
                 this.debounceTimer = null;
                 this.DEBOUNCE_DELAY = 2000;
-                this.suggestionsService = null; // Будет установлено извне
-                this.onItemSelect = null; // Колбэк, вызываемый при выборе элемента
+                this.suggestionsService = null; // будет установлено извне
+                this.onItemSelect = null;       // колбэк при выборе элемента (если нужно)
+                this.onTreeOpen = null;         // колбэк при открытии дерева (клик по стрелке)
             }
 
             init() {
@@ -160,10 +225,22 @@
 
             handleInput() {
                 const query = this.inputField.value.trim();
+
+                // Если пользователь начинает печатать заново,
+                // убираем .active у блока name-code-container
+                if (this.nameCodeContainer.classList.contains('active')) {
+                    this.nameCodeContainer.classList.remove('active');
+                    // Очистим поля
+                    this.nameInput.value = '';
+                    this.codeInput.value = '';
+                }
+
                 if (query.length < 3) {
                     this.hideSuggestions();
                     return;
                 }
+                // Запускаем анимацию загрузки
+                this.startLoadingAnimation();
 
                 clearTimeout(this.debounceTimer);
                 this.debounceTimer = setTimeout(async () => {
@@ -174,9 +251,11 @@
             async loadSuggestions(query) {
                 try {
                     const data = await this.suggestionsService.fetchSuggestions(query);
+                    this.stopLoadingAnimation();
                     this.renderSuggestions(data);
                 } catch (e) {
                     console.error(e);
+                    this.stopLoadingAnimation();
                     this.renderNoSuggestions();
                 }
             }
@@ -209,14 +288,22 @@
                     const codeEl = document.createElement('div');
                     codeEl.textContent = `Код: ${item.CODE}`;
 
-                    // При клике по элементу устанавливаем значения в поля
+                    // Клик по самому suggestionItem — выбираем подсказку
                     suggestionItem.addEventListener('click', () => {
+                        // Устанавливаем значения
                         this.nameInput.value = item.KR_NAIM;
                         this.codeInput.value = item.CODE;
-                        // Выводим данные выбранного товара в консоль в виде таблицы
+
+                        // Добавляем класс .active, чтобы показать блок с name/code
+                        this.nameCodeContainer.classList.add('active');
+
+                        // Очищаем поле tnved-input
+                        this.inputField.value = '';
+
+                        // Выводим в консоль в виде таблицы
                         console.table(item);
 
-                        // Если есть колбэк выбора элемента (например для дерева), вызываем
+                        // Если есть колбэк выбора (необязательно)
                         if (typeof this.onItemSelect === 'function') {
                             this.onItemSelect(item);
                         }
@@ -224,10 +311,25 @@
                         this.hideSuggestions();
                     });
 
+                    // Стрелка/ссылка (справа), открывающая дерево
+                    const arrowEl = document.createElement('span');
+                    arrowEl.className = 'open-tree-arrow';
+                    arrowEl.textContent = '➔';
+                    // Остановим всплытие, чтобы клик именно по стрелке не выбирал подсказку
+                    arrowEl.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Вызываем колбэк открытия дерева
+                        if (typeof this.onTreeOpen === 'function') {
+                            this.onTreeOpen(item);
+                        }
+                    });
+
                     suggestionItem.appendChild(nameEl);
                     suggestionItem.appendChild(codeEl);
+                    suggestionItem.appendChild(arrowEl);
 
                     this.suggestionContainer.appendChild(suggestionItem);
+
                     if (index < data.length - 1) {
                         const divider = document.createElement('div');
                         divider.className = 'suggestion-divider';
@@ -243,6 +345,16 @@
 
             hideSuggestions() {
                 this.suggestionContainer.style.display = 'none';
+            }
+
+            // Запустить анимацию загрузки на поле ввода
+            startLoadingAnimation() {
+                this.inputField.classList.add('loading');
+            }
+
+            // Остановить анимацию загрузки
+            stopLoadingAnimation() {
+                this.inputField.classList.remove('loading');
             }
         }
 
@@ -329,7 +441,7 @@
                     e.target.classList.toggle('expanded');
                     this.correctLineHeights(subTree);
                 } else {
-                    // Загружаем динамически
+                    // Догружаем поддерево
                     const dataId = parentItem.getAttribute('data-id');
                     const children = await this.treeService.loadChildren(dataId);
                     if (children.length > 0) {
@@ -364,7 +476,7 @@
                         codeSpan.textContent = it.code;
                         codeSpan.addEventListener('click', () => {
                             console.table(it);
-                            // Дополнительная логика, если нужно
+                            // Дополнительная логика при выборе кода (если нужно)
                             this.close();
                         });
                         li.appendChild(line);
@@ -382,7 +494,7 @@
 
                     container.appendChild(li);
                 });
-                // Добавляем пустой элемент для линии
+                // Добавляем пустой элемент для визуального оформления линии
                 const emptyLi = document.createElement('li');
                 emptyLi.className = 'tnved-tree-item';
                 emptyLi.style.height = '0';
@@ -411,33 +523,43 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const apiBase = "https://api-calc.wisetao.com:4343/api";
+
             const nameInput = document.querySelector('.tnved-name-input');
             const codeInput = document.querySelector('.tnved-code-input');
             const tnvedInput = document.querySelector('.tnved-input');
             const suggestionContainer = document.querySelector('.suggestion');
+            const nameCodeContainer = document.querySelector('.name-code-container');
 
+            // Дерево
             const treeContainer = document.querySelector('.tnved-tree-container');
             const overlay = document.querySelector('.overlay');
             const closeButton = document.querySelector('.tnved-tree-close-button');
             const treeList = document.querySelector('.tnved-tree-list');
 
+            // Инициализация сервисов
             const suggestionsService = new SuggestionsService(apiBase);
+            const tnvedTreeService = new TnvedTreeService(apiBase);
+
+            // Инициализация UI
             const suggestionsUI = new SuggestionsUI({
                 inputField: tnvedInput,
                 suggestionContainer: suggestionContainer,
                 nameInput: nameInput,
-                codeInput: codeInput
+                codeInput: codeInput,
+                nameCodeContainer: nameCodeContainer
             });
             suggestionsUI.suggestionsService = suggestionsService;
 
-            // При выборе элемента из подсказок открываем дерево
-            suggestionsUI.onItemSelect = async (item) => {
-                // Открываем дерево при выборе подсказки, если нужно
-                // Если нужно показывать дерево при выборе, раскомментируйте
+            // Колбэк открытия дерева при клике на стрелку в подсказке
+            suggestionsUI.onTreeOpen = async (item) => {
+                // item — это выбранный объект с KR_NAIM, CODE и т.д.
+                // Можно при открытии дерева что-то делать с item,
+                // например, вывести в консоль
+                console.log('Открыть дерево для:', item);
                 await tnvedTreeUI.open();
             };
 
-            const tnvedTreeService = new TnvedTreeService(apiBase);
+            // Инициализация дерева
             const tnvedTreeUI = new TnvedTreeUI({
                 treeContainer: treeContainer,
                 overlay: overlay,
@@ -446,10 +568,11 @@
             });
             tnvedTreeUI.treeService = tnvedTreeService;
 
-            // Инициализация
+            // Запуск
             suggestionsUI.init();
             tnvedTreeUI.init();
         });
+        
     </script>
 </body>
 </html>

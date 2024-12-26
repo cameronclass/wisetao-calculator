@@ -1720,7 +1720,7 @@ input[type="number"] {
   color: #e3851a;
 }
 
-.tnved-input-block input::placeholder{
+.tnved-input-block input::placeholder {
   text-transform: initial;
 }
 
@@ -1777,52 +1777,75 @@ input[type="number"] {
 .tnved-tree-container {
   display: none;
   position: fixed;
-  top: 10%;
-  left: 10%;
-  width: 400px;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
   height: 400px;
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #ccc;
+  background-color: #141a24;
+  border: 1px solid #2f3743;
+  border-radius: 20px;
   z-index: 999;
-  padding: 10px;
+  padding: 30px 40px;
+  color: white;
 }
 
 .tnved-tree-close-button {
-  float: right;
   cursor: pointer;
+  position: absolute;
+  right: 20px;
+  top: 15px;
 }
 
 .tnved-tree-list {
   list-style: none;
-  padding-left: 20px;
   position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 .tnved-tree-item {
   position: relative;
-  padding: 5px 0 5px 20px;
+  margin-top: 12px;
+  margin-bottom: 12px;
 }
 
 .tnved-tree-item-line {
   position: absolute;
   left: 0;
   width: 2px;
-  background: #000;
 }
 
 .tnved-toggle-icon {
-  width: 10px;
-  height: 10px;
-  background: #666;
+  width: 12px;
+  height: 12px;
+  background: #f09024;
   display: inline-block;
-  margin-right: 5px;
+  margin-right: 10px;
   cursor: pointer;
 }
 
 .tnved-code {
-  color: blue;
+  color: #f09024;
   cursor: pointer;
+}
+
+.after-tnved {
+  content: "Идет запрос";
+  display: none;
+  color: black;
+  position: absolute;
+  left: 0;
+  top: 120%;
+  transform: translateY(-50%);
+  animation: spin 1s linear infinite;
+  z-index: 100;
+}
+
+.tnved-input.loading ~ .after-tnved {
+  display: flex;
 }
 
 /* Mobile */
