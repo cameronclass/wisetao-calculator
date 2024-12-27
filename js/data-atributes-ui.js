@@ -211,6 +211,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Получаем все радиокнопки с name="calc-type"
   let calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
 
+  // Получаем input-ы с name="from_where" и name="from_to"
+  let fromWhereInput = document.querySelector('input[name="from_where"]');
+  let fromToInput = document.querySelector('input[name="from_to"]');
+
   // Для каждой радиокнопки навешиваем обработчик события "change"
   calcTypeRadios.forEach(function (radio) {
     radio.addEventListener("change", function () {
@@ -224,7 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
           .forEach(function (elem) {
             elem.classList.add("hidden");
           });
-      } else {
+
+        // Устанавливаем плейсхолдеры для input-ов
+        fromWhereInput.placeholder = "Китай - Хейхе";
+        fromToInput.placeholder = "Россия - Благовещенск";
+      } else if (radio.value === "calc-cargo" && radio.checked) {
         // Иначе убираем классы
         document.querySelector(".white-cargo").classList.remove("active");
         document
@@ -232,8 +240,21 @@ document.addEventListener("DOMContentLoaded", () => {
           .forEach(function (elem) {
             elem.classList.remove("hidden");
           });
+
+        // Устанавливаем плейсхолдеры для input-ов
+        fromWhereInput.placeholder = "Китай - Фошань";
+        fromToInput.placeholder = "Россия - Москва";
+      } else {
+        // Убираем классы и плейсхолдеры
+        document.querySelector(".white-cargo").classList.remove("active");
+        document
+          .querySelectorAll(".js-calc-category, .js-calc-brand")
+          .forEach(function (elem) {
+            elem.classList.remove("hidden");
+          });
+        fromWhereInput.placeholder = "";
+        fromToInput.placeholder = "";
       }
     });
   });
 });
-
