@@ -1742,8 +1742,12 @@ input[type="number"] {
 }
 
 .suggestion-item {
-  padding: 8px;
+  padding: 8px 40px 8px 8px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
 }
 
 .suggestion-item:hover {
@@ -1755,11 +1759,11 @@ input[type="number"] {
   border: 0.1px solid #f09024;
 }
 
-.suggestion-item div:last-child {
+.suggestion-item > div:nth-child(2) {
   color: #f09024;
 }
 
-.suggestion-item:hover div:last-child {
+.suggestion-item:hover > div:nth-child(2) {
   color: #141a24;
 }
 
@@ -1835,10 +1839,10 @@ input[type="number"] {
 .after-tnved {
   content: "Идет запрос";
   display: none;
-  color: black;
+  color: #f09024;
   position: absolute;
-  left: 0;
-  top: 120%;
+  right: 20px;
+  top: 50%;
   transform: translateY(-50%);
   animation: spin 1s linear infinite;
   z-index: 100;
@@ -1846,6 +1850,12 @@ input[type="number"] {
 
 .tnved-input.loading ~ .after-tnved {
   display: flex;
+}
+
+.open-tree-arrow {
+  position: absolute;
+  right: 10px;
+  top: 10px;
 }
 
 /* Mobile */
