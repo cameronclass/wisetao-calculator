@@ -211,29 +211,60 @@ document.addEventListener("DOMContentLoaded", () => {
   // Получаем все радиокнопки с name="calc-type"
   let calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
 
-  // Получаем input-ы с name="from_where" и name="from_to"
+  // Получаем инпуты по name
   let fromWhereInput = document.querySelector('input[name="from_where"]');
   let fromToInput = document.querySelector('input[name="from_to"]');
 
-  // Для каждой радиокнопки навешиваем обработчик события "change"
+  // Ищем конкретный блок, внутри которого находятся нужные tooltip-элементы
+  let fromToContainer = document.querySelector(".main-calc__from-to_to");
+  let tooltipTitle = fromToContainer.querySelector(".calc-tooltip__title");
+  let tooltipText = fromToContainer.querySelector(".calc-tooltip__text");
+
+  // Вешаем обработчик события "change" на каждую радиокнопку
   calcTypeRadios.forEach(function (radio) {
     radio.addEventListener("change", function () {
       // Проверяем, что выбрано значение "calc-customs"
       if (radio.value === "calc-customs" && radio.checked) {
+        // Добавляем класс "active" к .white-cargo
         document.querySelector(".white-cargo").classList.add("active");
 
-        // Добавляем класс hidden к этим блокам
+        // Добавляем класс "hidden" к .js-calc-category и .js-calc-brand
         document
           .querySelectorAll(".js-calc-category, .js-calc-brand")
           .forEach(function (elem) {
             elem.classList.add("hidden");
           });
 
-        // Устанавливаем плейсхолдеры для input-ов
+        // Меняем плейсхолдеры
         fromWhereInput.placeholder = "Китай - Хейхе";
         fromToInput.placeholder = "Россия - Благовещенск";
+
+        // Меняем тексты тултипа
+        tooltipTitle.textContent = "Склад временного хранение";
+        tooltipText.textContent =
+          "Доставка осуществляется только до г.Благовещенск СВХ. Доставка до вашего города осуществляется с помощью российских транспортных компаний.";
       } else if (radio.value === "calc-cargo" && radio.checked) {
-        // Иначе убираем классы
+        // Убираем класс "active" с .white-cargo
+        document.querySelector(".white-cargo").classList.remove("active");
+
+        // Убираем класс "hidden" с .js-calc-category и .js-calc-brand
+        document
+          .querySelectorAll(".js-calc-category, .js-calc-brand")
+          .forEach(function (elem) {
+            elem.classList.remove("hidden");
+          });
+
+        // Меняем плейсхолдеры
+        fromWhereInput.placeholder = "Китай - Фошань";
+        fromToInput.placeholder = "Россия - Москва";
+
+        // Меняем тексты тултипа
+        tooltipTitle.textContent = "Южные ворота";
+        tooltipText.textContent =
+          "Доставка осуществляется только до г.Москва «Южные ворота». Доставка до вашего города осуществляется с помощью российских транспортных компаний.";
+      } else {
+        // Если по какой-то причине выбрано что-то ещё (или отключили радиокнопку),
+        // сбрасываем всё в некое «дефолтное» состояние, если это требуется
         document.querySelector(".white-cargo").classList.remove("active");
         document
           .querySelectorAll(".js-calc-category, .js-calc-brand")
@@ -241,19 +272,11 @@ document.addEventListener("DOMContentLoaded", () => {
             elem.classList.remove("hidden");
           });
 
-        // Устанавливаем плейсхолдеры для input-ов
-        fromWhereInput.placeholder = "Китай - Фошань";
-        fromToInput.placeholder = "Россия - Москва";
-      } else {
-        // Убираем классы и плейсхолдеры
-        document.querySelector(".white-cargo").classList.remove("active");
-        document
-          .querySelectorAll(".js-calc-category, .js-calc-brand")
-          .forEach(function (elem) {
-            elem.classList.remove("hidden");
-          });
         fromWhereInput.placeholder = "";
         fromToInput.placeholder = "";
+
+        tooltipTitle.textContent = "";
+        tooltipText.textContent = "";
       }
     });
   });

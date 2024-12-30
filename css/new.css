@@ -811,6 +811,7 @@ input[type="number"] {
   border: 1px solid transparent;
   outline: none;
 }
+
 .group-input-increment input:focus {
   border: 1px solid #f09123;
 }
@@ -1539,7 +1540,8 @@ input[type="number"] {
 }
 
 .group-input__input input.error-input,
-.volume-block input.error-input {
+.volume-block input.error-input,
+.group-input-increment input.error-input {
   border: 1px solid #de4646;
 }
 

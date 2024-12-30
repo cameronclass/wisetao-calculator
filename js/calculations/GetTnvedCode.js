@@ -1,3 +1,5 @@
+import { State } from "../data/State.js";
+
 class SuggestionsService {
   constructor(apiBase) {
     this.apiBase = apiBase;
@@ -40,6 +42,11 @@ class SuggestionsUI {
 
   handleInput() {
     const query = this.inputField.value.trim();
+
+    // 1) Запоминаем введённое в State
+    State.tnvedSelection.inputValue = this.inputField.value;
+    // 2) Сбрасываем выбранный элемент
+    State.tnvedSelection.selectedItem = null;
 
     // Если пользователь начинает печатать заново,
     // убираем .active у блока name-code-container
@@ -103,23 +110,37 @@ class SuggestionsUI {
       const codeEl = document.createElement("div");
       codeEl.textContent = `Код: ${item.CODE}`;
 
-      // Клик по самому suggestionItem — выбираем подсказку
+      // Клик по suggestionItem = выбор
       suggestionItem.addEventListener("click", () => {
-        // Устанавливаем значения
+        // Устанавливаем выбранный элемент в State
+        State.tnvedSelection.selectedItem = item;
+        // А также обновим inputValue, если нужно
+        State.tnvedSelection.inputValue = item.CODE;
+
+        // Устанавливаем значения в поля (визуально)
         this.nameInput.textContent = item.KR_NAIM;
         this.codeInput.textContent = item.CODE;
 
-        // Добавляем класс .active, чтобы показать блок с name/code
+        // Показываем блок
         this.nameCodeContainer.classList.add("active");
+        // Записываем код в поле, если нужно
+        this.inputField.value = item.CODE;
 
-        // Очищаем поле tnved-input
-        /* this.inputField.value = ""; */
-        this.inputField.value = this.codeInput.textContent;
+        // Если нужно убрать ошибку:
+        const field = document.querySelector('input[name="tnved_input"]');
+        if (field) {
+          // Убираем класс "error-input"
+          field.classList.remove("error-input");
+          // Очищаем текст ошибки (если есть .error-message в родителе)
+          const parent = field.closest(".form-group") || field.parentElement;
+          const errorSpan = parent.querySelector(".error-message");
+          if (errorSpan) {
+            errorSpan.textContent = "";
+          }
+        }
 
-        // Выводим в консоль в виде таблицы
         console.table(item);
 
-        // Если есть колбэк выбора (необязательно)
         if (typeof this.onItemSelect === "function") {
           this.onItemSelect(item);
         }

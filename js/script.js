@@ -8,6 +8,16 @@ import { DeliveryCalculator } from "./calculations/DeliveryCalculator.js";
 import { UIController } from "./ui/ui-controller.js";
 import { State } from "./data/State.js";
 
+function hideCalculationResult() {
+  // 1) Скрываем блок с результатом
+  const resultBlock = document.querySelector(".main-calc-result");
+  if (resultBlock) {
+    resultBlock.classList.remove("active");
+  }
+  // 2) Очищаем State, если нужно
+  State.directionsData = {};
+}
+
 (async () => {
   const groupInfo = new TelegramGroupInfo(CONFIG.botToken, CONFIG.chatId);
   const groupName = await groupInfo.getGroupName();
@@ -61,6 +71,7 @@ import { State } from "./data/State.js";
     packingType: document.querySelectorAll('input[name="packing-type"]'),
     insurance: document.querySelector('input[name="insurance"]'),
     brand: document.querySelector('input[name="brand"]'),
+    tnvedInput: document.querySelector('input[name="tnved_input"]'),
   };
 
   const calculator = new DeliveryCalculator(
@@ -121,6 +132,44 @@ import { State } from "./data/State.js";
         }
       }
     });
+
+  // Предположим, что validation и State уже созданы
+  // Собираем все поля, которые при изменении должны сбрасывать результат
+  const allFieldsToReset = [
+    fields.totalCost,
+    fields.totalWeight,
+    fields.totalVolume,
+    fields.totalVolumeCalculated,
+    fields.volumeLength,
+    fields.volumeWidth,
+    fields.volumeHeight,
+    fields.quantity,
+    fields.tnvedInput,
+    fields.brand,
+    fields.insurance,
+    // и т. д. ...
+  ];
+
+  // Вешаем 'input' на обычные поля, 'change' на radio/checkbox
+  allFieldsToReset.forEach((fld) => {
+    if (!fld) return; // вдруг чего-то нет
+    // Определим подходящее событие
+    const eventName =
+      fld.type === "radio" || fld.type === "checkbox" ? "change" : "input";
+    fld.addEventListener(eventName, () => {
+      hideCalculationResult();
+    });
+  });
+
+  // И ещё для переключателя calc-type
+  const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
+  calcTypeRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+      hideCalculationResult();
+      // Плюс если нужно очистить поля:
+      validation.clearErrors();
+      const allFields = Object.values(fields);
+      validation.clearFields(allFields);
+    });
+  });
 })();
-
-

@@ -4,6 +4,12 @@ export const State = {
     // Будем хранить данные по направлениям: auto, train, avia
   },
 
+  // Добавляем блок для Tnved
+  tnvedSelection: {
+    selectedItem: null, // Здесь будет объект {KR_NAIM, CODE, ...} или null
+    inputValue: "", // То, что сейчас введено в поле tnved_input
+  },
+
   /**
    * Сохраняет данные для указанного направления.
    * @param {string} direction - 'auto' | 'train' | 'avia'
