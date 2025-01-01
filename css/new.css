@@ -1689,7 +1689,11 @@ input[type="number"] {
   color: #de4646;
   margin-top: 5px;
 }
-.main-calc-result-tooltip__title {
+.main-calc-result-tooltip__white {
+  display: none;
+}
+.main-calc-result-tooltip__white.active{
+  display: block;
 }
 
 .white-cargo {
@@ -1715,7 +1719,7 @@ input[type="number"] {
 .white-cargo__justinfo .group-input {
   display: grid;
   grid-template-columns: auto 1fr;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .white-cargo__justinfo .group-input__title {

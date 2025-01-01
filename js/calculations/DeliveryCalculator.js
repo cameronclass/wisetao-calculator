@@ -3,11 +3,23 @@ import { CONFIG } from "../config.js";
 import { UIController } from "../ui/ui-controller.js";
 
 export class DeliveryCalculator {
-  constructor(jsonLoader, currencyRuble, currencyYuan, fields) {
+  constructor(
+    jsonLoader,
+    wisetaoRuble,
+    wisetaoYuan,
+    cbrRuble,
+    cbrYuan,
+    fields
+  ) {
     this.jsonLoader = jsonLoader;
-    this.currencyRuble = currencyRuble;
-    this.currencyYuan = currencyYuan;
     this.fields = fields;
+
+    // Сохраним всё как поля класса:
+    this.wisetaoRuble = wisetaoRuble;
+    this.wisetaoYuan = wisetaoYuan;
+    this.cbrRuble = cbrRuble;
+    this.cbrYuan = cbrYuan;
+
     this.initEventListeners();
     this.setupNumericInputRestrictions();
   }
@@ -86,11 +98,11 @@ export class DeliveryCalculator {
     totalVolumeCalculated.value = calculatedVolume > 0 ? calculatedVolume : "";
   }
 
-  convertToDollar(totalCost, selectedCurrency) {
+  convertToDollar(totalCost, selectedCurrency, currentRuble, currentYuan) {
     if (selectedCurrency === "ruble") {
-      return (totalCost / this.currencyRuble).toFixed(2);
+      return (totalCost / currentRuble).toFixed(2);
     } else if (selectedCurrency === "yuan") {
-      return (totalCost / this.currencyYuan).toFixed(2);
+      return (totalCost / currentYuan).toFixed(2);
     }
     return totalCost.toFixed(2); // если выбрали "dollar"
   }
@@ -257,6 +269,15 @@ export class DeliveryCalculator {
       );
       const calcType = calcTypeRadio ? calcTypeRadio.value : "calc-cargo";
 
+      let currentRuble, currentYuan;
+      if (calcType === "calc-cargo") {
+        currentRuble = this.wisetaoRuble;
+        currentYuan = this.wisetaoYuan;
+      } else {
+        currentRuble = this.cbrRuble;
+        currentYuan = this.cbrYuan;
+      }
+
       // 2) Собираем общие данные
       const totalCost = parseFloat(this.fields.totalCost.value) || 0;
       const totalWeight = parseFloat(this.fields.totalWeight.value) || 0;
@@ -272,17 +293,28 @@ export class DeliveryCalculator {
         : "dollar";
 
       const costInDollar = parseFloat(
-        this.convertToDollar(totalCost, selectedCurrency)
+        this.convertToDollar(
+          totalCost,
+          selectedCurrency,
+          currentRuble,
+          currentYuan
+        )
       );
 
-      // 3) Если calc-cargo — используем старый расчёт
-      //    Если calc-customs — упрощённый
+      // (3) Объявляем все нужные переменные единоразово:
       let results;
       let density = 0;
       let categoryKey = "";
+      let totalCostUserRub = 0;
+      let dutyValue = 10;
+      let dutyRub = 0;
+      let ndsRub = 0;
+      let declRub = 0;
+      let shippingRub = 0;
+      let totalCustomsRub = 0;
+      let totalAllRub = 0;
 
       if (calcType === "calc-cargo") {
-        // Взять categoryKey, brand
         const categoryKeyElement = Array.from(this.fields.category).find(
           (field) => field.checked
         );
@@ -304,9 +336,29 @@ export class DeliveryCalculator {
           totalVolume
         );
       } else {
-        // calc-customs — игнорируем category/brand
-        // Плотность неважна, тариф = 0.6$/кг
+        // calc-customs
         results = this.calculateCustoms(totalWeight);
+
+        if (selectedCurrency === "dollar") {
+          totalCostUserRub = totalCost * State.cbrRates.dollar;
+        } else if (selectedCurrency === "yuan") {
+          totalCostUserRub = totalCost * State.cbrRates.yuan;
+        } else {
+          totalCostUserRub = totalCost;
+        }
+
+        dutyValue = State.tnvedSelection.chosenCodeImp || 10;
+        dutyRub = (dutyValue / 100) * totalCostUserRub;
+
+        const sumWithDuty = totalCostUserRub + dutyRub;
+        ndsRub = sumWithDuty * 0.2;
+        declRub = 550 * State.cbrRates.yuan;
+
+        totalCustomsRub = sumWithDuty + ndsRub + declRub - totalCostUserRub;
+
+        const shippingDollar = results[0].cost;
+        shippingRub = shippingDollar * State.cbrRates.dollar;
+        totalAllRub = totalCustomsRub + shippingRub;
       }
 
       // 4) Packaging
@@ -324,24 +376,57 @@ export class DeliveryCalculator {
         parseInt(this.fields.quantity.value, 10)
       );
 
-      // 5) Передаём результаты в UIController
-      UIController.showResults(results, {
-        totalCost,
-        selectedCurrency,
-        costInDollar,
-        totalVolume,
-        totalWeight,
-        quantity: parseInt(this.fields.quantity.value, 10),
-        density, // при calc-customs может быть 0
-        categoryKey,
-        packagingCost,
-        currencyYuan: this.currencyYuan,
-        currencyRuble: this.currencyRuble,
-        brandIncluded: this.fields.brand?.checked && calcType === "calc-cargo",
-        packingTypeValue: packingType,
-        calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
-        calculateTotalCost: this.calculateTotalCost.bind(this),
-      });
+      // (4) Теперь передаём данные
+      if (calcType === "calc-cargo") {
+        UIController.showResults(results, {
+          calcType: "calc-cargo",
+          totalCost,
+          selectedCurrency,
+          costInDollar,
+          totalVolume,
+          totalWeight,
+          density,
+          categoryKey,
+          packagingCost,
+          currencyYuan: this.currencyYuan,
+          currencyRuble: this.currencyRuble,
+          brandIncluded:
+            this.fields.brand?.checked && calcType === "calc-cargo",
+          packingTypeValue: packingType,
+          calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
+          calculateTotalCost: this.calculateTotalCost.bind(this),
+        });
+      } else {
+        UIController.showResults(results, {
+          calcType: "calc-customs",
+          totalCost,
+          selectedCurrency,
+          costInDollar,
+          totalVolume,
+          totalWeight,
+          density,
+          categoryKey,
+          packagingCost,
+          currencyYuan: this.currencyYuan,
+          currencyRuble: this.currencyRuble,
+          brandIncluded:
+            this.fields.brand?.checked && calcType === "calc-cargo",
+          packingTypeValue: packingType,
+
+          // Все для customs:
+          totalCostUserRub,
+          dutyValue,
+          dutyRub,
+          ndsRub,
+          declRub,
+          shippingRub,
+          totalCustomsRub,
+          totalAllRub,
+
+          calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
+          calculateTotalCost: this.calculateTotalCost.bind(this),
+        });
+      }
     } catch (error) {
       UIController.showError(
         "Произошла непредвиденная ошибка при расчёте: " + error.message
@@ -350,4 +435,3 @@ export class DeliveryCalculator {
     }
   }
 }
-

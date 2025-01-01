@@ -1,30 +1,28 @@
 // project/src/data/State.js
 export const State = {
-  directionsData: {
-    // Будем хранить данные по направлениям: auto, train, avia
-  },
+  directionsData: {},
 
-  // Добавляем блок для Tnved
   tnvedSelection: {
-    selectedItem: null, // Здесь будет объект {KR_NAIM, CODE, ...} или null
-    inputValue: "", // То, что сейчас введено в поле tnved_input
+    selectedItem: null,
+    inputValue: "",
+    chosenCodeImp: 10, // пусть по умолчанию 10
   },
 
-  /**
-   * Сохраняет данные для указанного направления.
-   * @param {string} direction - 'auto' | 'train' | 'avia'
-   * @param {object} data - Объект с данными расчетов для данного направления.
-   */
+  cbrRates: {
+    dollar: 100,
+    yuan: 14,
+  },
+
   setDirectionData(direction, data) {
     this.directionsData[direction] = data;
   },
 
-  /**
-   * Возвращает данные для указанного направления.
-   * @param {string} direction - 'auto' | 'train' | 'avia'
-   * @returns {object|null} Объект с данными или null, если нет данных.
-   */
   getDirectionData(direction) {
     return this.directionsData[direction] || null;
+  },
+
+  updateRates(dollar, yuan) {
+    this.cbrRates.dollar = dollar;
+    this.cbrRates.yuan = yuan;
   },
 };

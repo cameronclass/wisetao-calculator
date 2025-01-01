@@ -262,6 +262,16 @@ export class CalculatorValidation {
     this.clearCategoryError();
   }
 
+  hideCalculationResult() {
+    // 1) Скрываем блок с результатом
+    const resultBlock = document.querySelector(".main-calc-result");
+    if (resultBlock) {
+      resultBlock.classList.remove("active");
+    }
+    // 2) Очищаем State, если нужно
+    State.directionsData = {};
+  }
+
   validateAll() {
     this.clearErrors();
 

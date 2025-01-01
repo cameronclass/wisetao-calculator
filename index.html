@@ -174,14 +174,19 @@
                                 <div class="group-input__title">Имя товара:</div>
                                 <div class="group-input__input">
                                     <span class="tnved-name-input"></span>
-                                    <!--                                     <input type="text" class="tnved-name-input" disabled placeholder="" /> -->
                                 </div>
                             </div>
                             <div class="group-input">
                                 <div class="group-input__title">Код товара:</div>
                                 <div class="group-input__input">
                                     <span class="tnved-code-input"></span>
-                                    <!--  <input type="text" class="tnved-code-input" disabled placeholder="" /> -->
+                                </div>
+                            </div>
+
+                            <div class="group-input">
+                                <div class="group-input__title">Ставка Полшина:</div>
+                                <div class="group-input__input">
+                                    <span class="tnved-code-percent"></span>
                                 </div>
                             </div>
                         </div>
@@ -535,7 +540,7 @@
                 </div>
 
                 <!-- Результат -->
-                <div class="main-calc-result">
+                <div class="main-calc-result active">
                     <h4 class="main-calc__title _small label-text active">
                         <span class="main-calc__title_icon"></span>
                         <span class="main-calc__title_text label-text active">Расценки по видам доставки</span>
@@ -655,8 +660,9 @@
 
                                 <div class="overflow-info">
                                     <div class="main-calc-result-tooltip">
-                                        <div class="main-calc-result-tooltip__title">Только до терминала ТК “Южные ворота” Москва</div>
+                                        <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
+                                        <div class="main-calc-result-tooltip__subtitle">Перевозка</div>
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -677,12 +683,6 @@
                                                 <span class="_pack-ruble"></span>
                                             </div>
                                         </div>
-                                        <!-- <div class="main-calc-result-tooltip__row">
-                                            <div class="main-calc-result-tooltip__cell">Комиссия (выкуп):</div>
-                                            <div class="main-calc-result-tooltip__cell">
-                                                <span></span>
-                                            </div>
-                                        </div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Страховка:</div>
                                             <div class="main-calc-result-tooltip__cell _text">
@@ -698,27 +698,45 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
-                                            <div class="main-calc-result-tooltip__cell">Сумма:</div>
+                                            <div class="main-calc-result-tooltip__cell">Итого:</div>
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_all-dollar"></span>
                                                 <span class="_all-ruble"></span>
                                             </div>
                                         </div>
-                                        <!-- <div class="main-calc-result-tooltip__title_2">ИТОГ (КАРГО + ПЭК)</div>
-                                        <div class="main-calc-result-tooltip__row">
-                                            <div class="main-calc-result-tooltip__cell">За кг:</div>
-                                            <div class="main-calc-result-tooltip__cell"></div>
+                                        <div class="main-calc-result-tooltip__white">
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Пошлина:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_chosen-imp"></span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">НДС:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_nds">20%</span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_decloration-dollar"></span>
+                                                    <span class="_decloration-ruble"></span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Итого за всё:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_all-white-dollar"></span>
+                                                    <span class="_all-white-ruble"></span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="main-calc-result-tooltip__row">
-                                            <div class="main-calc-result-tooltip__cell">Сумма:</div>
-                                            <div class="main-calc-result-tooltip__cell"></div>
-                                        </div> -->
-                                        <!-- <button class="main-calc-result-tooltip__btn" type="button">
-                                            ПОЛУЧИТЬ РАСЧЕТ В PDF
-                                        </button> -->
                                         <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
@@ -787,8 +805,9 @@
 
                                 <div class="overflow-info">
                                     <div class="main-calc-result-tooltip">
-                                        <div class="main-calc-result-tooltip__title">Только до терминала ТК “Южные ворота” Москва</div>
+                                        <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
+                                        <div class="main-calc-result-tooltip__subtitle">Перевозка</div>
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -809,12 +828,6 @@
                                                 <span class="_pack-ruble"></span>
                                             </div>
                                         </div>
-                                        <!-- <div class="main-calc-result-tooltip__row">
-                                                                            <div class="main-calc-result-tooltip__cell">Комиссия (выкуп):</div>
-                                                                            <div class="main-calc-result-tooltip__cell">
-                                                                                <span></span>
-                                                                            </div>
-                                                                        </div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Страховка:</div>
                                             <div class="main-calc-result-tooltip__cell _text">
@@ -830,24 +843,41 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
-                                            <div class="main-calc-result-tooltip__cell">Сумма:</div>
+                                            <div class="main-calc-result-tooltip__cell">Итого:</div>
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_all-dollar"></span>
                                                 <span class="_all-ruble"></span>
                                             </div>
                                         </div>
-                                        <!-- <div class="main-calc-result-tooltip__title_2">ИТОГ (КАРГО + ПЭК)</div>
-                                                                        <div class="main-calc-result-tooltip__row">
-                                                                            <div class="main-calc-result-tooltip__cell">За кг:</div>
-                                                                            <div class="main-calc-result-tooltip__cell"></div>
-                                                                        </div>
-                                                                        <div class="main-calc-result-tooltip__row">
-                                                                            <div class="main-calc-result-tooltip__cell">Сумма:</div>
-                                                                            <div class="main-calc-result-tooltip__cell"></div>
-                                                                        </div> -->
-                                        <!-- <button class="main-calc-result-tooltip__btn" type="button">
-                                                                            ПОЛУЧИТЬ РАСЧЕТ В PDF
-                                                                        </button> -->
+                                        <div class="main-calc-result-tooltip__white">
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Пошлина:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_chosen-imp"></span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">НДС:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_nds">20%</span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_decloration-dollar"></span>
+                                                    <span class="_decloration-ruble"></span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Итого за всё:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_all-white-dollar"></span>
+                                                    <span class="_all-white-ruble"></span>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
@@ -923,8 +953,9 @@
 
                                 <div class="overflow-info">
                                     <div class="main-calc-result-tooltip">
-                                        <div class="main-calc-result-tooltip__title">Только до терминала ТК “Южные ворота” Москва</div>
+                                        <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
+                                        <div class="main-calc-result-tooltip__subtitle">Перевозка</div>
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -945,12 +976,6 @@
                                                 <span class="_pack-ruble"></span>
                                             </div>
                                         </div>
-                                        <!-- <div class="main-calc-result-tooltip__row">
-                                                                            <div class="main-calc-result-tooltip__cell">Комиссия (выкуп):</div>
-                                                                            <div class="main-calc-result-tooltip__cell">
-                                                                                <span></span>
-                                                                            </div>
-                                                                        </div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Страховка:</div>
                                             <div class="main-calc-result-tooltip__cell _text">
@@ -966,24 +991,41 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
-                                            <div class="main-calc-result-tooltip__cell">Сумма:</div>
+                                            <div class="main-calc-result-tooltip__cell">Итого:</div>
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_all-dollar"></span>
                                                 <span class="_all-ruble"></span>
                                             </div>
                                         </div>
-                                        <!-- <div class="main-calc-result-tooltip__title_2">ИТОГ (КАРГО + ПЭК)</div>
-                                                                        <div class="main-calc-result-tooltip__row">
-                                                                            <div class="main-calc-result-tooltip__cell">За кг:</div>
-                                                                            <div class="main-calc-result-tooltip__cell"></div>
-                                                                        </div>
-                                                                        <div class="main-calc-result-tooltip__row">
-                                                                            <div class="main-calc-result-tooltip__cell">Сумма:</div>
-                                                                            <div class="main-calc-result-tooltip__cell"></div>
-                                                                        </div> -->
-                                        <!-- <button class="main-calc-result-tooltip__btn" type="button">
-                                                                            ПОЛУЧИТЬ РАСЧЕТ В PDF
-                                                                        </button> -->
+                                        <div class="main-calc-result-tooltip__white">
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Пошлина:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_chosen-imp"></span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">НДС:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_nds">20%</span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_decloration-dollar"></span>
+                                                    <span class="_decloration-ruble"></span>
+                                                </div>
+                                            </div>
+                                            <div class="main-calc-result-tooltip__row">
+                                                <div class="main-calc-result-tooltip__cell">Итого за всё:</div>
+                                                <div class="main-calc-result-tooltip__cell _text">
+                                                    <span class="_all-white-dollar"></span>
+                                                    <span class="_all-white-ruble"></span>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>

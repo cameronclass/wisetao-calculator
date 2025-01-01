@@ -112,26 +112,24 @@ class SuggestionsUI {
 
       // Клик по suggestionItem = выбор
       suggestionItem.addEventListener("click", () => {
-        // Устанавливаем выбранный элемент в State
+        // 1) Сохраняем выбранный элемент в State (либо где вам удобно)
         State.tnvedSelection.selectedItem = item;
         // А также обновим inputValue, если нужно
         State.tnvedSelection.inputValue = item.CODE;
 
-        // Устанавливаем значения в поля (визуально)
+        // 2) Заполняем поля визуально
         this.nameInput.textContent = item.KR_NAIM;
         this.codeInput.textContent = item.CODE;
-
-        // Показываем блок
         this.nameCodeContainer.classList.add("active");
-        // Записываем код в поле, если нужно
-        this.inputField.value = item.CODE;
+        this.inputField.value = item.CODE; // обновим поле
+
+        // 3) Делает второй запрос, передавая item.CODE
+        this.fetchDataForChosenCode(item.CODE);
 
         // Если нужно убрать ошибку:
         const field = document.querySelector('input[name="tnved_input"]');
         if (field) {
-          // Убираем класс "error-input"
           field.classList.remove("error-input");
-          // Очищаем текст ошибки (если есть .error-message в родителе)
           const parent = field.closest(".form-group") || field.parentElement;
           const errorSpan = parent.querySelector(".error-message");
           if (errorSpan) {
@@ -192,6 +190,77 @@ class SuggestionsUI {
   // Остановить анимацию загрузки
   stopLoadingAnimation() {
     this.inputField.classList.remove("loading");
+  }
+
+  async fetchDataForChosenCode(code) {
+    // Получаем ссылку на .tnved-code-percent
+    const tnvedPercentEl = document.querySelector(".tnved-code-percent");
+    if (!tnvedPercentEl) {
+      console.warn("Не найден .tnved-code-percent на странице");
+      return;
+    }
+
+    // Перед запросом показываем текст об ожидании
+    tnvedPercentEl.textContent = "Ищем процент, подождите...";
+
+    try {
+      const response = await fetch(
+        "https://api-calc.wisetao.com:4343/api/parse-alta-duty",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ code: code }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Ошибка при получении данных");
+      }
+
+      const data = await response.json(); // data может быть объектом или false
+      console.log("Доп. данные по коду:", data);
+
+      let percentValue = 10; // По умолчанию 10 (если не получили код)
+      let infoText = ""; // Переменная для хранения информации
+
+      if (data && typeof data.duty !== "undefined") {
+        // Преобразуем data.duty в число
+        const dutyValue = Number(data.duty); // или parseFloat(data.duty)
+
+        if (!isNaN(dutyValue)) {
+          // Если dutyValue является числом
+          percentValue = dutyValue;
+          tnvedPercentEl.textContent = `${percentValue} %`;
+        } else {
+          // Если dutyValue не число
+          tnvedPercentEl.textContent =
+            "Нет информации по % пошлине, для наглядности будет использоваться 10%";
+        }
+
+        // Проверяем наличие поля info
+        if (data.info && data.info.trim() !== "") {
+          infoText = ` (${data.info})`; // Добавляем информацию, если она есть
+        }
+      } else {
+        // Нет данных
+        tnvedPercentEl.textContent =
+          "Нет информации по % пошлине, для наглядности будет использоваться 10%";
+      }
+
+      // Обновляем текст с учетом информации
+      tnvedPercentEl.textContent += infoText;
+
+      // Сохраняем в State
+      State.tnvedSelection.chosenCodeImp = percentValue;
+    } catch (error) {
+      console.error("Произошла ошибка:", error);
+      tnvedPercentEl.textContent =
+        "Нет информации по % пошлине (ошибка запроса), используется 10%";
+      State.tnvedSelection.chosenCodeImp = 10;
+    }
   }
 }
 

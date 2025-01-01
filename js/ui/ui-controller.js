@@ -37,8 +37,20 @@ export class UIController {
       packingTypeValue,
       calculateInsuranceCost,
       calculateTotalCost,
+      // ОБЯЗАТЕЛЬНО добавляем переменные для customs:
+      calcType, // <--- добавили
+      totalCostUserRub,
+      dutyValue,
+      dutyRub,
+      ndsRub,
+      declRub,
+      shippingRub,
+      totalCustomsRub,
+      totalAllRub,
     }
   ) {
+
+
     const directionKeys = ["auto", "train", "avia"];
     results.forEach((res, idx) => {
       const directionName = directionKeys[idx]; // 'auto', 'train' или 'avia'
@@ -154,6 +166,65 @@ export class UIController {
         }
       }
     });
+
+    // Находим tooltipTitle
+    const tooltipTitle = document.querySelector(
+      ".main-calc-result-tooltip__title"
+    );
+    // Находим блок .main-calc-result-tooltip__white
+    const whiteBlock = document.querySelector(
+      ".main-calc-result-tooltip__white"
+    );
+
+    if (calcType === "calc-cargo") {
+      if (tooltipTitle) {
+        tooltipTitle.textContent =
+          "Только до терминала ТК “Южные ворота” Москва";
+      }
+      if (whiteBlock) {
+        whiteBlock.classList.remove("active");
+      }
+    } else if (calcType === "calc-customs") {
+      if (tooltipTitle) {
+        tooltipTitle.textContent = "Доставка только до г.Благовещенск СВХ";
+      }
+      if (whiteBlock) {
+        whiteBlock.classList.add("active");
+      }
+
+      // Пошлина
+      const chosenImpEl = document.querySelector("._chosen-imp");
+      if (chosenImpEl) {
+        chosenImpEl.textContent = dutyValue + "%";
+      }
+
+      // НДС
+      const ndsEl = document.querySelector("._nds");
+      if (ndsEl) {
+        ndsEl.textContent = "20%";
+      }
+
+      // Услуги декларации (550 юаней)
+      // Нужно в $ и ₽
+      // declRub = declRub
+      const declDollarEl = document.querySelector("._decloration-dollar");
+      const declRubleEl = document.querySelector("._decloration-ruble");
+      if (declDollarEl && declRubleEl) {
+        // Переводим declRub в доллары:
+        const declDollar = declRub / State.cbrRates.dollar;
+        declDollarEl.textContent = declDollar.toFixed(2) + "$";
+        declRubleEl.textContent = declRub.toFixed(2) + "₽";
+      }
+
+      // Итого за всё (._all-white-dollar, ._all-white-ruble)
+      const allWhiteDollarEl = document.querySelector("._all-white-dollar");
+      const allWhiteRubleEl = document.querySelector("._all-white-ruble");
+      if (allWhiteDollarEl && allWhiteRubleEl) {
+        const totalAllDollar = totalAllRub / State.cbrRates.dollar;
+        allWhiteDollarEl.textContent = totalAllDollar.toFixed(2) + "$";
+        allWhiteRubleEl.textContent = totalAllRub.toFixed(2) + "₽";
+      }
+    }
 
     const resultBlock = document.querySelector(".main-calc-result");
     if (resultBlock) resultBlock.classList.add("active");

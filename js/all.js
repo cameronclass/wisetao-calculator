@@ -30,7 +30,6 @@ export class TelegramGroupInfo {
     return chatData ? chatData.title : null; // Возвращает имя группы
   }
 }
-
 export class CurrencyParser {
   constructor(multiplier = 7.3) {
     this.multiplier = multiplier; // Множитель (по умолчанию 7.3)
@@ -80,7 +79,6 @@ export class CurrencyParser {
     this.calculateDollarRate();
   }
 }
-
 // JsonDataLoader.js
 import { CONFIG } from "../config.js";
 
@@ -154,32 +152,29 @@ export class JsonDataLoader {
     return this.data?.categories?.[direction] || null;
   }
 }
-
 // project/src/data/State.js
 export const State = {
-  directionsData: {
-    // Будем хранить данные по направлениям: auto, train, avia
+  directionsData: {},
+
+  tnvedSelection: {
+    selectedItem: null,
+    inputValue: "",
   },
 
-  /**
-   * Сохраняет данные для указанного направления.
-   * @param {string} direction - 'auto' | 'train' | 'avia'
-   * @param {object} data - Объект с данными расчетов для данного направления.
-   */
+  // Новое: храним курсы ЦБ (заглушка, или получим из другого запроса)
+  cbrRates: {
+    dollar: 78.95, // Пример, далее можно заменить на реальный
+    yuan: 11.2, // Пример
+  },
+
   setDirectionData(direction, data) {
     this.directionsData[direction] = data;
   },
 
-  /**
-   * Возвращает данные для указанного направления.
-   * @param {string} direction - 'auto' | 'train' | 'avia'
-   * @returns {object|null} Объект с данными или null, если нет данных.
-   */
   getDirectionData(direction) {
     return this.directionsData[direction] || null;
   },
 };
-
 import { State } from "../data/State.js";
 
 // uiController.js
@@ -201,9 +196,8 @@ export class UIController {
     }
   }
 
-  static showResults(
-    results,
-    {
+  static showResults(results, data) {
+    const {
       totalCost,
       selectedCurrency,
       costInDollar,
@@ -219,8 +213,17 @@ export class UIController {
       packingTypeValue,
       calculateInsuranceCost,
       calculateTotalCost,
-    }
-  ) {
+      calcType,
+      totalCostUserRub,
+      dutyValue,
+      dutyRub,
+      ndsRub,
+      declRub,
+      shippingRub,
+      totalCustomsRub,
+      totalAllRub,
+    } = data;
+
     const directionKeys = ["auto", "train", "avia"];
     results.forEach((res, idx) => {
       const directionName = directionKeys[idx]; // 'auto', 'train' или 'avia'
@@ -337,36 +340,216 @@ export class UIController {
       }
     });
 
+    // Находим tooltipTitle
+    const tooltipTitle = document.querySelector(
+      ".main-calc-result-tooltip__title"
+    );
+    // Находим блок .main-calc-result-tooltip__white
+    const whiteBlock = document.querySelector(
+      ".main-calc-result-tooltip__white"
+    );
+
+    if (calcType === "calc-cargo") {
+      if (tooltipTitle) {
+        tooltipTitle.textContent =
+          "Только до терминала ТК “Южные ворота” Москва";
+      }
+      if (whiteBlock) {
+        whiteBlock.classList.remove("active");
+      }
+    } else if (calcType === "calc-customs") {
+      if (tooltipTitle) {
+        tooltipTitle.textContent = "Доставка только до г.Благовещенск СВХ";
+      }
+      if (whiteBlock) {
+        whiteBlock.classList.add("active");
+      }
+
+      // Пошлина
+      const chosenImpEl = document.querySelector("._chosen-imp");
+      if (chosenImpEl) {
+        chosenImpEl.textContent = dutyValue + "%";
+      }
+
+      // НДС
+      const ndsEl = document.querySelector("._nds");
+      if (ndsEl) {
+        ndsEl.textContent = "20%";
+      }
+
+      // Услуги декларации (550 юаней)
+      // Нужно в $ и ₽
+      // declRub = declRub
+      const declDollarEl = document.querySelector("._decloration-dollar");
+      const declRubleEl = document.querySelector("._decloration-ruble");
+      if (declDollarEl && declRubleEl) {
+        // Переводим declRub в доллары:
+        const declDollar = declRub / State.cbrRates.dollar;
+        declDollarEl.textContent = declDollar.toFixed(2) + "$";
+        declRubleEl.textContent = declRub.toFixed(2) + "₽";
+      }
+
+      // Итого за всё (._all-white-dollar, ._all-white-ruble)
+      const allWhiteDollarEl = document.querySelector("._all-white-dollar");
+      const allWhiteRubleEl = document.querySelector("._all-white-ruble");
+      if (allWhiteDollarEl && allWhiteRubleEl) {
+        const totalAllDollar = totalAllRub / State.cbrRates.dollar;
+        allWhiteDollarEl.textContent = totalAllDollar.toFixed(2) + "$";
+        allWhiteRubleEl.textContent = totalAllRub.toFixed(2) + "₽";
+      }
+    }
+
     const resultBlock = document.querySelector(".main-calc-result");
     if (resultBlock) resultBlock.classList.add("active");
   }
 }
+import { State } from "../data/State.js";
 
 export class CalculatorValidation {
   constructor(fields) {
     this.fields = fields; // Поля для валидации
     this.errors = {}; // Список ошибок
     this.setupInputRestrictions(); // Ограничение ввода
+    // Добавляем вызов реалтайм-валидации:
+    this.setupRealtimeValidation();
   }
 
   // Ограничение ввода
   setupInputRestrictions() {
     const setupFieldRestriction = (field, regex, maxDecimals = null) => {
       field.addEventListener("input", () => {
+        // 1) Убираем все лишние символы, кроме цифр, точки, запятой
         field.value = field.value.replace(regex, "");
-        if (maxDecimals !== null) {
-          const parts = field.value.split(".");
-          if (parts[1]?.length > maxDecimals) {
-            field.value = `${parts[0]}.${parts[1].substring(0, maxDecimals)}`;
-          }
+
+        // 2) Заменяем все запятые на точки
+        field.value = field.value.replace(/,/g, ".");
+
+        // 3) Ограничиваем количество точек до 1 (опционально)
+        const partsDot = field.value.split(".");
+        if (partsDot.length > 2) {
+          // Удаляем «лишние» точки
+          field.value = partsDot[0] + "." + partsDot.slice(1).join("");
+        }
+
+        // 4) Ограничиваем число знаков после точки, если maxDecimals != null
+        if (maxDecimals !== null && partsDot[1]?.length > maxDecimals) {
+          field.value = `${partsDot[0]}.${partsDot[1].substring(
+            0,
+            maxDecimals
+          )}`;
         }
       });
     };
 
-    setupFieldRestriction(this.fields.totalVolume, /[^0-9.]/g, 4);
-    setupFieldRestriction(this.fields.totalWeight, /[^0-9.]/g, 2);
-    setupFieldRestriction(this.fields.totalCost, /[^0-9.]/g, 2);
+    setupFieldRestriction(this.fields.totalVolume, /[^0-9.,]/g, 4);
+    setupFieldRestriction(this.fields.totalWeight, /[^0-9.,]/g, 2);
+    setupFieldRestriction(this.fields.totalCost, /[^0-9.,]/g, 2);
     setupFieldRestriction(this.fields.quantity, /[^0-9]/g);
+  }
+
+  /**
+   * Регистрируем слушатели 'input' (или 'change') на полях,
+   * чтобы при изменении заново проверять конкретное поле
+   */
+  setupRealtimeValidation() {
+    // Например, хотим отслеживать поля: totalVolume, totalWeight, totalCost, quantity,
+    // и т.д., включая tnved_input
+    const fieldNamesToWatch = [
+      "totalVolume",
+      "totalWeight",
+      "totalCost",
+      "quantity",
+      "tnvedInput", // наше поле
+      // ... при необходимости другие
+    ];
+
+    fieldNamesToWatch.forEach((fieldName) => {
+      const fieldEl = this.fields[fieldName];
+      if (fieldEl) {
+        fieldEl.addEventListener("input", () => {
+          // При вводе очищаем ошибку у этого поля (если была),
+          // и проверяем заново
+          this.removeError(fieldEl);
+          this.validateSingleField(fieldName);
+        });
+      }
+    });
+
+    // Аналогично для radio-кнопок, например, brand, category
+    // Можно по 'change'
+    const categoryRadios = document.querySelectorAll('input[name="category"]');
+    categoryRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        this.clearCategoryError();
+        this.validateCategory();
+      });
+    });
+
+    // Или если хотите при клике на radio:
+    // let packingType = document.querySelectorAll('input[name="packing-type"]');
+    // ...
+  }
+
+  validateSingleField(fieldName) {
+    // Вызовем ту же логику, что в validateAll(),
+    // но только для одного поля.
+    // Можно выделить разные методы: validateNumber, validateTnvedInput и т.д.
+    switch (fieldName) {
+      case "totalVolume":
+        if (this.fields.weightVolumeChange.checked) {
+          // Если включен режим "ввести объём напрямую", то totalVolume обязательное
+          this.validateNumber("totalVolume", {
+            required: true,
+            maxDecimals: 4,
+          });
+        } else {
+          // иначе используем validateDimensions()
+          this.validateDimensions();
+        }
+        break;
+      case "totalWeight":
+        this.validateNumber("totalWeight", {
+          required: true,
+          min: 5,
+          maxDecimals: 2,
+        });
+        break;
+      case "totalCost":
+        this.validateNumber("totalCost", {
+          required: true,
+          maxDecimals: 2,
+        });
+        break;
+      case "quantity":
+        this.validateNumber("quantity", { required: true });
+        break;
+      case "tnvedInput":
+        // если calc-customs, тогда validateTnvedInput
+        const calcTypeRadio = document.querySelector(
+          'input[name="calc-type"]:checked'
+        );
+        const calcType = calcTypeRadio ? calcTypeRadio.value : "calc-cargo";
+        if (calcType === "calc-customs") {
+          this.validateTnvedInput();
+        }
+        break;
+      default:
+        // Другие поля
+        break;
+    }
+  }
+
+  validateTnvedInput() {
+    const field = this.fields.tnvedInput;
+    // Если пользователь выбрал `calc-customs`, то
+    // нужно проверять: selectedItem != null
+    const selectedItem = State.tnvedSelection.selectedItem;
+
+    if (!selectedItem) {
+      this.addError(field, "Нужно выбрать ТНВЭД из списка");
+      return false;
+    }
+    return true;
   }
 
   clearFields(fields) {
@@ -457,6 +640,21 @@ export class CalculatorValidation {
     field.classList.add("error-input");
   }
 
+  clearCategoryError() {
+    // убираем текст и класс active из .js-error-category
+    const errorSpan = document.querySelector(".error-message-category");
+    const errorBlock = document.querySelector(".js-error-category");
+    if (errorSpan) errorSpan.textContent = "";
+    if (errorBlock) errorBlock.classList.remove("active");
+  }
+
+  removeError(fieldEl) {
+    fieldEl.classList.remove("error-input");
+    const parent = fieldEl.closest(".form-group") || fieldEl.parentElement;
+    const errorSpan = parent.querySelector(".error-message");
+    if (errorSpan) errorSpan.textContent = "";
+  }
+
   clearErrors() {
     this.errors = {};
     document
@@ -465,18 +663,31 @@ export class CalculatorValidation {
     document.querySelectorAll(".error-message").forEach((el) => {
       el.textContent = "";
     });
+
+    this.clearCategoryError();
+  }
+
+  hideCalculationResult() {
+    // 1) Скрываем блок с результатом
+    const resultBlock = document.querySelector(".main-calc-result");
+    if (resultBlock) {
+      resultBlock.classList.remove("active");
+    }
+    // 2) Очищаем State, если нужно
+    State.directionsData = {};
   }
 
   validateAll() {
     this.clearErrors();
 
-    // Определить режим
     const calcTypeRadio = document.querySelector(
       'input[name="calc-type"]:checked'
     );
     const calcType = calcTypeRadio ? calcTypeRadio.value : "calc-cargo";
 
     const { weightVolumeChange } = this.fields;
+
+    // Базовые проверки
     const isValid = [
       weightVolumeChange.checked
         ? this.validateNumber("totalVolume", { required: true, maxDecimals: 4 })
@@ -489,15 +700,15 @@ export class CalculatorValidation {
       this.validateNumber("quantity", { required: true }),
       this.validateNumber("totalCost", { required: true, maxDecimals: 2 }),
       this.validateRadio("total_currecy"),
-      // Если calc-cargo, тогда validateCategory()
       calcType === "calc-cargo" ? this.validateCategory() : true,
       this.validateRadio("packing-type"),
+      // Новая проверка для calc-customs:
+      calcType === "calc-customs" ? this.validateTnvedInput() : true,
     ].every((result) => result);
 
     return isValid;
   }
 }
-
 import { State } from "../data/State.js";
 import { CONFIG } from "../config.js";
 import { UIController } from "../ui/ui-controller.js";
@@ -804,9 +1015,32 @@ export class DeliveryCalculator {
           totalVolume
         );
       } else {
-        // calc-customs — игнорируем category/brand
-        // Плотность неважна, тариф = 0.6$/кг
+        // calc-customs
         results = this.calculateCustoms(totalWeight);
+
+        // --- НОВЫЙ КОД Начало ---
+        let totalCostUserRub = totalCost;
+        if (selectedCurrency === "dollar") {
+          totalCostUserRub = totalCost * State.cbrRates.dollar;
+        } else if (selectedCurrency === "yuan") {
+          totalCostUserRub = totalCost * State.cbrRates.yuan;
+        }
+
+        const dutyValue = State.tnvedSelection.chosenCodeImp || 10;
+        const dutyRub = (dutyValue / 100) * totalCostUserRub;
+
+        const sumWithDuty = totalCostUserRub + dutyRub;
+        const ndsRub = sumWithDuty * 0.2;
+
+        const declRub = 550 * State.cbrRates.yuan;
+
+        const totalCustomsRub =
+          sumWithDuty + ndsRub + declRub - totalCostUserRub;
+
+        const shippingDollar = results[0].cost;
+        const shippingRub = shippingDollar * State.cbrRates.dollar;
+        const totalAllRub = totalCustomsRub + shippingRub;
+        // --- НОВЫЙ КОД Конец ---
       }
 
       // 4) Packaging
@@ -824,24 +1058,63 @@ export class DeliveryCalculator {
         parseInt(this.fields.quantity.value, 10)
       );
 
-      // 5) Передаём результаты в UIController
-      UIController.showResults(results, {
-        totalCost,
-        selectedCurrency,
-        costInDollar,
-        totalVolume,
-        totalWeight,
-        quantity: parseInt(this.fields.quantity.value, 10),
-        density, // при calc-customs может быть 0
-        categoryKey,
-        packagingCost,
-        currencyYuan: this.currencyYuan,
-        currencyRuble: this.currencyRuble,
-        brandIncluded: this.fields.brand?.checked && calcType === "calc-cargo",
-        packingTypeValue: packingType,
-        calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
-        calculateTotalCost: this.calculateTotalCost.bind(this),
-      });
+      let totalCostUserRub = 0;
+
+      if (calcType === "calc-cargo") {
+        // 5) Передаём результаты в UIController
+        UIController.showResults(results, {
+          calcType: "calc-cargo",
+          totalCost,
+          selectedCurrency,
+          costInDollar,
+          totalVolume,
+          totalWeight,
+          quantity: parseInt(this.fields.quantity.value, 10),
+          density, // при calc-customs может быть 0
+          categoryKey,
+          packagingCost,
+          currencyYuan: this.currencyYuan,
+          currencyRuble: this.currencyRuble,
+          brandIncluded:
+            this.fields.brand?.checked && calcType === "calc-cargo",
+          packingTypeValue: packingType,
+          calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
+          calculateTotalCost: this.calculateTotalCost.bind(this),
+        });
+      } else {
+        // 5) Передаём результаты в UIController
+        UIController.showResults(results, {
+          calcType: "calc-customs",
+          totalCost,
+          selectedCurrency,
+          costInDollar,
+          totalVolume,
+          totalWeight,
+          quantity: parseInt(this.fields.quantity.value, 10),
+          density, // при calc-customs может быть 0
+          categoryKey,
+          packagingCost,
+          currencyYuan: this.currencyYuan,
+          currencyRuble: this.currencyRuble,
+          brandIncluded:
+            this.fields.brand?.checked && calcType === "calc-cargo",
+          packingTypeValue: packingType,
+
+          // Все данные для UI
+
+          totalCostUserRub,
+          dutyValue,
+          dutyRub,
+          ndsRub,
+          declRub,
+          shippingRub,
+          totalCustomsRub,
+          totalAllRub,
+
+          calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
+          calculateTotalCost: this.calculateTotalCost.bind(this),
+        });
+      }
     } catch (error) {
       UIController.showError(
         "Произошла непредвиденная ошибка при расчёте: " + error.message
@@ -850,8 +1123,6 @@ export class DeliveryCalculator {
     }
   }
 }
-
-
 // main.js
 import { CONFIG } from "./config.js";
 import { TelegramGroupInfo } from "./api/TelegramGroupInfo.js";
@@ -915,6 +1186,7 @@ import { State } from "./data/State.js";
     packingType: document.querySelectorAll('input[name="packing-type"]'),
     insurance: document.querySelector('input[name="insurance"]'),
     brand: document.querySelector('input[name="brand"]'),
+    tnvedInput: document.querySelector('input[name="tnved_input"]'),
   };
 
   const calculator = new DeliveryCalculator(
@@ -975,9 +1247,47 @@ import { State } from "./data/State.js";
         }
       }
     });
+
+  // Предположим, что validation и State уже созданы
+  // Собираем все поля, которые при изменении должны сбрасывать результат
+  const allFieldsToReset = [
+    fields.totalCost,
+    fields.totalWeight,
+    fields.totalVolume,
+    fields.totalVolumeCalculated,
+    fields.volumeLength,
+    fields.volumeWidth,
+    fields.volumeHeight,
+    fields.quantity,
+    fields.tnvedInput,
+    fields.brand,
+    fields.insurance,
+    // и т. д. ...
+  ];
+
+  // Вешаем 'input' на обычные поля, 'change' на radio/checkbox
+  allFieldsToReset.forEach((fld) => {
+    if (!fld) return; // вдруг чего-то нет
+    // Определим подходящее событие
+    const eventName =
+      fld.type === "radio" || fld.type === "checkbox" ? "change" : "input";
+    fld.addEventListener(eventName, () => {
+      validation.hideCalculationResult();
+    });
+  });
+
+  // И ещё для переключателя calc-type
+  const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
+  calcTypeRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+      validation.hideCalculationResult();
+      // Плюс если нужно очистить поля:
+      validation.clearErrors();
+      const allFields = Object.values(fields);
+      validation.clearFields(allFields);
+    });
+  });
 })();
-
-
 import { State } from "../data/State.js";
 
 function prepareOfferData(
@@ -1202,7 +1512,6 @@ document.querySelector(".js-get-pdf").addEventListener("click", async () => {
     overlayCountdownCalc.textContent = "";
   }
 });
-
 import { State } from "../data/State.js";
 
 // Карта для отображения понятных названий упаковки:
@@ -1334,6 +1643,7 @@ document.querySelectorAll(".main-calc-result-tooltip__btn").forEach((btn) => {
     sendOfferData(offerData);
   });
 });
+import { State } from "../data/State.js";
 
 class SuggestionsService {
   constructor(apiBase) {
@@ -1377,6 +1687,11 @@ class SuggestionsUI {
 
   handleInput() {
     const query = this.inputField.value.trim();
+
+    // 1) Запоминаем введённое в State
+    State.tnvedSelection.inputValue = this.inputField.value;
+    // 2) Сбрасываем выбранный элемент
+    State.tnvedSelection.selectedItem = null;
 
     // Если пользователь начинает печатать заново,
     // убираем .active у блока name-code-container
@@ -1440,23 +1755,35 @@ class SuggestionsUI {
       const codeEl = document.createElement("div");
       codeEl.textContent = `Код: ${item.CODE}`;
 
-      // Клик по самому suggestionItem — выбираем подсказку
+      // Клик по suggestionItem = выбор
       suggestionItem.addEventListener("click", () => {
-        // Устанавливаем значения
+        // 1) Сохраняем выбранный элемент в State (либо где вам удобно)
+        State.tnvedSelection.selectedItem = item;
+        // А также обновим inputValue, если нужно
+        State.tnvedSelection.inputValue = item.CODE;
+
+        // 2) Заполняем поля визуально
         this.nameInput.textContent = item.KR_NAIM;
         this.codeInput.textContent = item.CODE;
-
-        // Добавляем класс .active, чтобы показать блок с name/code
         this.nameCodeContainer.classList.add("active");
+        this.inputField.value = item.CODE; // обновим поле
 
-        // Очищаем поле tnved-input
-        /* this.inputField.value = ""; */
-        this.inputField.value = this.codeInput.textContent;
+        // 3) Делает второй запрос, передавая item.CODE
+        this.fetchDataForChosenCode(item.CODE);
 
-        // Выводим в консоль в виде таблицы
+        // Если нужно убрать ошибку:
+        const field = document.querySelector('input[name="tnved_input"]');
+        if (field) {
+          field.classList.remove("error-input");
+          const parent = field.closest(".form-group") || field.parentElement;
+          const errorSpan = parent.querySelector(".error-message");
+          if (errorSpan) {
+            errorSpan.textContent = "";
+          }
+        }
+
         console.table(item);
 
-        // Если есть колбэк выбора (необязательно)
         if (typeof this.onItemSelect === "function") {
           this.onItemSelect(item);
         }
@@ -1508,6 +1835,77 @@ class SuggestionsUI {
   // Остановить анимацию загрузки
   stopLoadingAnimation() {
     this.inputField.classList.remove("loading");
+  }
+
+  async fetchDataForChosenCode(code) {
+    // Получаем ссылку на .tnved-code-percent
+    const tnvedPercentEl = document.querySelector(".tnved-code-percent");
+    if (!tnvedPercentEl) {
+      console.warn("Не найден .tnved-code-percent на странице");
+      return;
+    }
+
+    // Перед запросом показываем текст об ожидании
+    tnvedPercentEl.textContent = "Ищем процент, подождите...";
+
+    try {
+      const response = await fetch(
+        "https://api-calc.wisetao.com:4343/api/parse-alta-duty",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ code: code }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Ошибка при получении данных");
+      }
+
+      const data = await response.json(); // data может быть объектом или false
+      console.log("Доп. данные по коду:", data);
+
+      let percentValue = 10; // По умолчанию 10 (если не получили код)
+      let infoText = ""; // Переменная для хранения информации
+
+      if (data && typeof data.duty !== "undefined") {
+        // Преобразуем data.duty в число
+        const dutyValue = Number(data.duty); // или parseFloat(data.duty)
+
+        if (!isNaN(dutyValue)) {
+          // Если dutyValue является числом
+          percentValue = dutyValue;
+          tnvedPercentEl.textContent = `${percentValue} %`;
+        } else {
+          // Если dutyValue не число
+          tnvedPercentEl.textContent =
+            "Нет информации по % пошлине, для наглядности будет использоваться 10%";
+        }
+
+        // Проверяем наличие поля info
+        if (data.info && data.info.trim() !== "") {
+          infoText = ` (${data.info})`; // Добавляем информацию, если она есть
+        }
+      } else {
+        // Нет данных
+        tnvedPercentEl.textContent =
+          "Нет информации по % пошлине, для наглядности будет использоваться 10%";
+      }
+
+      // Обновляем текст с учетом информации
+      tnvedPercentEl.textContent += infoText;
+
+      // Сохраняем в State
+      State.tnvedSelection.chosenCodeImp = percentValue;
+    } catch (error) {
+      console.error("Произошла ошибка:", error);
+      tnvedPercentEl.textContent =
+        "Нет информации по % пошлине (ошибка запроса), используется 10%";
+      State.tnvedSelection.chosenCodeImp = 10;
+    }
   }
 }
 

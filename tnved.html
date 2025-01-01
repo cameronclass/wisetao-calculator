@@ -57,7 +57,7 @@
             display: flex;
         }
 
-/*         @keyframes spin {
+        /*         @keyframes spin {
             from {
                 transform: translateY(-50%) rotate(0deg);
             }
@@ -566,13 +566,73 @@
                 closeButton: closeButton,
                 treeList: treeList
             });
+
             tnvedTreeUI.treeService = tnvedTreeService;
 
             // Запуск
             suggestionsUI.init();
             tnvedTreeUI.init();
+
+
+
         });
-        
+
+        // Предположим, вы хотите вызвать этот метод по кнопке
+        async function getDataForGood() {
+            try {
+                // Сам код, который отправляем
+                const codeToSend = '6115950000';
+
+                // Делаем POST-запрос на /api/get-data-for-chosen-good
+                const response = await fetch('https://api-calc.wisetao.com:4343/api/get-data-for-chosen-good', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ code: codeToSend })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении данных');
+                }
+
+                // Получаем JSON-ответ
+                const data = await response.json();
+
+                console.log('Ответ с бэкенда:', data);
+                // Здесь вы уже можете использовать переменную data как нужно
+            } catch (error) {
+                console.error('Произошла ошибка:', error);
+            }
+        }
+
+        getDataForGood();
+
+        async function fetchDuty() {
+            try {
+                const code = '6115950000';
+                const response = await fetch('https://api-calc.wisetao.com:4343/api/parse-alta-duty', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ code })
+                });
+                if (!response.ok) {
+                    throw new Error('Request failed');
+                }
+                const data = await response.json();
+                console.log('Response from server:', data);
+                // Предположим, data.duty === '5%'
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        fetchDuty();
+
     </script>
 </body>
 </html>

@@ -8,38 +8,36 @@ import { DeliveryCalculator } from "./calculations/DeliveryCalculator.js";
 import { UIController } from "./ui/ui-controller.js";
 import { State } from "./data/State.js";
 
-function hideCalculationResult() {
-  // 1) Скрываем блок с результатом
-  const resultBlock = document.querySelector(".main-calc-result");
-  if (resultBlock) {
-    resultBlock.classList.remove("active");
-  }
-  // 2) Очищаем State, если нужно
-  State.directionsData = {};
+async function getCbrRates() {
+  const response = await fetch("https://www.cbr-xml-daily.ru/daily_json.js");
+  const data = await response.json();
+  const usdToRub = parseFloat(data.Valute.USD.Value).toFixed(2);
+  const cnyToRub = parseFloat(data.Valute.CNY.Value).toFixed(2);
+
+  return {
+    currencyCbRuble: usdToRub,
+    currencyCbYuan: cnyToRub,
+  };
 }
 
 (async () => {
   const groupInfo = new TelegramGroupInfo(CONFIG.botToken, CONFIG.chatId);
   const groupName = await groupInfo.getGroupName();
 
-  let currencyYuan;
-  let currencyRuble;
+  let wisetaoYuan; // было currencyYuan
+  let wisetaoRuble; // было currencyRuble
+
+  let cbrYuan; // было currencyCbYuan
+  let cbrRuble; // было currencyCbRuble
 
   if (groupName) {
     const currencyParser = new CurrencyParser();
     try {
       currencyParser.parseAndCalculate(groupName);
-      currencyYuan = currencyParser.getYuanRate();
-      currencyRuble = currencyParser.getDollarRate();
-      console.log(`1$ = ${currencyYuan} юань`);
-      console.log(`1$ = ${currencyRuble} рубль`);
-
-      document.querySelector(
-        'input[name="current_rate_ruble"]'
-      ).value = `${currencyRuble}`;
-      document.querySelector(
-        'input[name="current_rate_yuan"]'
-      ).value = `${currencyYuan}`;
+      wisetaoYuan = currencyParser.getYuanRate(); // бывший currencyYuan
+      wisetaoRuble = currencyParser.getDollarRate(); // бывший currencyRuble
+      console.log(`Wisetao: 1$ = ${wisetaoYuan} юань`);
+      console.log(`Wisetao: 1$ = ${wisetaoRuble} рубль`);
     } catch (error) {
       UIController.showError(
         "Не удалось получить курс валют: " + error.message
@@ -47,6 +45,44 @@ function hideCalculationResult() {
     }
   } else {
     UIController.showError("Не удалось получить имя группы.");
+  }
+
+  // Получаем курсы валют от ЦБ РФ
+  try {
+    const cbrRates = await getCbrRates();
+    cbrRuble = cbrRates.currencyCbRuble; // допустим "75.50"
+    cbrYuan = cbrRates.currencyCbYuan; // допустим  "10.20"
+
+    // Обновляем State с курсами от ЦБ
+    State.updateRates(cbrRuble, cbrYuan);
+
+    console.log(`Курс ЦБ: 1$ = ${State.cbrRates.dollar} рубль`);
+    console.log(`Курс ЦБ: 1$ = ${State.cbrRates.yuan} юань`);
+  } catch (error) {
+    UIController.showError(
+      "Не удалось получить курс валют от ЦБ: " + error.message
+    );
+  }
+
+  if (!wisetaoYuan || !wisetaoRuble || !cbrYuan || !cbrRuble) {
+    UIController.showError("Курсы валют не загружены, расчет невозможен.");
+    return;
+  }
+
+  // Узнаём, какая радиокнопка сейчас выбрана
+  const defaultCalcTypeRadio = document.querySelector(
+    'input[name="calc-type"]:checked'
+  );
+  if (defaultCalcTypeRadio && defaultCalcTypeRadio.value === "calc-customs") {
+    // Показываем cbr:
+    document.querySelector('input[name="current_rate_ruble"]').value = cbrRuble;
+    document.querySelector('input[name="current_rate_yuan"]').value = cbrYuan;
+  } else {
+    // Показываем wisetao:
+    document.querySelector('input[name="current_rate_ruble"]').value =
+      wisetaoRuble;
+    document.querySelector('input[name="current_rate_yuan"]').value =
+      wisetaoYuan;
   }
 
   const jsonLoader = new JsonDataLoader(CONFIG.jsonPath);
@@ -76,16 +112,15 @@ function hideCalculationResult() {
 
   const calculator = new DeliveryCalculator(
     jsonLoader,
-    currencyRuble,
-    currencyYuan,
+
+    wisetaoRuble,
+    wisetaoYuan,
+
+    cbrRuble,
+    cbrYuan,
     fields
   );
   const validation = new CalculatorValidation(fields);
-
-  if (!currencyRuble || !currencyYuan) {
-    UIController.showError("Курсы валют не загружены, расчет невозможен.");
-    return;
-  }
 
   fields.weightVolumeChange.addEventListener("change", () => {
     if (fields.weightVolumeChange.checked) {
@@ -133,7 +168,6 @@ function hideCalculationResult() {
       }
     });
 
-  // Предположим, что validation и State уже созданы
   // Собираем все поля, которые при изменении должны сбрасывать результат
   const allFieldsToReset = [
     fields.totalCost,
@@ -143,21 +177,17 @@ function hideCalculationResult() {
     fields.volumeLength,
     fields.volumeWidth,
     fields.volumeHeight,
-    fields.quantity,
     fields.tnvedInput,
     fields.brand,
     fields.insurance,
-    // и т. д. ...
   ];
 
-  // Вешаем 'input' на обычные поля, 'change' на radio/checkbox
   allFieldsToReset.forEach((fld) => {
-    if (!fld) return; // вдруг чего-то нет
-    // Определим подходящее событие
+    if (!fld) return;
     const eventName =
       fld.type === "radio" || fld.type === "checkbox" ? "change" : "input";
     fld.addEventListener(eventName, () => {
-      hideCalculationResult();
+      validation.hideCalculationResult();
     });
   });
 
@@ -165,11 +195,25 @@ function hideCalculationResult() {
   const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
   calcTypeRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
-      hideCalculationResult();
-      // Плюс если нужно очистить поля:
+      validation.hideCalculationResult();
       validation.clearErrors();
-      const allFields = Object.values(fields);
+      const allFields = Object.values(allFieldsToReset);
       validation.clearFields(allFields);
+
+      // --- НОВЫЙ КОД: заменяем курс в полях
+      if (radio.value === "calc-cargo") {
+        // Используем wisetaoRuble / wisetaoYuan
+        document.querySelector('input[name="current_rate_ruble"]').value =
+          wisetaoRuble;
+        document.querySelector('input[name="current_rate_yuan"]').value =
+          wisetaoYuan;
+      } else {
+        // Используем cbrRuble / cbrYuan
+        document.querySelector('input[name="current_rate_ruble"]').value =
+          cbrRuble;
+        document.querySelector('input[name="current_rate_yuan"]').value =
+          cbrYuan;
+      }
     });
   });
 })();

@@ -1,17 +1,103 @@
-Изначально у нас было одно направление калькулятора, теперь у нас есть и другое направление
 1. Первое направление name="calc-type" value="calc-cargo" Карго Доставка
 2. Второе направление name="calc-type" value="calc-customs" Белая Доставка
 
-Сначала давай начнем с валидации:
-1. Когда мы переключаем между направлениями,
-а. все вычесление которые были сделаны сбрасывается до этого (если были сделаны),
-б. все ошибки в валидации исчезают,
-в. все поля сбрасываются чтобы были чистые
+Если мы выбрали value="calc-customs"
+1. Курс доллара и юаня нам надо будет уже использовать курс ЦБ для рассчетев а не то что мы настраивали
+2. к рассчету карго который мы делали для value="calc-customs" нам еще нужно добавить "Пошлину" тоесть =(chosenCodeImp) + НДС + Услуги декларации (550 юаней)
+Есть таможенные расходы, их надо посчитать:
+name="total_cost" клиент который вел стоимость товаров, к нему нужно добавить + Пошлину(chosenCodeImp) %, дальше из того что узнали ему нужно добавить НДС (оно всегда 20%) + добавить нашу услуги декларации (550 юаней)
+Приведу нагдяный пример:
+Стоимость товара: 100.000р
+Пошлина: 15% (к примеру)
+НДС: 20%
+100000р + 15% + 20% + 550 юаней (нужно конвертировать в рубли по ЦБ, скажем по текущему 1 юань = 15,14 руб, соответвенно выйдет 8326,25) = 138000 + 8326,25 = 146326,25 - 100.000р(сумма который вел человек) = 46326,25р - (общая сумма за пошлину)
+Дальше к нему добавляем стоимость перевозки которую мы уже настроили если помнишь. Весь результат показываем в консоли, а также нужно настроить отображение
 
-2. Если у нас Второе направление(value="calc-customs") то к обязательному полю добавляется еще type="text" name="tnved_input", и соответственно если оно пустое то показываем текст ощибки как и в других блоках, при этом если оно не заполнено то рассчет не происходит
+<div class="overflow-info">
+    <div class="main-calc-result-tooltip">
+        <div class="main-calc-result-tooltip__title"></div>
+        <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
+        <div class="main-calc-result-tooltip__subtitle">Перевозка</div>
+        <div class="main-calc-result-tooltip__row">
+            <div class="main-calc-result-tooltip__cell">Курс:</div>
+            <div class="main-calc-result-tooltip__cell">
+                <span>$: </span> <span class="_number _ruble"></span>
+                <span>¥: </span> <span class="_number _yuan"></span>
+            </div>
+        </div>
+        <div class="main-calc-result-tooltip__row">
+            <div class="main-calc-result-tooltip__cell">Упаковка:</div>
+            <div class="main-calc-result-tooltip__cell _text">
+                <span class="_packing"></span>
+            </div>
+        </div>
+        <div class="main-calc-result-tooltip__row">
+            <div class="main-calc-result-tooltip__cell">За упаковку:</div>
+            <div class="main-calc-result-tooltip__cell _text">
+                <span class="_pack-dollar"></span>
+                <span class="_pack-ruble"></span>
+            </div>
+        </div>
+        <div class="main-calc-result-tooltip__row">
+            <div class="main-calc-result-tooltip__cell">Страховка:</div>
+            <div class="main-calc-result-tooltip__cell _text">
+                <span class="_insurance-dollar"></span>
+                <span class="_insurance-ruble"></span>
+            </div>
+        </div>
+        <div class="main-calc-result-tooltip__row">
+            <div class="main-calc-result-tooltip__cell">За кг:</div>
+            <div class="main-calc-result-tooltip__cell _text">
+                <span class="_kg-dollar"></span>
+                <span class="_kg-ruble"></span>
+            </div>
+        </div>
+        <div class="main-calc-result-tooltip__row">
+            <div class="main-calc-result-tooltip__cell">Итого:</div>
+            <div class="main-calc-result-tooltip__cell _text">
+                <span class="_all-dollar"></span>
+                <span class="_all-ruble"></span>
+            </div>
+        </div>
 
+        <div class="main-calc-result-tooltip__white">
+            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+            <div class="main-calc-result-tooltip__row">
+                <div class="main-calc-result-tooltip__cell">Пошлина:</div>
+                <div class="main-calc-result-tooltip__cell _text">
+                    <span class="_chosen-imp"></span>
+                </div>
+            </div>
+            <div class="main-calc-result-tooltip__row">
+                <div class="main-calc-result-tooltip__cell">НДС:</div>
+                <div class="main-calc-result-tooltip__cell _text">
+                    <span class="_nds"></span>
+                </div>
+            </div>
+            <div class="main-calc-result-tooltip__row">
+                <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
+                <div class="main-calc-result-tooltip__cell _text">
+                    <span class="_decloration-dollar"></span>
+                    <span class="_decloration-ruble"></span>
+                </div>
+            </div>
+            <div class="main-calc-result-tooltip__row">
+                <div class="main-calc-result-tooltip__cell">Итого за всё:</div>
+                <div class="main-calc-result-tooltip__cell _text">
+                    <span class="_all-white-dollar"></span>
+                    <span class="_all-white-ruble"></span>
+                </div>
+            </div>
+        </div>
 
-Еще нужно доработать,
-Проверка валидацию можно например когда человек начинает водить что либо и ощибка исчезачает, если поле пустое то появляется ощибка, тоесть не только по нажатию сделать проверку но также по мере ввода данных удалять ощибки тем самым показать наглядно что валидация проходит
+        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
 
-А также там где name="tnved_input" валидация не просто что то должно быть а что конкретно,
+    </div>
+</div>
+
+1. .main-calc-result-tooltip__title - если value="calc-cargo" то туда добавляем текст "Только до терминала ТК “Южные ворота” Москва", если value="calc-customs" то "Доставка только до г.Благовещенск СВХ"
+2. .main-calc-result-tooltip__white - если value="calc-customs" то к нему добавляем класс active
+3. ._chosen-imp сюда добавляем пошлину которую узнали
+4. ._nds - добаляем текст 20%
+5. <span class="_decloration-dollar"></span><span class="_decloration-ruble"></span> - наши услуги декларации который 550 юане, конвертируем по курсу и добавляем доллар и рубль сколько выйдет
+6. <span class="_all-white-dollar"></span><span class="_all-white-ruble"></span> - общая стоимость вместе с перевозкой и пошлин
