@@ -30,7 +30,7 @@ class SuggestionsUI {
     this.nameCodeContainer = nameCodeContainer;
 
     this.debounceTimer = null;
-    this.DEBOUNCE_DELAY = 2000;
+    this.DEBOUNCE_DELAY = 500;
     this.suggestionsService = null; // будет установлено извне
     this.onItemSelect = null; // колбэк при выборе элемента (если нужно)
     this.onTreeOpen = null; // колбэк при открытии дерева (клик по стрелке)

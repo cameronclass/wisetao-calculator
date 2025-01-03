@@ -36,7 +36,7 @@ async function getCbrRates() {
       currencyParser.parseAndCalculate(groupName);
       wisetaoYuan = currencyParser.getYuanRate(); // бывший currencyYuan
       wisetaoRuble = currencyParser.getDollarRate(); // бывший currencyRuble
-      console.log(`Wisetao: 1$ = ${wisetaoYuan} юань`);
+      console.log(`Wisetao: 1¥ = ${wisetaoYuan} рубль`);
       console.log(`Wisetao: 1$ = ${wisetaoRuble} рубль`);
     } catch (error) {
       UIController.showError(
@@ -57,7 +57,7 @@ async function getCbrRates() {
     State.updateRates(cbrRuble, cbrYuan);
 
     console.log(`Курс ЦБ: 1$ = ${State.cbrRates.dollar} рубль`);
-    console.log(`Курс ЦБ: 1$ = ${State.cbrRates.yuan} юань`);
+    console.log(`Курс ЦБ: 1¥ = ${State.cbrRates.yuan} рубль`);
   } catch (error) {
     UIController.showError(
       "Не удалось получить курс валют от ЦБ: " + error.message
@@ -179,7 +179,6 @@ async function getCbrRates() {
     fields.volumeHeight,
     fields.tnvedInput,
     fields.brand,
-    fields.insurance,
   ];
 
   allFieldsToReset.forEach((fld) => {

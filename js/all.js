@@ -159,12 +159,12 @@ export const State = {
   tnvedSelection: {
     selectedItem: null,
     inputValue: "",
+    chosenCodeImp: 10, // пусть по умолчанию 10
   },
 
-  // Новое: храним курсы ЦБ (заглушка, или получим из другого запроса)
   cbrRates: {
-    dollar: 78.95, // Пример, далее можно заменить на реальный
-    yuan: 11.2, // Пример
+    dollar: 100,
+    yuan: 14,
   },
 
   setDirectionData(direction, data) {
@@ -174,10 +174,15 @@ export const State = {
   getDirectionData(direction) {
     return this.directionsData[direction] || null;
   },
+
+  updateRates(dollar, yuan) {
+    this.cbrRates.dollar = dollar;
+    this.cbrRates.yuan = yuan;
+  },
 };
+// uiController.js
 import { State } from "../data/State.js";
 
-// uiController.js
 export class UIController {
   static showError(message) {
     const errorBox = document.querySelector(".error-box");
@@ -196,8 +201,46 @@ export class UIController {
     }
   }
 
+  /**
+   * showResults
+   * @param {Array}  results - [{cost, pricePerKg, calculationMode}, ...] для auto/train/avia
+   * @param {Object} data - все входные/выходные параметры, включая:
+   *
+   *   calcType: 'calc-cargo' | 'calc-customs'
+   *
+   *   // Данные от пользователя:
+   *   totalCost,            // Сумма, которую ввёл пользователь
+   *   selectedCurrency,     // 'dollar' | 'ruble' | 'yuan'
+   *   costInDollar,         // totalCost в долларах (переведён DeliveryCalculator)
+   *   totalVolume,
+   *   totalWeight,
+   *   quantity,
+   *   density,
+   *   categoryKey,          // Если cargo
+   *   packagingCost,
+   *   brandIncluded,
+   *   packingTypeValue,
+   *
+   *   // Курсы:
+   *   currencyRuble, // Wisetao
+   *   currencyYuan,  // Wisetao
+   *   cbrRuble,      // ЦБ
+   *   cbrYuan,       // ЦБ
+   *
+   *   // Тамож. данные (если calc-customs):
+   *   dutyValue,   // % пошлины (например, 15)
+   *   ndsValue,    // % НДС, обычно 20
+   *   declRub,     // услуги декларации в рублях
+   *   totalAllDollar, // Перевозка+таможня в $
+   *   totalAllRub,    // Перевозка+таможня в ₽
+   *
+   *   // Методы:
+   *   calculateInsuranceCost,
+   *   calculateTotalCost
+   */
   static showResults(results, data) {
     const {
+      calcType, // 'calc-cargo' | 'calc-customs'
       totalCost,
       selectedCurrency,
       costInDollar,
@@ -207,198 +250,245 @@ export class UIController {
       density,
       categoryKey,
       packagingCost,
-      currencyYuan,
-      currencyRuble,
       brandIncluded,
       packingTypeValue,
+
+      // Курсы
+      currencyRuble, // Wisetao
+      currencyYuan, // Wisetao
+      cbrRuble,
+      cbrYuan,
+
+      // Таможня (если calc-customs)
+      dutyValue,
+      ndsValue, // если надо, по умолчанию 20
+      declRub,
+      totalAllDollar,
+      totalAllRub,
+
       calculateInsuranceCost,
       calculateTotalCost,
-      calcType,
-      totalCostUserRub,
-      dutyValue,
-      dutyRub,
-      ndsRub,
-      declRub,
-      shippingRub,
-      totalCustomsRub,
-      totalAllRub,
     } = data;
 
+    // Массив направлений
     const directionKeys = ["auto", "train", "avia"];
+
+    // Для расширенного вывода в консоль подготовим массив строк
+    const bigConsoleRows = [];
+
+    // Перебираем все три направления
     results.forEach((res, idx) => {
-      const directionName = directionKeys[idx]; // 'auto', 'train' или 'avia'
+      // Определяем ключ направления: auto | train | avia
+      const directionName = directionKeys[idx];
+      // Как считаем: weight | volume
       const calculationMode =
-        res?.calculationMode === "weight" ? "по килограммам" : "по объему";
+        res?.calculationMode === "weight" ? "по весу" : "по объему";
 
-      const shippingCostDollar = (res?.cost || 0).toFixed(2);
+      // Само значение перевозки (в долларах)
+      const shippingCostDollar = parseFloat(res?.cost || 0);
 
+      // Считаем «за КГ»
       let pricePerKgDollar, pricePerKgRuble;
       if (calculationMode === "по объему") {
-        const shippingCostInDollarNum = parseFloat(shippingCostDollar);
-        pricePerKgDollar = (shippingCostInDollarNum / totalWeight).toFixed(2);
-        pricePerKgRuble = (
-          parseFloat(pricePerKgDollar) * currencyRuble
-        ).toFixed(2);
+        // shipping / totalWeight
+        pricePerKgDollar = shippingCostDollar / (totalWeight || 1);
       } else {
-        pricePerKgDollar = (res?.pricePerKg || 0).toFixed(2);
-        pricePerKgRuble = ((res?.pricePerKg || 0) * currencyRuble).toFixed(2);
+        // res.pricePerKg
+        pricePerKgDollar = parseFloat(res?.pricePerKg || 0);
+      }
+      pricePerKgDollar = +pricePerKgDollar.toFixed(2); // округлим
+      pricePerKgRuble = +(pricePerKgDollar * currencyRuble).toFixed(2);
+
+      // Считаем страховку (в долларах)
+      const insuranceUsd = calculateInsuranceCost(
+        shippingCostDollar,
+        costInDollar
+      );
+      const insuranceCostDollar = +insuranceUsd.toFixed(2);
+
+      // CARGO-сумма (shipping + packaging + insurance)
+      const cargoUsd = calculateTotalCost(
+        shippingCostDollar,
+        packagingCost,
+        insuranceCostDollar
+      );
+      const cargoDollar = +cargoUsd.toFixed(2);
+      const cargoRuble = +(cargoUsd * currencyRuble).toFixed(2);
+
+      // Если calc-cargo => показываем cargo
+      // Если calc-customs => показываем totalAllDollar / totalAllRub
+      let finalDollar = 0;
+      let finalRuble = 0;
+      if (calcType === "calc-cargo") {
+        finalDollar = cargoDollar;
+        finalRuble = cargoRuble;
+      } else {
+        // calc-customs => суммарная величина (если DeliveryCalculator уже сложил всё)
+        finalDollar = parseFloat(totalAllDollar || 0);
+        finalRuble = parseFloat(totalAllRub || 0);
       }
 
-      const insuranceCostDollar = calculateInsuranceCost(
-        res?.cost || 0,
-        costInDollar
-      ).toFixed(2);
-      const totalCostFinal = calculateTotalCost(
-        res?.cost || 0,
-        packagingCost,
-        parseFloat(insuranceCostDollar)
-      );
-      const totalCostFinalDollar = totalCostFinal.toFixed(2);
-      const totalCostFinalRuble = (totalCostFinal * currencyRuble).toFixed(2);
-
-      // Сохраняем данные в State
+      // Сохраняем данные в State (для PDF)
       State.setDirectionData(directionName, {
-        currencyYuan: currencyYuan, // Передаем реальное значение yuan
-        currencyRuble: currencyRuble,
-        costInDollar: costInDollar,
-        totalCostFinalDollar: parseFloat(totalCostFinalDollar),
-        totalCostFinalRuble: parseFloat(totalCostFinalRuble),
-        totalVolume: totalVolume,
-        totalWeight: totalWeight,
-        quantity: quantity,
-        pricePerKgDollar: pricePerKgDollar,
-        pricePerKgRuble: pricePerKgRuble,
-        packingTypeValue: packingTypeValue,
-        packagingCost: packagingCost, // в долларах
-        insuranceCostDollar: parseFloat(insuranceCostDollar),
+        currencyYuan,
+        currencyRuble,
+        costInDollar,
+        totalCostFinalDollar: finalDollar,
+        totalCostFinalRuble: finalRuble,
+        totalVolume,
+        totalWeight,
+        quantity,
+        pricePerKgDollar: pricePerKgDollar.toFixed(2),
+        pricePerKgRuble: pricePerKgRuble.toFixed(2),
+        packingTypeValue,
+        packagingCost,
+        insuranceCostDollar,
       });
 
-      // Вывод в консоль (как было ранее)
-      console.table({
+      // Собираем строку для console.table
+      bigConsoleRows.push({
         Направление: directionName,
-        "Cтоимость товара": `${totalCost} ${
-          selectedCurrency === "dollar"
-            ? "$"
-            : selectedCurrency === "ruble"
-            ? "₽"
-            : "¥"
-        }`,
-        "Выбранная валюта": selectedCurrency,
-        "Стоимость товара в долларах": `${costInDollar.toFixed(2)} $`,
-        Объем: totalVolume,
-        Килограм: totalWeight,
+        Калькуляция: calcType,
+        "Входная сумма (польз.)": `${totalCost} ${selectedCurrency}`,
+        "В $ (costInDollar)": `${costInDollar.toFixed(2)}$`,
+        "Объём (m³)": totalVolume,
+        "Вес (кг)": totalWeight,
         Количество: quantity,
         Плотность: density,
-        "Категория груза": categoryKey,
-        Тариф: calculationMode,
-        "Стоимость за КГ": `${pricePerKgDollar} $ | ${pricePerKgRuble} ₽`,
-        Бренд: brandIncluded ? "Да (Включено)" : "Нет",
-        Упаковка: packingTypeValue,
-        "Стоимость доставки": `${shippingCostDollar} $`,
-        "Стоимость упаковки": `${packagingCost.toFixed(2)} $`,
-        "Стоимость страховки": `${insuranceCostDollar} $`,
-        "Общая стоимость": `${totalCostFinalDollar} $ | ${totalCostFinalRuble} ₽`,
+        "Категория груза": categoryKey || "(—)",
+        TarifMode: calculationMode,
+        "Перевозка($)": shippingCostDollar.toFixed(2),
+        "Price/kg($)": pricePerKgDollar.toFixed(2),
+        "Упаковка($)": packagingCost.toFixed(2),
+        "Страховка($)": insuranceCostDollar.toFixed(2),
+        "Итог(CARGO)($)": `${cargoDollar.toFixed(2)}`,
+        "Итог(CARGO)(₽)": `${cargoRuble.toFixed(2)}`,
+        "Итог(RES)($)": finalDollar.toFixed(2),
+        "Итог(RES)(₽)": finalRuble.toFixed(2),
       });
 
-      // Дополнительное обновление HTML
-      // Находим нужный блок по направлению: .price-auto, .price-train, .price-avia
+      // --- Обновляем DOM ---
       const priceBlock = document.querySelector(`.price-${directionName}`);
-      if (priceBlock) {
-        // Обновляем текст "Стоимость за КГ"
-        const titleTarif = priceBlock.querySelector(
-          ".calculate-result__title_tarif"
-        );
-        if (titleTarif) {
-          titleTarif.textContent = "За КГ:";
+      if (!priceBlock) return;
+      const kgDollarEl = priceBlock.querySelector(".calculate-result__kg");
+      const kgRubleEl = priceBlock.querySelector(".calculate-result__kg_ruble");
+      if (kgDollarEl) kgDollarEl.textContent = pricePerKgDollar.toFixed(2);
+      if (kgRubleEl) kgRubleEl.textContent = pricePerKgRuble.toFixed(2);
+
+      const dollarEl = priceBlock.querySelector(".calculate-result__dollar");
+      const rubleEl = priceBlock.querySelector(".calculate-result__ruble");
+      if (dollarEl) dollarEl.textContent = finalDollar.toFixed(2);
+      if (rubleEl) rubleEl.textContent = finalRuble.toFixed(2);
+
+      // Найдём tooltip (каждый блок .price-cell -> .overflow-info)
+      const overflowInfo = priceBlock
+        .closest(".price-cell")
+        ?.querySelector(".overflow-info");
+      if (!overflowInfo) return;
+      const tooltip = overflowInfo.querySelector(".main-calc-result-tooltip");
+      if (!tooltip) return;
+
+      // Заголовок
+      const tooltipTitle = tooltip.querySelector(
+        ".main-calc-result-tooltip__title"
+      );
+      const whiteBlock = tooltip.querySelector(
+        ".main-calc-result-tooltip__white"
+      );
+
+      // Курс: ._number._ruble, ._number._yuan
+      const rubleSpan = tooltip.querySelector("._number._ruble");
+      const yuanSpan = tooltip.querySelector("._number._yuan");
+
+      // Итого(CARGO):
+      const cargoDollarEl = tooltip.querySelector("._all-cargo-dollar");
+      const cargoRubleEl = tooltip.querySelector("._all-cargo-ruble");
+
+      // Таможня:
+      const chosenImpEl = tooltip.querySelector("._chosen-imp");
+      const ndsEl = tooltip.querySelector("._nds");
+      const declDollarEl = tooltip.querySelector("._decloration-dollar");
+      const declRubleEl = tooltip.querySelector("._decloration-ruble");
+      const allWhiteDollarEl = tooltip.querySelector("._all-white-dollar");
+      const allWhiteRubleEl = tooltip.querySelector("._all-white-ruble");
+      const allCalculatedDollarEl = tooltip.querySelector(
+        "._all-calculated-price-dollar"
+      );
+      const allCalculatedRubleEl = tooltip.querySelector(
+        "._all-calculated-price-ruble"
+      );
+
+      // Заполняем поля
+      if (calcType === "calc-cargo") {
+        // 1) Заголовок
+        if (tooltipTitle) {
+          tooltipTitle.textContent =
+            "Только до терминала ТК “Южные ворота” Москва";
         }
-
-        // Обновляем стоимость за КГ в долларах
-        const kgDollarEl = priceBlock.querySelector(".calculate-result__kg");
-        if (kgDollarEl) {
-          kgDollarEl.textContent = pricePerKgDollar;
+        // 2) Скрыть тамож. блок
+        if (whiteBlock) {
+          whiteBlock.classList.remove("active");
         }
-
-        // Обновляем стоимость за КГ в рублях
-        const kgRubleEl = priceBlock.querySelector(
-          ".calculate-result__kg_ruble"
-        );
-        if (kgRubleEl) {
-          kgRubleEl.textContent = pricePerKgRuble;
+        // 3) Курс Wisetao
+        if (rubleSpan)
+          rubleSpan.textContent = currencyRuble?.toFixed?.(2) || "0.00";
+        if (yuanSpan)
+          yuanSpan.textContent = currencyYuan?.toFixed?.(2) || "0.00";
+        // 4) Итого (CARGO)
+        if (cargoDollarEl)
+          cargoDollarEl.textContent = cargoDollar.toFixed(2) + "$";
+        if (cargoRubleEl)
+          cargoRubleEl.textContent = cargoRuble.toFixed(2) + "₽";
+      } else {
+        // calc-customs
+        if (tooltipTitle) {
+          tooltipTitle.textContent = "Доставка только до г.Благовещенск СВХ";
         }
-
-        // Обновляем общую стоимость в долларах
-        const dollarEl = priceBlock.querySelector(".calculate-result__dollar");
-        if (dollarEl) {
-          dollarEl.textContent = totalCostFinalDollar;
+        if (whiteBlock) {
+          whiteBlock.classList.add("active");
         }
+        // Курс ЦБ
+        if (rubleSpan) rubleSpan.textContent = cbrRuble?.toFixed?.(2) || "0.00";
+        if (yuanSpan) yuanSpan.textContent = cbrYuan?.toFixed?.(2) || "0.00";
 
-        // Обновляем общую стоимость в рублях
-        const rubleEl = priceBlock.querySelector(".calculate-result__ruble");
-        if (rubleEl) {
-          rubleEl.textContent = totalCostFinalRuble;
+        // Пошлина
+        if (chosenImpEl && dutyValue !== undefined) {
+          chosenImpEl.textContent = dutyValue + "%";
+        }
+        // НДС
+        if (ndsEl && ndsValue !== undefined) {
+          ndsEl.textContent = ndsValue + "%";
+        }
+        // 550 юаней (declRub) => в $?
+        if (declDollarEl && declRubleEl && declRub !== undefined) {
+          // declRub уже в рублях => declRub / cbrRuble => $
+          const decDollar = cbrRuble > 0 ? declRub / cbrRuble : 0;
+          declDollarEl.textContent = decDollar.toFixed(2) + "$";
+          declRubleEl.textContent = declRub.toFixed(2) + "₽";
+        }
+        // ._all-white-dollar/._all-white-ruble => таможня (duty+nds+dec) минус исходная стоим.
+        if (allWhiteDollarEl && allWhiteRubleEl) {
+          // допустим totalAllDollar - cargoDollar = чисто тамож.часть
+          // но вы можете передавать отдельное поле totalCustomsDollar/totalCustomsRub
+          const customsDollarOnly = (totalAllDollar || 0) - cargoDollar;
+          const customsRubleOnly = (totalAllRub || 0) - cargoRuble;
+          allWhiteDollarEl.textContent = customsDollarOnly.toFixed(2) + "$";
+          allWhiteRubleEl.textContent = customsRubleOnly.toFixed(2) + "₽";
+        }
+        // "Перевозка + Таможенные расходы" => ._all-calculated-price-dollar/._ruble
+        if (allCalculatedDollarEl && allCalculatedRubleEl) {
+          const finalDollarStr = (totalAllDollar || 0).toFixed(2);
+          const finalRubleStr = (totalAllRub || 0).toFixed(2);
+          allCalculatedDollarEl.textContent = finalDollarStr + "$";
+          allCalculatedRubleEl.textContent = finalRubleStr + "₽";
         }
       }
-    });
+    }); // end forEach
 
-    // Находим tooltipTitle
-    const tooltipTitle = document.querySelector(
-      ".main-calc-result-tooltip__title"
-    );
-    // Находим блок .main-calc-result-tooltip__white
-    const whiteBlock = document.querySelector(
-      ".main-calc-result-tooltip__white"
-    );
+    // Выводим *все* строки в консоль
+    console.table(bigConsoleRows);
 
-    if (calcType === "calc-cargo") {
-      if (tooltipTitle) {
-        tooltipTitle.textContent =
-          "Только до терминала ТК “Южные ворота” Москва";
-      }
-      if (whiteBlock) {
-        whiteBlock.classList.remove("active");
-      }
-    } else if (calcType === "calc-customs") {
-      if (tooltipTitle) {
-        tooltipTitle.textContent = "Доставка только до г.Благовещенск СВХ";
-      }
-      if (whiteBlock) {
-        whiteBlock.classList.add("active");
-      }
-
-      // Пошлина
-      const chosenImpEl = document.querySelector("._chosen-imp");
-      if (chosenImpEl) {
-        chosenImpEl.textContent = dutyValue + "%";
-      }
-
-      // НДС
-      const ndsEl = document.querySelector("._nds");
-      if (ndsEl) {
-        ndsEl.textContent = "20%";
-      }
-
-      // Услуги декларации (550 юаней)
-      // Нужно в $ и ₽
-      // declRub = declRub
-      const declDollarEl = document.querySelector("._decloration-dollar");
-      const declRubleEl = document.querySelector("._decloration-ruble");
-      if (declDollarEl && declRubleEl) {
-        // Переводим declRub в доллары:
-        const declDollar = declRub / State.cbrRates.dollar;
-        declDollarEl.textContent = declDollar.toFixed(2) + "$";
-        declRubleEl.textContent = declRub.toFixed(2) + "₽";
-      }
-
-      // Итого за всё (._all-white-dollar, ._all-white-ruble)
-      const allWhiteDollarEl = document.querySelector("._all-white-dollar");
-      const allWhiteRubleEl = document.querySelector("._all-white-ruble");
-      if (allWhiteDollarEl && allWhiteRubleEl) {
-        const totalAllDollar = totalAllRub / State.cbrRates.dollar;
-        allWhiteDollarEl.textContent = totalAllDollar.toFixed(2) + "$";
-        allWhiteRubleEl.textContent = totalAllRub.toFixed(2) + "₽";
-      }
-    }
-
+    // Активируем общий блок .main-calc-result
     const resultBlock = document.querySelector(".main-calc-result");
     if (resultBlock) resultBlock.classList.add("active");
   }
@@ -709,16 +799,31 @@ export class CalculatorValidation {
     return isValid;
   }
 }
-import { State } from "../data/State.js";
+// DeliveryCalculator.js
 import { CONFIG } from "../config.js";
 import { UIController } from "../ui/ui-controller.js";
+import { State } from "../data/State.js";
 
 export class DeliveryCalculator {
-  constructor(jsonLoader, currencyRuble, currencyYuan, fields) {
+  constructor(
+    jsonLoader,
+    wisetaoRuble,
+    wisetaoYuan,
+    cbrRuble,
+    cbrYuan,
+    fields
+  ) {
     this.jsonLoader = jsonLoader;
-    this.currencyRuble = currencyRuble;
-    this.currencyYuan = currencyYuan;
     this.fields = fields;
+
+    // Курсы Wisetao (для calc-cargo)
+    this.wisetaoRuble = wisetaoRuble;
+    this.wisetaoYuan = wisetaoYuan;
+
+    // Курсы ЦБ (для calc-customs)
+    this.cbrRuble = cbrRuble;
+    this.cbrYuan = cbrYuan;
+
     this.initEventListeners();
     this.setupNumericInputRestrictions();
   }
@@ -770,6 +875,7 @@ export class DeliveryCalculator {
     } = this.fields;
 
     if (weightVolumeChange.checked) {
+      // Включили «Ввести объём напрямую»
       totalVolume.disabled = false;
       volumeLength.disabled = true;
       volumeWidth.disabled = true;
@@ -793,35 +899,34 @@ export class DeliveryCalculator {
     const width = parseFloat(volumeWidth.value) || 0;
     const height = parseFloat(volumeHeight.value) || 0;
 
-    const calculatedVolume = ((length * width * height) / 1000000).toFixed(4);
-    totalVolumeCalculated.value = calculatedVolume > 0 ? calculatedVolume : "";
-  }
-
-  convertToDollar(totalCost, selectedCurrency) {
-    if (selectedCurrency === "ruble") {
-      return (totalCost / this.currencyRuble).toFixed(2);
-    } else if (selectedCurrency === "yuan") {
-      return (totalCost / this.currencyYuan).toFixed(2);
-    }
-    return totalCost.toFixed(2); // если выбрали "dollar"
-  }
-
-  calculateDensity(totalWeight, totalVolume) {
-    if (totalVolume > 0) {
-      return (totalWeight / totalVolume).toFixed(2);
-    }
-    UIController.showError("Объем должен быть больше нуля");
-    return null;
+    const calcVol = (length * width * height) / 1_000_000;
+    totalVolumeCalculated.value = calcVol > 0 ? calcVol.toFixed(4) : "";
   }
 
   /**
-   * Рассчёт для "calc-cargo" (старый)
-   * @param {string} categoryKey
-   * @param {number} density
-   * @param {number} totalWeight
-   * @param {number} totalVolume
-   * @returns {Array} массив результатов для auto/train/avia
+   * Конвертирует введённую стоимость (totalCost) в доллары
+   * на базе выбранной валюты (selectedCurrency)
+   * и курсов currentRuble/currentYuan.
    */
+  convertToDollar(totalCost, selectedCurrency, currentRuble, currentYuan) {
+    if (selectedCurrency === "ruble") {
+      return totalCost / currentRuble;
+    } else if (selectedCurrency === "yuan") {
+      return totalCost / currentYuan;
+    }
+    // Если 'dollar'
+    return totalCost; // уже в долларах
+  }
+
+  calculateDensity(totalWeight, totalVolume) {
+    if (totalVolume <= 0) {
+      UIController.showError("Объём должен быть больше нуля");
+      return null;
+    }
+    return totalWeight / totalVolume;
+  }
+
+  // Старая логика для calc-cargo: смотрим JSON, ищем тариф
   calculateCargo(categoryKey, density, totalWeight, totalVolume) {
     const directions = ["auto", "train", "avia"];
     return directions.map((direction) => {
@@ -836,23 +941,24 @@ export class DeliveryCalculator {
   }
 
   /**
-   * Рассчёт для "calc-customs"
-   * @param {number} totalWeight
-   * @returns {Array} массив с 3-мя направлениями, но одинаковым тарифом
+   * Упрощённая логика для calc-customs (0.6$/кг) для всех направлений
    */
   calculateCustoms(totalWeight) {
-    // ставка 0.6$/кг
     const directions = ["auto", "train", "avia"];
-    return directions.map((direction) => {
-      const shippingCost = totalWeight * 0.6; // по весу
+    return directions.map(() => {
+      const shippingCost = totalWeight * 0.6;
       return {
         cost: shippingCost,
-        pricePerKg: 0.6, // нет разницы в плотности
+        pricePerKg: 0.6,
         calculationMode: "weight",
       };
     });
   }
 
+  /**
+   * Метод, который ищет в JSON нужный тариф (в $ за кг)
+   * с учётом плотности (если cargo)
+   */
   calculateShippingCostForDirection(
     direction,
     categoryKey,
@@ -860,44 +966,46 @@ export class DeliveryCalculator {
     weight,
     volume
   ) {
-    // Старый код выбора тарифов из JSON
     const directionData = this.jsonLoader.getDirectionData(direction);
     if (!directionData) {
-      UIController.showError(
-        `Данные для направления "${direction}" не найдены.`
-      );
+      UIController.showError(`Нет данных для направления "${direction}".`);
       return { cost: 0, pricePerKg: 0, calculationMode: null };
     }
 
-    let calculationMode = null;
+    // ищем «rangeData»
+    let calculationMode = "";
     let rangeData = null;
 
     if (direction === "train") {
-      rangeData = directionData.find((range) => {
-        const [min, max] = range.weight_range
+      // Тарифы лежат прямо в массиве directionData
+      rangeData = directionData.find((rd) => {
+        const [min, max] = rd.weight_range
           .split("-")
           .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
         return density >= min && density <= max;
       });
       calculationMode = density >= 200 ? "weight" : "volume";
-    } else if (direction === "avia") {
-      const categoryData =
-        directionData.find((cat) => cat.category_key === categoryKey) ||
-        directionData.find((cat) => cat.category_key === "others");
-
-      rangeData = categoryData?.data?.find((range) => {
-        const [min, max] = range.weight_range
-          .split("-")
-          .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
-        return density >= min && density <= max;
-      });
-      calculationMode = density >= 100 ? "weight" : "volume";
     } else {
-      const categoryData = directionData.find(
-        (cat) => cat.category_key === categoryKey
-      );
-      rangeData = categoryData?.data?.find((range) => {
-        const [min, max] = range.weight_range
+      // auto / avia => сначала ищем категорию
+      let catData;
+      if (direction === "avia") {
+        catData =
+          directionData.find((cat) => cat.category_key === categoryKey) ||
+          directionData.find((cat) => cat.category_key === "others");
+      } else {
+        // auto
+        catData = directionData.find((cat) => cat.category_key === categoryKey);
+      }
+      if (!catData) {
+        UIController.showError(
+          `Категория ${categoryKey} не найдена для ${direction}`
+        );
+        return { cost: 0, pricePerKg: 0, calculationMode: null };
+      }
+
+      // catData.data => массив весовых диапазонов
+      rangeData = catData.data?.find((rd) => {
+        const [min, max] = rd.weight_range
           .split("-")
           .map((val) => (val === "" ? Infinity : parseFloat(val) || 0));
         return density >= min && density <= max;
@@ -907,107 +1015,188 @@ export class DeliveryCalculator {
 
     if (!rangeData) {
       UIController.showError(
-        `Не удалось найти подходящий тариф для направления ${direction} и плотности ${density}.`
+        `Не найден подходящий тариф для ${direction}, плотность: ${density}`
       );
       return { cost: 0, pricePerKg: 0, calculationMode: null };
     }
 
     let pricePerKg = rangeData.price_kg;
-    if (this.fields.brand && this.fields.brand.checked) {
-      // "brand" добавляет 0.5$ или 50$ в зависимости от weight/volume
+    // Доплата за бренд (если включено):
+    if (this.fields.brand?.checked) {
+      // Если плотность >= 100 => +0.5$/кг, иначе +50$/куб
       pricePerKg += density >= 100 ? 0.5 : 50;
     }
 
     const cost =
-      calculationMode === "weight" ? weight * pricePerKg : volume * pricePerKg;
+      calculationMode === "weight" ? pricePerKg * weight : pricePerKg * volume;
+
     return { cost, pricePerKg, calculationMode };
   }
 
+  /**
+   * Считаем упаковку (packingType)
+   */
   calculatePackagingCost(packingType, volume, quantity) {
     const packaging = this.jsonLoader.getPackagingData(packingType);
     if (!packaging) {
-      UIController.showError("Упаковка не найдена");
+      UIController.showError("Не найдена упаковка " + packingType);
+      return 0;
+    }
+    const standardPack = this.jsonLoader.getPackagingData("std_pack");
+    if (!standardPack) {
+      UIController.showError("Не найдена упаковка std_pack");
       return 0;
     }
 
-    const standardPackaging = this.jsonLoader.getPackagingData("std_pack");
-    if (!standardPackaging) {
-      UIController.showError("Стандартная упаковка не найдена");
-      return 0;
-    }
-
-    const packagingCost =
+    // Сколько стоит эта упаковка
+    const mainCost =
       packaging.which === "place"
-        ? quantity * packaging.price
-        : volume * packaging.price;
-    const standardPackagingCost =
-      standardPackaging.which === "place"
-        ? quantity * standardPackaging.price
-        : volume * standardPackaging.price;
+        ? packaging.price * quantity
+        : packaging.price * volume;
+    // И сколько стоит стандартная упаковка (она добавляется, если не «std_pack»)
+    const stdCost =
+      standardPack.which === "place"
+        ? standardPack.price * quantity
+        : standardPack.price * volume;
 
-    return (
-      packagingCost + (packingType === "std_pack" ? 0 : standardPackagingCost)
-    );
+    // если выбрано «std_pack» => не надо прибавлять stdCost
+    if (packingType === "std_pack") {
+      return mainCost;
+    }
+    return mainCost + stdCost;
   }
 
-  calculateInsuranceCost(shippingCost, totalCost) {
+  /**
+   * Страховка
+   */
+  calculateInsuranceCost(shippingCost, goodsCostDollar) {
+    // Пример: 3% от (доставка + стоимость товара)
+    // или rate=0.03 => CONFIG.insuranceRate
+    const rate = CONFIG.insuranceRate;
     return this.fields.insurance.checked
-      ? (shippingCost + totalCost) * CONFIG.insuranceRate
+      ? (shippingCost + goodsCostDollar) * rate
       : 0;
   }
 
+  /**
+   * Cумма (доставка + упаковка + страховка)
+   */
   calculateTotalCost(shippingCost, packagingCost, insuranceCost) {
     return shippingCost + packagingCost + insuranceCost;
   }
 
+  /**
+   * Дополнительный метод: считаем «таможенные расходы»
+   * @param {number} costInDollar  — стоимость товара в $ (которую ввёл клиент)
+   * @param {number} dutyValuePct  — процент пошлины (например, 15%)
+   * @param {number} cbrRateDollar — например, 100 руб/долл
+   * @param {number} cbrRateYuan   — например, 15 руб/юань
+   * @returns {object} { totalCustomsDollar, decDollar, totalCustomsRub, ...}
+   */
+  calculateCustomsCost(costInDollar, dutyValuePct, cbrRateDollar, cbrRateYuan) {
+    // 1) Пошлина: dutyValuePct% от стоимости
+    const dutyDollar = (dutyValuePct / 100) * costInDollar;
+
+    // 2) Сумма с пошлиной
+    const sumWithDutyDollar = costInDollar + dutyDollar;
+
+    // 3) НДС = 20% от sumWithDutyDollar
+    const ndsDollar = sumWithDutyDollar * 0.2; // или храните 0.2 в config
+
+    // 4) Услуги декларации: 550 юаней => сколько это в долларах?
+    //   если cbrRateYuan=15 руб/юань, cbrRateDollar=100 руб/долл
+    //   тогда 1$=100 руб, 1¥=15 руб => 1$= (100/15)¥ => 1¥= (15/100)$=0.15$
+    //   => 550¥ = 550*(15/100)$ = 82.5$
+    // Упрощённо:
+    const decDollar = (550 * cbrRateYuan) / cbrRateDollar;
+
+    // 5) Итого всё (пошлина+ндс+декларация), но вычитаем «исходную сумму товара»
+    //   чтобы получить чисто «таможенные затраты»
+    //   либо можно оставить «всю сумму»: costInDollar + dutyDollar + ndsDollar + decDollar
+    //   часто хотят показать, насколько дороже стало
+    const totalCustomsDollar =
+      costInDollar + dutyDollar + ndsDollar + decDollar - costInDollar;
+
+    // 6) Переводим всё в рубли
+    const totalCustomsRub = totalCustomsDollar * cbrRateDollar;
+    const decRub = decDollar * cbrRateDollar;
+    // dutyRub/ndsRub по аналогии
+    const dutyRub = dutyDollar * cbrRateDollar;
+    const ndsRub = ndsDollar * cbrRateDollar;
+
+    return {
+      dutyDollar,
+      ndsDollar,
+      decDollar,
+      dutyRub,
+      ndsRub,
+      decRub,
+      totalCustomsDollar,
+      totalCustomsRub,
+    };
+  }
+
   async calculate() {
     try {
-      // 1) Определить, какой режим выбран:
+      // 1) Узнаём тип режима (calc-cargo | calc-customs)
       const calcTypeRadio = document.querySelector(
         'input[name="calc-type"]:checked'
       );
       const calcType = calcTypeRadio ? calcTypeRadio.value : "calc-cargo";
 
-      // 2) Собираем общие данные
-      const totalCost = parseFloat(this.fields.totalCost.value) || 0;
+      // Для cargo берём wisetao-курсы, для customs — cbr-курсы
+      let currentRuble, currentYuan;
+      if (calcType === "calc-cargo") {
+        currentRuble = this.wisetaoRuble;
+        currentYuan = this.wisetaoYuan;
+      } else {
+        currentRuble = this.cbrRuble;
+        currentYuan = this.cbrYuan;
+      }
+
+      // 2) Собираем данные, которые ввёл пользователь
+      const totalCostUser = parseFloat(this.fields.totalCost.value) || 0; // то, что ввёл
       const totalWeight = parseFloat(this.fields.totalWeight.value) || 0;
       const totalVolume = this.fields.weightVolumeChange.checked
         ? parseFloat(this.fields.totalVolume.value) || 0
         : parseFloat(this.fields.totalVolumeCalculated.value) || 0;
 
-      const selectedCurrencyElement = document.querySelector(
+      // Выбранная валюта (dollar/ruble/yuan)
+      const selCurEl = document.querySelector(
         'input[name="total_currecy"]:checked'
       );
-      const selectedCurrency = selectedCurrencyElement
-        ? selectedCurrencyElement.value
-        : "dollar";
+      const selectedCurrency = selCurEl ? selCurEl.value : "dollar";
 
-      const costInDollar = parseFloat(
-        this.convertToDollar(totalCost, selectedCurrency)
+      // Конвертируем totalCost в доллары (на основе курсов)
+      const costInDollar = this.convertToDollar(
+        totalCostUser,
+        selectedCurrency,
+        currentRuble,
+        currentYuan
       );
 
-      // 3) Если calc-cargo — используем старый расчёт
-      //    Если calc-customs — упрощённый
-      let results;
+      // Далее будем считать отдельно:
+      let results; // [{cost, pricePerKg, calculationMode},...]
       let density = 0;
       let categoryKey = "";
 
       if (calcType === "calc-cargo") {
-        // Взять categoryKey, brand
-        const categoryKeyElement = Array.from(this.fields.category).find(
-          (field) => field.checked
+        // Карго
+        // 1) узнаём категорию
+        const catKeyEl = Array.from(this.fields.category).find(
+          (c) => c.checked
         );
-        if (!categoryKeyElement) {
-          UIController.showError("Категория не выбрана!");
+        if (!catKeyEl) {
+          UIController.showError("Не выбрана категория для карго!");
           return;
         }
-        categoryKey = categoryKeyElement.value;
+        categoryKey = catKeyEl.value;
 
+        // 2) плотность
         density = this.calculateDensity(totalWeight, totalVolume);
-        if (!density) {
-          return; // Ошибка уже показана
-        }
+        if (density === null) return; // ошибка уже показана
 
+        // 3) Считаем доставку
         results = this.calculateCargo(
           categoryKey,
           density,
@@ -1015,111 +1204,136 @@ export class DeliveryCalculator {
           totalVolume
         );
       } else {
-        // calc-customs
+        // Белая доставка (0.6$/кг)
         results = this.calculateCustoms(totalWeight);
-
-        // --- НОВЫЙ КОД Начало ---
-        let totalCostUserRub = totalCost;
-        if (selectedCurrency === "dollar") {
-          totalCostUserRub = totalCost * State.cbrRates.dollar;
-        } else if (selectedCurrency === "yuan") {
-          totalCostUserRub = totalCost * State.cbrRates.yuan;
-        }
-
-        const dutyValue = State.tnvedSelection.chosenCodeImp || 10;
-        const dutyRub = (dutyValue / 100) * totalCostUserRub;
-
-        const sumWithDuty = totalCostUserRub + dutyRub;
-        const ndsRub = sumWithDuty * 0.2;
-
-        const declRub = 550 * State.cbrRates.yuan;
-
-        const totalCustomsRub =
-          sumWithDuty + ndsRub + declRub - totalCostUserRub;
-
-        const shippingDollar = results[0].cost;
-        const shippingRub = shippingDollar * State.cbrRates.dollar;
-        const totalAllRub = totalCustomsRub + shippingRub;
-        // --- НОВЫЙ КОД Конец ---
       }
 
-      // 4) Packaging
-      const packingType = document.querySelector(
+      // Упаковка
+      const packingTypeEl = document.querySelector(
         'input[name="packing-type"]:checked'
-      )?.value;
-      if (!packingType) {
+      );
+      if (!packingTypeEl) {
         UIController.showError("Упаковка не выбрана!");
         return;
       }
-
+      const packingType = packingTypeEl.value;
       const packagingCost = this.calculatePackagingCost(
         packingType,
         totalVolume,
         parseInt(this.fields.quantity.value, 10)
       );
 
-      let totalCostUserRub = 0;
+      // 3) Если calc-customs, то нужно посчитать тамож. расходы
+      let customsObj = null; // результат calculateCustomsCost
+      if (calcType === "calc-customs") {
+        // Предположим, State.tnvedSelection.chosenCodeImp — % пошлины
+        const dutyValuePct = State.tnvedSelection.chosenCodeImp || 10;
 
-      if (calcType === "calc-cargo") {
-        // 5) Передаём результаты в UIController
-        UIController.showResults(results, {
-          calcType: "calc-cargo",
-          totalCost,
-          selectedCurrency,
-          costInDollar,
-          totalVolume,
-          totalWeight,
-          quantity: parseInt(this.fields.quantity.value, 10),
-          density, // при calc-customs может быть 0
-          categoryKey,
-          packagingCost,
-          currencyYuan: this.currencyYuan,
-          currencyRuble: this.currencyRuble,
-          brandIncluded:
-            this.fields.brand?.checked && calcType === "calc-cargo",
-          packingTypeValue: packingType,
-          calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
-          calculateTotalCost: this.calculateTotalCost.bind(this),
-        });
-      } else {
-        // 5) Передаём результаты в UIController
-        UIController.showResults(results, {
-          calcType: "calc-customs",
-          totalCost,
-          selectedCurrency,
-          costInDollar,
-          totalVolume,
-          totalWeight,
-          quantity: parseInt(this.fields.quantity.value, 10),
-          density, // при calc-customs может быть 0
-          categoryKey,
-          packagingCost,
-          currencyYuan: this.currencyYuan,
-          currencyRuble: this.currencyRuble,
-          brandIncluded:
-            this.fields.brand?.checked && calcType === "calc-cargo",
-          packingTypeValue: packingType,
-
-          // Все данные для UI
-
-          totalCostUserRub,
-          dutyValue,
-          dutyRub,
-          ndsRub,
-          declRub,
-          shippingRub,
-          totalCustomsRub,
-          totalAllRub,
-
-          calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
-          calculateTotalCost: this.calculateTotalCost.bind(this),
-        });
+        // Считаем всё
+        customsObj = this.calculateCustomsCost(
+          costInDollar, // costInDollar
+          dutyValuePct, // процент пошлины
+          this.cbrRuble, // сколько руб / $
+          this.cbrYuan // сколько руб / ¥
+        );
       }
-    } catch (error) {
-      UIController.showError(
-        "Произошла непредвиденная ошибка при расчёте: " + error.message
-      );
-      console.error(error);
+
+      // Логика вывода
+      //  - Расходы на доставку cargo (results),
+      //  - если calc-customs => складываем "стоимость доставки" + "тамож.расходы"
+      //    или отдельный объект data для UI
+
+      // 4) Подготовим данные для UIController
+      //    Если calc-cargo: таможенные поля = null
+      //    Если calc-customs: таможенные поля = customsObj
+      const dataForUI = {
+        calcType, // 'calc-cargo' | 'calc-customs'
+        totalCost: totalCostUser,
+        selectedCurrency, // dollar/ruble/yuan
+        costInDollar, // totalCostUser, но в $
+        totalVolume,
+        totalWeight,
+        quantity: parseInt(this.fields.quantity.value, 10),
+        density,
+        categoryKey,
+        packagingCost, // (доллары)
+        brandIncluded: this.fields.brand?.checked && calcType === "calc-cargo",
+        packingTypeValue: packingType,
+
+        // Курсы: Wisetao (cargo) и CBR (customs)
+        currencyRuble: this.wisetaoRuble,
+        currencyYuan: this.wisetaoYuan,
+        cbrRuble: this.cbrRuble,
+        cbrYuan: this.cbrYuan,
+
+        calculateInsuranceCost: this.calculateInsuranceCost.bind(this),
+        calculateTotalCost: this.calculateTotalCost.bind(this),
+      };
+
+      // Если есть таможенные данные, добавим их
+      if (calcType === "calc-customs" && customsObj) {
+        // Посчитаем «Итог перевозки»:
+        //   results[0].cost = доставка auto
+        //   results[1].cost = train
+        //   results[2].cost = avia
+        //   …но обычно выбирают одно из направлений (auto/train/avia).
+        //   если нужно общую сумму, можно взять, напр., results[0].cost
+        //   или показать для каждого
+        //   А если пользователь будет дальше выбирать?
+        // Для примера возьмём auto => results[0].cost
+        //   (или можно для каждого сложить: results[i].cost + customsObj.totalCustomsDollar)
+        // «Перевозка + таможка» = shippingCost + customsObj.totalCustomsDollar.
+        // Но лучше всё это делать в UI на каждый direction.
+        // Для примера оставлю aggregated:
+        const shippingDollarAuto = results[0].cost; // можно idx=0 (auto)
+        // Переводим в рубли:
+        const shippingRubAuto = shippingDollarAuto * this.cbrRuble;
+        // Итого (доставка + таможня) в долларах + рублях:
+        const totalAllDollar =
+          shippingDollarAuto + customsObj.totalCustomsDollar;
+        const totalAllRub = shippingRubAuto + customsObj.totalCustomsRub;
+
+        // Дополнительные поля для UI
+        dataForUI.dutyValue = State.tnvedSelection.chosenCodeImp || 10;
+        dataForUI.dutyUsd = customsObj.dutyDollar;
+        dataForUI.ndsUsd = customsObj.ndsDollar;
+        dataForUI.decDollar = customsObj.decDollar;
+        dataForUI.dutyRub = customsObj.dutyRub;
+        dataForUI.ndsRub = customsObj.ndsRub;
+        dataForUI.decRub = customsObj.decRub;
+        dataForUI.totalCustomsDollar = customsObj.totalCustomsDollar;
+        dataForUI.totalCustomsRub = customsObj.totalCustomsRub;
+
+        dataForUI.totalAllDollar = totalAllDollar;
+        dataForUI.totalAllRub = totalAllRub;
+      }
+
+      // Вызываем UI
+      UIController.showResults(results, dataForUI);
+
+      // В конец можно вывести полную отладочную таблицу в консоль:
+      console.table({
+        ТипРасчёта: calcType,
+        totalCostUser,
+        selectedCurrency,
+        costInDollar: costInDollar.toFixed(2),
+        totalVolume,
+        totalWeight,
+        packagingCost: packagingCost.toFixed(2),
+        brandIncluded: !!this.fields.brand?.checked,
+        packingTypeValue: packingType,
+        wisetaoRuble: this.wisetaoRuble,
+        wisetaoYuan: this.wisetaoYuan,
+        cbrRuble: this.cbrRuble,
+        cbrYuan: this.cbrYuan,
+        categoryKey,
+        density,
+        // Если есть customsObj, тоже выведем:
+        customsObj,
+      });
+    } catch (err) {
+      UIController.showError("Ошибка в расчёте: " + err.message);
+      console.error(err);
     }
   }
 }
@@ -1133,28 +1347,36 @@ import { DeliveryCalculator } from "./calculations/DeliveryCalculator.js";
 import { UIController } from "./ui/ui-controller.js";
 import { State } from "./data/State.js";
 
+async function getCbrRates() {
+  const response = await fetch("https://www.cbr-xml-daily.ru/daily_json.js");
+  const data = await response.json();
+  const usdToRub = parseFloat(data.Valute.USD.Value).toFixed(2);
+  const cnyToRub = parseFloat(data.Valute.CNY.Value).toFixed(2);
+
+  return {
+    currencyCbRuble: usdToRub,
+    currencyCbYuan: cnyToRub,
+  };
+}
+
 (async () => {
   const groupInfo = new TelegramGroupInfo(CONFIG.botToken, CONFIG.chatId);
   const groupName = await groupInfo.getGroupName();
 
-  let currencyYuan;
-  let currencyRuble;
+  let wisetaoYuan; // было currencyYuan
+  let wisetaoRuble; // было currencyRuble
+
+  let cbrYuan; // было currencyCbYuan
+  let cbrRuble; // было currencyCbRuble
 
   if (groupName) {
     const currencyParser = new CurrencyParser();
     try {
       currencyParser.parseAndCalculate(groupName);
-      currencyYuan = currencyParser.getYuanRate();
-      currencyRuble = currencyParser.getDollarRate();
-      console.log(`1$ = ${currencyYuan} юань`);
-      console.log(`1$ = ${currencyRuble} рубль`);
-
-      document.querySelector(
-        'input[name="current_rate_ruble"]'
-      ).value = `${currencyRuble}`;
-      document.querySelector(
-        'input[name="current_rate_yuan"]'
-      ).value = `${currencyYuan}`;
+      wisetaoYuan = currencyParser.getYuanRate(); // бывший currencyYuan
+      wisetaoRuble = currencyParser.getDollarRate(); // бывший currencyRuble
+      console.log(`Wisetao: 1¥ = ${wisetaoYuan} рубль`);
+      console.log(`Wisetao: 1$ = ${wisetaoRuble} рубль`);
     } catch (error) {
       UIController.showError(
         "Не удалось получить курс валют: " + error.message
@@ -1162,6 +1384,44 @@ import { State } from "./data/State.js";
     }
   } else {
     UIController.showError("Не удалось получить имя группы.");
+  }
+
+  // Получаем курсы валют от ЦБ РФ
+  try {
+    const cbrRates = await getCbrRates();
+    cbrRuble = cbrRates.currencyCbRuble; // допустим "75.50"
+    cbrYuan = cbrRates.currencyCbYuan; // допустим  "10.20"
+
+    // Обновляем State с курсами от ЦБ
+    State.updateRates(cbrRuble, cbrYuan);
+
+    console.log(`Курс ЦБ: 1$ = ${State.cbrRates.dollar} рубль`);
+    console.log(`Курс ЦБ: 1¥ = ${State.cbrRates.yuan} Рубль`);
+  } catch (error) {
+    UIController.showError(
+      "Не удалось получить курс валют от ЦБ: " + error.message
+    );
+  }
+
+  if (!wisetaoYuan || !wisetaoRuble || !cbrYuan || !cbrRuble) {
+    UIController.showError("Курсы валют не загружены, расчет невозможен.");
+    return;
+  }
+
+  // Узнаём, какая радиокнопка сейчас выбрана
+  const defaultCalcTypeRadio = document.querySelector(
+    'input[name="calc-type"]:checked'
+  );
+  if (defaultCalcTypeRadio && defaultCalcTypeRadio.value === "calc-customs") {
+    // Показываем cbr:
+    document.querySelector('input[name="current_rate_ruble"]').value = cbrRuble;
+    document.querySelector('input[name="current_rate_yuan"]').value = cbrYuan;
+  } else {
+    // Показываем wisetao:
+    document.querySelector('input[name="current_rate_ruble"]').value =
+      wisetaoRuble;
+    document.querySelector('input[name="current_rate_yuan"]').value =
+      wisetaoYuan;
   }
 
   const jsonLoader = new JsonDataLoader(CONFIG.jsonPath);
@@ -1191,16 +1451,15 @@ import { State } from "./data/State.js";
 
   const calculator = new DeliveryCalculator(
     jsonLoader,
-    currencyRuble,
-    currencyYuan,
+
+    wisetaoRuble,
+    wisetaoYuan,
+
+    cbrRuble,
+    cbrYuan,
     fields
   );
   const validation = new CalculatorValidation(fields);
-
-  if (!currencyRuble || !currencyYuan) {
-    UIController.showError("Курсы валют не загружены, расчет невозможен.");
-    return;
-  }
 
   fields.weightVolumeChange.addEventListener("change", () => {
     if (fields.weightVolumeChange.checked) {
@@ -1248,7 +1507,6 @@ import { State } from "./data/State.js";
       }
     });
 
-  // Предположим, что validation и State уже созданы
   // Собираем все поля, которые при изменении должны сбрасывать результат
   const allFieldsToReset = [
     fields.totalCost,
@@ -1258,17 +1516,12 @@ import { State } from "./data/State.js";
     fields.volumeLength,
     fields.volumeWidth,
     fields.volumeHeight,
-    fields.quantity,
     fields.tnvedInput,
     fields.brand,
-    fields.insurance,
-    // и т. д. ...
   ];
 
-  // Вешаем 'input' на обычные поля, 'change' на radio/checkbox
   allFieldsToReset.forEach((fld) => {
-    if (!fld) return; // вдруг чего-то нет
-    // Определим подходящее событие
+    if (!fld) return;
     const eventName =
       fld.type === "radio" || fld.type === "checkbox" ? "change" : "input";
     fld.addEventListener(eventName, () => {
@@ -1281,10 +1534,24 @@ import { State } from "./data/State.js";
   calcTypeRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
       validation.hideCalculationResult();
-      // Плюс если нужно очистить поля:
       validation.clearErrors();
-      const allFields = Object.values(fields);
+      const allFields = Object.values(allFieldsToReset);
       validation.clearFields(allFields);
+
+      // --- НОВЫЙ КОД: заменяем курс в полях
+      if (radio.value === "calc-cargo") {
+        // Используем wisetaoRuble / wisetaoYuan
+        document.querySelector('input[name="current_rate_ruble"]').value =
+          wisetaoRuble;
+        document.querySelector('input[name="current_rate_yuan"]').value =
+          wisetaoYuan;
+      } else {
+        // Используем cbrRuble / cbrYuan
+        document.querySelector('input[name="current_rate_ruble"]').value =
+          cbrRuble;
+        document.querySelector('input[name="current_rate_yuan"]').value =
+          cbrYuan;
+      }
     });
   });
 })();
