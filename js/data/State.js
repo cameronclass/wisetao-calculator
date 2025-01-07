@@ -13,6 +13,17 @@ export const State = {
     yuan: 14,
   },
 
+  currencyRates: {
+    wisetao: {
+      dollar: ,
+      yuan: ,
+    },
+    cbr: {
+      dollar: ,
+      yuan: ,
+    }
+  }
+
   setDirectionData(direction, data) {
     this.directionsData[direction] = data;
   },

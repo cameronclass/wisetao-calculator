@@ -90,13 +90,13 @@ async function getCbrRates() {
 
   const fields = {
     totalCost: document.querySelector('input[name="total_cost"]'),
-    totalCurrency: document.querySelector('input[name="total_currecy"]'),
+    totalCurrency: document.querySelector('input[name="total_currency"]'),
     totalWeight: document.querySelector('input[name="total_weight"]'),
     totalVolume: document.querySelector('input[name="total_volume"]'),
     totalVolumeCalculated: document.querySelector(
       'input[name="total_volume_calculated"]'
     ),
-    volumeLength: document.querySelector('input[name="volume_lenght"]'),
+    volumeLength: document.querySelector('input[name="volume_length"]'),
     volumeWidth: document.querySelector('input[name="volume_width"]'),
     volumeHeight: document.querySelector('input[name="volume_height"]'),
     weightVolumeChange: document.querySelector(

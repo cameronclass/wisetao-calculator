@@ -286,11 +286,11 @@ export class DeliveryCalculator {
 
   /**
    * Дополнительный метод: считаем «таможенные расходы»
-   * @param {number} costInDollar  — стоимость товара в $ (которую ввёл клиент)
+   * @param {number} costInDollar  — стоимость товара в $ (которую ввёл клиент) 
    * @param {number} dutyValuePct  — процент пошлины (например, 15%)
    * @param {number} cbrRateDollar — например, 100 руб/долл
    * @param {number} cbrRateYuan   — например, 15 руб/юань
-   * @returns {object} { totalCustomsDollar, decDollar, totalCustomsRub, ...}
+   * @returns {object}
    */
   calculateCustomsCost(costInDollar, dutyValuePct, cbrRateDollar, cbrRateYuan) {
     // 1) Пошлина: dutyValuePct% от стоимости
@@ -316,22 +316,11 @@ export class DeliveryCalculator {
     const totalCustomsDollar =
       costInDollar + dutyDollar + ndsDollar + decDollar - costInDollar;
 
-    // 6) Переводим всё в рубли
-    const totalCustomsRub = totalCustomsDollar * cbrRateDollar;
-    const decRub = decDollar * cbrRateDollar;
-    // dutyRub/ndsRub по аналогии
-    const dutyRub = dutyDollar * cbrRateDollar;
-    const ndsRub = ndsDollar * cbrRateDollar;
 
     return {
       dutyDollar,
       ndsDollar,
       decDollar,
-      dutyRub,
-      ndsRub,
-      decRub,
-      totalCustomsDollar,
-      totalCustomsRub,
     };
   }
 
