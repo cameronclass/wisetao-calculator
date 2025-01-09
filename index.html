@@ -14,6 +14,7 @@
     <script type="module" src="./js/calculations/FormValidation.js"></script>
     <script type="module" src="./js/api/TnvedManager.js"></script>
     <script type="module" src="./js/calculations/Calculator.js"></script>
+    <script type="module" src="./js/ui/UiRenderer.js"></script>
     <script type="module" src="./js/main.js"></script>
 
 </head>
@@ -145,7 +146,7 @@
                         <span class="main-calc__title_icon"></span>
                         <span class="main-calc__title_text">Коды ТН ВЭД</span>
                     </h4>
-                    <span class="main-calc__subtitle">Внимание! Могут действовать ограничения на 84, 85 и 90 группу, возможен индивидуальный просчет</span>
+                    <!--                     <span class="main-calc__subtitle">Внимание! Могут действовать ограничения на 84, 85 и 90 группу, возможен индивидуальный просчет</span> -->
 
                     <div class="main-calc-bordered white-cargo__block">
 
@@ -707,12 +708,16 @@
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_chosen-imp"></span>
+                                                    <span class="_chosen-imp-dollar"></span>
+                                                    <span class="_chosen-imp-ruble"></span>
                                                 </div>
                                             </div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">НДС:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
-                                                    <span class="_nds">20%</span>
+                                                    <span class="_nds"></span>
+                                                    <span class="_nds-dollar"></span>
+                                                    <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
                                             <div class="main-calc-result-tooltip__row">
@@ -741,7 +746,6 @@
                                         <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
@@ -860,12 +864,16 @@
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_chosen-imp"></span>
+                                                    <span class="_chosen-imp-dollar"></span>
+                                                    <span class="_chosen-imp-ruble"></span>
                                                 </div>
                                             </div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">НДС:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
-                                                    <span class="_nds">20%</span>
+                                                    <span class="_nds"></span>
+                                                    <span class="_nds-dollar"></span>
+                                                    <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
                                             <div class="main-calc-result-tooltip__row">
@@ -1016,12 +1024,16 @@
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_chosen-imp"></span>
+                                                    <span class="_chosen-imp-dollar"></span>
+                                                    <span class="_chosen-imp-ruble"></span>
                                                 </div>
                                             </div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">НДС:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
-                                                    <span class="_nds">20%</span>
+                                                    <span class="_nds"></span>
+                                                    <span class="_nds-dollar"></span>
+                                                    <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
                                             <div class="main-calc-result-tooltip__row">

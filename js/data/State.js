@@ -2,6 +2,7 @@ export const State = {
   directionsData: {},
 
   insuranceRate: 0.02,
+  nds: 20,
 
   currencyRates: {
     wisetao: {

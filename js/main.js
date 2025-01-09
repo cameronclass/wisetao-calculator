@@ -2,6 +2,7 @@
 import { Calculator } from "./calculations/Calculator.js";
 import { FormValidation } from "./calculations/FormValidation.js";
 import { State } from "./data/State.js";
+import { UiRenderer } from "./ui/UiRenderer.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),
@@ -42,6 +43,9 @@ document
       calculator.runShippingLogic();
 
       console.log("State.calculatedData:", State.calculatedData);
+
+      const uiRenderer = new UiRenderer();
+      uiRenderer.renderAll();
 
       const resultBlock = document.querySelector(".main-calc-result");
 
