@@ -1,6 +1,7 @@
 // Currency.js
-import { State } from "./State.js";
-import { CONFIG } from "./config.js";
+import { CONFIG } from "../data/config.js";
+import { State } from "../data/State.js";
+
 
 class Currency {
   constructor(botToken, chatId, multiplier = 7.3) {

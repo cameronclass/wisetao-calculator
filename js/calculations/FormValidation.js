@@ -1,5 +1,5 @@
 // FormValidation.js
-import { State } from "./State.js";
+import { State } from "../data/State.js";
 
 export class FormValidation {
   constructor(fields) {
@@ -114,7 +114,6 @@ export class FormValidation {
         });
       }
     });
-
   }
 
   // --------------------------------------------------

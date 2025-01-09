@@ -1,7 +1,7 @@
 // main.js
-import { State } from "./State.js";
-import { FormValidation } from "./FormValidation.js";
-import { Calculator } from "./Calculator.js";
+import { Calculator } from "./calculations/Calculator.js";
+import { FormValidation } from "./calculations/FormValidation.js";
+import { State } from "./data/State.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),
@@ -35,10 +35,7 @@ document
 
     const valid = formValidation.validateAll();
     if (valid) {
-      console.log(
-        "State.clientData:",
-        State.clientData
-      );
+      console.log("State.clientData:", State.clientData);
 
       const calculator = new Calculator();
       calculator.runBaseLogic();

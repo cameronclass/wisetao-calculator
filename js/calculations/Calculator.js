@@ -1,5 +1,5 @@
 // Calculator.js
-import { State } from "./State.js";
+import { State } from "../data/State.js";
 
 export class Calculator {
   runBaseLogic() {

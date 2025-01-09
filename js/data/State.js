@@ -1,39 +1,217 @@
-// project/src/data/State.js
 export const State = {
   directionsData: {},
 
-  tnvedSelection: {
-    selectedItem: null,
-    inputValue: "",
-    chosenCodeImp: 10, // пусть по умолчанию 10
-  },
-
-  cbrRates: {
-    dollar: 100,
-    yuan: 14,
-  },
+  insuranceRate: 0.02,
 
   currencyRates: {
     wisetao: {
-      dollar: ,
-      yuan: ,
+      dollar: "",
+      yuan: "",
     },
     cbr: {
-      dollar: ,
-      yuan: ,
-    }
-  }
-
-  setDirectionData(direction, data) {
-    this.directionsData[direction] = data;
+      dollar: "",
+      yuan: "",
+    },
   },
 
-  getDirectionData(direction) {
-    return this.directionsData[direction] || null;
+  clientData: {
+    calcType: "",
+    totalCost: "",
+    currency: "",
+    totalWeight: "",
+    totalVolume: "",
+    volumeLength: "",
+    volumeWidth: "",
+    volumeHeight: "",
+    quantity: "",
+    categoryKey: "",
+    packingType: "",
+    insurance: "",
+    brand: "",
+    tnvedInput: "",
+    tnvedSelectedName: null,
+    tnvedSelectedCode: null,
+    tnvedSelectedImp: null,
   },
 
-  updateRates(dollar, yuan) {
-    this.cbrRates.dollar = dollar;
-    this.cbrRates.yuan = yuan;
+  tnvedSelection: {
+    inputValue: "",
+    selectedItem: "",
+    chosenCodeImp: "",
+  },
+
+  calculatedData: {
+    clientCostDollar: "",
+    dollar: "",
+    yuan: "",
+    density: "",
+    avia: {
+      calculationMode: "",
+      shippingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      pricePerKg: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      packagingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      insuranceCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      cargoCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      declaration: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      duty: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      nds: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      customsCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      totalCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+    },
+    auto: {
+      calculationMode: "",
+      shippingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      pricePerKg: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      packagingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      insuranceCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      cargoCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      declaration: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      duty: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      nds: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      customsCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      totalCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+    },
+    train: {
+      calculationMode: "",
+      shippingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      pricePerKg: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      packagingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      insuranceCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      cargoCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      declaration: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      duty: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      nds: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      customsCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      totalCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+    },
   },
 };

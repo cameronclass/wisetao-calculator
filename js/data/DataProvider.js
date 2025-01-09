@@ -102,5 +102,5 @@ class DataProvider {
   const dataProvider = new DataProvider();
   await dataProvider.loadAndSave();
 
-  /* console.log("Тарифы успешно сохранены в State:", State.directionsData); */
+  console.log("Тарифы успешно сохранены в State:", State.directionsData);
 })();

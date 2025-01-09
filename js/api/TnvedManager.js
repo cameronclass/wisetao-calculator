@@ -1,5 +1,5 @@
 // TnvedManager.js
-import { State } from "./State.js"; // <-- подправьте путь к вашему State
+import { State } from "../data/State.js";
 
 class TnvedManager {
   constructor(config) {
@@ -260,7 +260,7 @@ class TnvedManager {
       //   tnvedSelectedName
       //   tnvedSelectedCode
       //   tnvedSelectedImp
-/*       if (!State.clientData) {
+      /*       if (!State.clientData) {
         State.clientData = {};
       } */
 
