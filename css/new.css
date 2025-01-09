@@ -1691,7 +1691,7 @@ input[type="number"] {
 .main-calc-result-tooltip__white {
   display: none;
 }
-.main-calc-result-tooltip__white.active{
+.main-calc-result-tooltip__white.active {
   display: block;
 }
 
@@ -2018,9 +2018,10 @@ input[type="number"] {
     top: -205px;
   }
 
-  .result_auto .overflow-info {
+  .result_auto .overflow-info,
+  .main-calc-result__column .overflow-info {
     left: 0px;
-    top: -205px;
+    top: 100%;
   }
 
   .cargo-cell .calc-tooltip {
@@ -2028,5 +2029,9 @@ input[type="number"] {
   }
   .main-calc-result__currency_tooltip .calc-tooltip {
     left: 10px;
+  }
+
+  .white-cargo__justinfo .group-input {
+    display: flex;
   }
 }

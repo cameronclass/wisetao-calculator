@@ -93,13 +93,13 @@ export class Calculator {
   runCustomsLogic() {
     const directions = ["auto", "train", "avia"];
     const costInDollar = State.calculatedData.clientCostDollar;
-    const dutyValuePct = parseFloat(State.clientData.tnvedSelectedImp) || 10;
-    const cbrRateDollar = State.calculatedData.dollar || 100;
-    const cbrRateYuan = State.calculatedData.yuan || 15;
+    const dutyValuePct = parseFloat(State.clientData.tnvedSelectedImp);
+    const cbrRateDollar = State.calculatedData.dollar;
+    const cbrRateYuan = State.calculatedData.yuan;
 
     // Для каждого направления считаем таможенные расходы
     directions.forEach((dir) => {
-      const cargoDollar = State.calculatedData[dir].cargoCost.dollar || 0;
+      const cargoDollar = State.calculatedData[dir].cargoCost.dollar;
       const { dutyDollar, ndsDollar, decDollar, totalCustomsDollar } =
         this.calculateCustomsCost(
           costInDollar,

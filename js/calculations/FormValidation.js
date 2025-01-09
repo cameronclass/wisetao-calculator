@@ -161,6 +161,9 @@ export class FormValidation {
       };
     }
 
+    const tnvedBlock = document.querySelector(".white-cargo__justinfo");
+    tnvedBlock.classList.remove("active");
+
     console.log("Форма и State.clientData сброшены при переключении calc-type");
   }
 
