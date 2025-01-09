@@ -150,14 +150,6 @@ overlayCalc.addEventListener("click", (event) => {
 });
 
 document.querySelector(".js-get-pdf").addEventListener("click", async () => {
-  const checkedRadio = document.querySelector(
-    'input[name="all-price"]:checked'
-  );
-  if (!checkedRadio) {
-    console.error("Не выбрано направление для генерации PDF");
-    return;
-  }
-
   // Показать оверлей и запустить обратный отсчет
   overlayCalc.classList.add("active");
   overlayMessageCalc.innerHTML = `Идёт передача данных менеджеру <br> пожалуйста, подождите...`;

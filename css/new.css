@@ -1135,7 +1135,7 @@ input[type="number"] {
   font-weight: 500;
 }
 .main-calc-result__getblock {
-  display: flex;
+  display: none;
   justify-content: center;
   margin-top: 20px;
 }
@@ -1862,6 +1862,8 @@ input[type="number"] {
   right: 10px;
   top: 10px;
 }
+
+
 
 /* Mobile */
 @media screen and (max-width: 768px) {
