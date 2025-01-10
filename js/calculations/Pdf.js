@@ -1,173 +1,248 @@
-import { State } from "../data/State.js";
 
-async function generateOffer(data) {
-  const params = new URLSearchParams();
 
-  // Добавляем данные, связанные с предложением
-  params.append("ExchangeRateYuan", data.exchangeRateYuan);
-  params.append("ExchangeRateDollar", data.exchangeRateDollar);
-  params.append("TOTAL", data.total);
-  if (data.tkData) {
-    params.append("TOTALTK", data.totalTk);
-    params.append("tkData[kgTk]", data.tkData.kgTk);
-    params.append("tkData[varyKg]", data.tkData.varyKg);
-    params.append("Sum", data.sum);
-    params.append("tkData[sumTk]", data.tkData.sumTk);
-    params.append("tkData[varySum]", data.tkData.varySum);
-    params.append("tkData[kgTotal]", data.tkData.kgTotal);
-    params.append("tkData[sumTotal]", data.tkData.sumTotal);
-  }
-  params.append("GoodsCost", data.goodsCost);
-  params.append("Weight", data.weight);
-  params.append("Volume", data.volume);
-  params.append("Count", data.count);
-  params.append("RedeemCommission", data.redeemCommission);
-  params.append("DeliveryType", data.deliveryType);
-  params.append("PackageType", data.packageType);
-  params.append("PackageCost", data.packageCost);
-  params.append("Insurance", data.insurance);
-  params.append("Kg", data.kg);
+const API_ENDPOINTS = {
+  getOffer: "https://api-calc.wisetao.com:4343/api/get-offer",
+  getOfferWhite: "https://api-calc.wisetao.com:4343/api/get-offer-white",
+};
 
-  // Добавляем товары
-  data.items.forEach((item, index) => {
-    params.append(`Items[${index}][TNVED_NAME]`, item.TNVED_NAME);
-    params.append(`Items[${index}][IMP_PRINT]`, item.IMP_PRINT);
-    params.append(`Items[${index}][DUTY]`, item.DUTY);
-    params.append(`Items[${index}][NDS]`, item.NDS);
-    params.append(`Items[${index}][LICENSE]`, item.LICENSE);
-    params.append(`Items[${index}][SAFETY]`, item.SAFETY);
-    // Добавьте другие поля товара по мере необходимости
-  });
-
-  try {
-    const response = await fetch(
-      "https://api-calc.wisetao.com:4343/api/get-offer",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        },
-        body: params.toString(),
-      }
-    );
-
-    if (response.ok) {
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "Offer.pdf";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } else {
-      const errorText = await response.text();
-      console.error("Ошибка при генерации предложения:", errorText);
-    }
-  } catch (error) {
-    console.error("Сетевая ошибка:", error);
-  }
+function formatData(text, number, unit) {
+  return `${text}${number} ${unit}`;
 }
 
-// Пример использования:
-const offerData = {
-  exchangeRateYuan: "6.5",
-  exchangeRateDollar: "1.0",
-  total: "1000",
-  tkData: {
-    totalTk: "200",
-    kgTk: "50",
-    varyKg: "5",
-    sumTk: "300",
-    varySum: "30",
-    kgTotal: "55",
-    sumTotal: "330",
+// Данные для запроса get-offer
+const getOfferDataComponents = {
+  DeliveryType: {
+    text: "Тип доставки: ",
+    value: "Air (до г. [город])",
+    unit: "",
   },
-  goodsCost: "500",
-  weight: "100",
-  volume: "200",
-  count: "10",
-  redeemCommission: "50.00 ₽",
-  deliveryType: "Air",
-  packageType: "Box",
-  packageCost: "20",
-  insurance: "Yes",
-  kg: "150",
-  items: [
-    {
-      TNVED_NAME: "[1234] Product A",
-      IMP_PRINT: "Import",
-      DUTY: "100",
-      NDS: "20",
-      LICENSE: true,
-      SAFETY: false,
+  ExchangeRateYuan: { text: "Курс юаня SAIDE: ", value: "6.5", unit: "₽" },
+  ExchangeRateDollar: { text: "Курс доллара SAIDE: ", value: "1.0", unit: "₽" },
+  TOTAL: { text: "Стоимость до г. [город]: ", value: "1000", unit: "$; 950₽" },
+  TOTALTK: {
+    text: "Стоимость до г. [город] (Терм. ТК [тип]): ",
+    value: "1000",
+    unit: "$; 950₽",
+  },
+  GoodsCost: { text: "Стоимость товара: ", value: "500", unit: "₽" },
+  Weight: { text: "Вес: ", value: "200", unit: "кг" },
+  Volume: { text: "Объем: ", value: "1.5", unit: "м³" },
+  Count: { text: "Количество: ", value: "10", unit: "" },
+  RedeemCommissionFirst: { text: "Комиссия SAIDE ", value: "5", unit: "%" },
+  RedeemCommission: {
+    text: "от стоимости товара: ",
+    value: "50.00",
+    unit: "$; 10.00₽",
+  },
+  PackageType: { text: "Упаковка: ", value: "Box", unit: "" },
+  PackageCost: { text: "За упаковку: ", value: "100", unit: "₽" },
+  Insurance: { text: "Страховка: ", value: "50.00", unit: "$; 100.00₽" },
+  Kg: { text: "За кг: ", value: "200.00", unit: "$; 200.00₽ (до г. [город])" },
+  Sum: { text: "Стоимость до г. [город] ", value: "1000", unit: "$; 950₽" },
+  tkType: { text: "", value: "[тип]", unit: "" },
+  // Вложенные данные tkData
+  tkData: {
+    kgTk: {
+      text: "За кг: ",
+      value: "50.00",
+      unit: "$; 50.00₽ (г. [город] - г. [город])",
     },
-    // Добавьте больше товаров по мере необходимости
+    sumTk: {
+      text: "Стоимость: ",
+      value: "100.00",
+      unit: "$; 100.00₽ (г. [город] - г. [город])",
+    },
+    kgTotal: {
+      text: "За кг до г. [город] (Терм. ТК [тип]): ",
+      value: "50.00",
+      unit: "$; 50.00₽",
+    },
+    sumTotal: {
+      text: "Общая стоимость до г. [город] (Терм. ТК [тип]): ",
+      value: "100.00",
+      unit: "$; 100.00₽",
+    },
+    varyKg: { text: "", value: "", unit: "(стоимость может варьир.)" },
+    varySum: { text: "", value: "", unit: "(стоимость может варьир.)" },
+  },
+  USD_RATE: { value: 75 },
+  Items: [], // Пустой массив Items
+};
+
+// Данные для запроса get-offer-white
+const getOfferWhiteDataComponents = {
+  sumDuty: { text: "ПОШЛИНА: ", value: "200", unit: "$" },
+  NDS: { text: "НДС: ", value: "20", unit: "%" },
+  Saide: { text: "ПЕРЕВОЗКА SAIDE: ", value: "0.7", unit: "$/кг" },
+  totalDuty: { text: "СУММ. ПОШЛИНА: ", value: "200", unit: "$" },
+  totalNds: { text: "CУММ. НДС: ", value: "400", unit: "$" },
+  totalCustoms: { text: "ТАМОЖНЯ: ", value: "600", unit: "$; 45000 ₽" },
+  fees: { text: "Сборы: ", value: "50", unit: "$" },
+  ExchangeRateYuan: { text: "Курс юаня SAIDE: ", value: "11", unit: " ₽" },
+  ExchangeRateDollar: { text: "Курс доллара SAIDE: ", value: "75", unit: " ₽" },
+  TOTAL: {
+    text: "Стоимость до г. Благовещенск (Тамож.+Saide): ",
+    value: "250",
+    unit: "$; 56250 ₽",
+  },
+  TOTALTK: {
+    text: "Стоимость до г. Благовещенск (Тамож.+Saide): ",
+    value: "250",
+    unit: "$; 56250 ₽",
+  },
+  GoodsCost: { text: "Стоимость товара: ", value: "2000", unit: "$; 150000 ₽" },
+  Weight: { text: "Вес: ", value: "100", unit: "кг" },
+  Volume: { text: "Объем: ", value: "1.5", unit: " м³" },
+  RedeemCommissionFirst: { text: "", value: "", unit: "" },
+  RedeemCommission: { text: "", value: "", unit: "" },
+  SumSaide: {
+    text: "Стоимость перевозки SAIDE (до г. Благовещенск 0.7$/кг): ",
+    value: "70",
+    unit: "$; 5250 ₽",
+  },
+  PackageType: { text: "Упаковка: ", value: "Картонная коробка", unit: "" },
+  PackageCost: { text: "За упаковку: ", value: "50", unit: "₽" },
+  Kg: {
+    text: "За кг: ",
+    value: "2.50",
+    unit: "$; 187.50 ₽ (Тамож. + SAIDE до г. Благовещенск)",
+  },
+  Sum: {
+    text: "Стоимость: ",
+    value: "250",
+    unit: "$; 56250 ₽ (Тамож. + SAIDE до г. Благовещенск)",
+  },
+  tkType: { text: "", value: "ТК Пример", unit: "" },
+  tkData: null, // Пустое поле
+  USD_RATE: { value: 105 },
+  Items: [
+    {
+      TNVED_NAME: "[12345678] Наименование товара 1",
+      IMP_PRINT: "IMP1",
+      DUTY: 200,
+      NDS_PRINT: "NDS1",
+      NDS: 400,
+      LICENSE: "",
+      SAFETY_PR: "",
+      SAFETY: "",
+      LICIMP_PR: false,
+    },
   ],
 };
 
-// Ссылки на элементы
-const overlayCalc = document.querySelector(".main-calc__over");
-const overlayMessageCalc = overlayCalc.querySelector(
-  ".main-calc__over_pdf span:first-child"
-);
-const overlayCountdownCalc = overlayCalc.querySelector(
-  ".main-calc__over_pdf_count"
-);
+function buildString(component) {
+  if (component.text || component.unit) {
+    return `${component.text}${component.value}${component.unit}`;
+  }
+  return component.value;
+}
 
-let countdownTimer = null;
+function generateParams(dataComponents) {
+  const params = new URLSearchParams();
 
-// Функция для запуска обратного отсчёта
-function startCountdown(seconds = 10) {
-  overlayCountdownCalc.textContent = seconds;
-  countdownTimer = setInterval(() => {
-    seconds--;
-    if (seconds <= 0) {
-      clearInterval(countdownTimer);
-      countdownTimer = null;
-      // Когда время истекло, но ответа нет, можно оставить так
-      // либо добавить какой-то обработчик
+  for (const key in dataComponents) {
+    if (key === "Items") {
+      // Обработка массива Items
+      dataComponents.Items.forEach((item, index) => {
+        for (const itemKey in item) {
+          const composedKey = `Items[${index}][${itemKey}]`;
+          let value = item[itemKey];
+          if (typeof value === "boolean") {
+            value = value.toString();
+          }
+          params.append(composedKey, value);
+        }
+      });
+    } else if (key === "tkData") {
+      if (dataComponents.tkData === null) {
+        // Отправляем tkData как пустую строку
+        params.append("tkData", "");
+      } else {
+        // Обработка вложенного объекта tkData
+        for (const tkKey in dataComponents.tkData) {
+          const composedKey = `tkData[${tkKey}]`;
+          params.append(composedKey, buildString(dataComponents.tkData[tkKey]));
+        }
+      }
+    } else if (key === "USD_RATE" || key === "YUAN_RATE") {
+      // Обработка числовых значений без текста
+      params.append(key, dataComponents[key].value.toString());
+    } else if (
+      typeof dataComponents[key] === "object" &&
+      !Array.isArray(dataComponents[key])
+    ) {
+      // Для других вложенных объектов, если такие есть
+      params.append(key, buildString(dataComponents[key]));
     } else {
-      overlayCountdownCalc.textContent = seconds;
+      // Обычные поля
+      params.append(key, dataComponents[key]);
     }
-  }, 1000);
+  }
+
+  return params;
 }
 
-// Функция для остановки и сброса обратного отсчёта
-function stopCountdown() {
-  if (countdownTimer) {
-    clearInterval(countdownTimer);
-    countdownTimer = null;
+async function handleResponse(response) {
+  if (!response.ok) {
+    console.error("Ошибка сервера:", response.statusText);
+    alert(`Ошибка сервера: ${response.statusText}`);
+    return;
   }
-}
 
-// Обработчик при нажатии на оверлей для его скрытия после успеха
-overlayCalc.addEventListener("click", (event) => {
-  // Проверим, есть ли в тексте слово "Успешно" - чтобы не закрыть до ответа.
-  if (overlayMessageCalc.textContent.includes("Успешно получено")) {
-    overlayCalc.classList.remove("active");
-  }
-});
-
-document.querySelector(".js-get-pdf").addEventListener("click", async () => {
-  // Показать оверлей и запустить обратный отсчет
-  overlayCalc.classList.add("active");
-  overlayMessageCalc.innerHTML = `Идёт передача данных менеджеру <br> пожалуйста, подождите...`;
-  startCountdown(10);
-
-  // Отправить запрос
   try {
-    await generateOffer(offerData);
-    // Если успешно - обновляем текст
-    stopCountdown();
-    overlayMessageCalc.textContent =
-      "Успешно получено. Нажмите на экран чтобы закрыть окно";
-    // Счётчик уберём, можно очистить текст или оставить в предыдущем состоянии
-    overlayCountdownCalc.textContent = "";
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+
+    // Открываем PDF в новой вкладке
+    const openLink = document.createElement("a");
+    openLink.href = url;
+    openLink.target = "_blank";
+    document.body.appendChild(openLink);
+    openLink.click();
+    document.body.removeChild(openLink);
+
+    // Скачивание PDF
+    /* const downloadLink = document.createElement("a");
+                downloadLink.href = url;
+                downloadLink.download = "Коммерческое предложение.pdf";
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink); */
+
+    // Освобождаем URL
+    URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Ошибка при получении PDF:", error);
-    stopCountdown();
-    overlayMessageCalc.textContent = "Произошла ошибка при получении PDF";
-    overlayCountdownCalc.textContent = "";
+    console.error("Ошибка при обработке ответа:", error);
+    alert("Произошла ошибка при обработке ответа от сервера.");
   }
+}
+
+async function sendPostRequest(url, dataComponents) {
+  const params = generateParams(dataComponents);
+  console.log("Отправляемые параметры:", params.toString()); // Для отладки
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+      body: params.toString(),
+    });
+
+    await handleResponse(response);
+  } catch (error) {
+    console.error("Ошибка при отправке запроса:", error);
+    alert("Произошла ошибка при отправке запроса.");
+  }
+}
+
+/* // Обработчик для кнопки "Получить предложение"
+document.getElementById("getOfferBtn").addEventListener("click", () => {
+  sendPostRequest(API_ENDPOINTS.getOffer, getOfferDataComponents);
 });
+
+// Обработчик для кнопки "Получить белое предложение"
+document.getElementById("getOfferWhiteBtn").addEventListener("click", () => {
+  sendPostRequest(API_ENDPOINTS.getOfferWhite, getOfferWhiteDataComponents);
+}); */
