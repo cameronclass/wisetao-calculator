@@ -3,6 +3,8 @@ import { Calculator } from "./calculations/Calculator.js";
 import { FormValidation } from "./calculations/FormValidation.js";
 import { State } from "./data/State.js";
 import { UiRenderer } from "./ui/UiRenderer.js";
+import { offerManager } from "./calculations/PdfClass.js";
+import { UIManager } from "./calculations/PdfUI.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),
@@ -28,37 +30,43 @@ const fields = {
 
 const formValidation = new FormValidation(fields);
 
-// при клике на кнопку «Рассчитать»
-document
-  .querySelector(".js-calculate-result")
-  .addEventListener("click", (e) => {
-    e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
+  // при клике на кнопку «Рассчитать»
+  document
+    .querySelector(".js-calculate-result")
+    .addEventListener("click", (e) => {
+      e.preventDefault();
 
-    const valid = formValidation.validateAll();
-    if (valid) {
-      console.log("State.clientData:", State.clientData);
+      const valid = formValidation.validateAll();
+      if (valid) {
+        console.log("State.clientData:", State.clientData);
 
-      const calculator = new Calculator();
-      calculator.runBaseLogic();
-      calculator.runShippingLogic();
+        const calculator = new Calculator();
+        calculator.runBaseLogic();
+        calculator.runShippingLogic();
 
-      console.log("State.calculatedData:", State.calculatedData);
+        console.log("State.calculatedData:", State.calculatedData);
 
-      const uiRenderer = new UiRenderer();
-      uiRenderer.renderAll();
+        const uiRenderer = new UiRenderer();
+        uiRenderer.renderAll();
 
-      const resultBlock = document.querySelector(".main-calc-result");
+        const resultBlock = document.querySelector(".main-calc-result");
 
-      if (resultBlock) {
-        resultBlock.classList.add("active");
-        resultBlock.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (resultBlock) {
+          resultBlock.classList.add("active");
+          resultBlock.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      } else {
+        console.log("Форма заполнена с ошибками");
+
+        const wrapperBlock = document.querySelector(".main-calc__wrapper");
+        if (wrapperBlock) {
+          wrapperBlock.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
-    } else {
-      console.log("Форма заполнена с ошибками");
+    });
 
-      const wrapperBlock = document.querySelector(".main-calc__wrapper");
-      if (wrapperBlock) {
-        wrapperBlock.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  });
+  /* PDF Генерация */
+  const uiManager = new UIManager(offerManager, State);
+  uiManager.init();
+});

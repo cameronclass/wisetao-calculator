@@ -3,15 +3,16 @@ export const State = {
 
   insuranceRate: 0.02,
   nds: 20,
+  whiteCargoRate: 0.6,
 
   currencyRates: {
     wisetao: {
-      dollar: "",
-      yuan: "",
+      dollar: 100,
+      yuan: 15,
     },
     cbr: {
-      dollar: "",
-      yuan: "",
+      dollar: 100,
+      yuan: 15,
     },
   },
 
@@ -30,9 +31,9 @@ export const State = {
     insurance: "",
     brand: "",
     tnvedInput: "",
-    tnvedSelectedName: null,
-    tnvedSelectedCode: null,
-    tnvedSelectedImp: null,
+    tnvedSelectedName: "",
+    tnvedSelectedCode: "",
+    tnvedSelectedImp: "",
   },
 
   tnvedSelection: {
@@ -43,10 +44,10 @@ export const State = {
 
   calculatedData: {
     clientCostDollar: "",
-    dollar: "",
-    yuan: "",
+    dollar: 100,
+    yuan: 15,
     density: "",
-    avia: {
+    auto: {
       calculationMode: "",
       shippingCost: {
         dollar: "",
@@ -63,11 +64,13 @@ export const State = {
         ruble: "",
         yuan: "",
       },
+
       insuranceCost: {
         dollar: "",
         ruble: "",
         yuan: "",
       },
+
       cargoCost: {
         dollar: "",
         ruble: "",
@@ -101,7 +104,7 @@ export const State = {
         yuan: "",
       },
     },
-    auto: {
+    avia: {
       calculationMode: "",
       shippingCost: {
         dollar: "",
@@ -118,13 +121,11 @@ export const State = {
         ruble: "",
         yuan: "",
       },
-
       insuranceCost: {
         dollar: "",
         ruble: "",
         yuan: "",
       },
-
       cargoCost: {
         dollar: "",
         ruble: "",

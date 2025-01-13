@@ -1,140 +1,378 @@
-
+// Импортируйте State
+import { State } from "../data/State.js";
 
 const API_ENDPOINTS = {
   getOffer: "https://api-calc.wisetao.com:4343/api/get-offer",
   getOfferWhite: "https://api-calc.wisetao.com:4343/api/get-offer-white",
 };
 
-function formatData(text, number, unit) {
-  return `${text}${number} ${unit}`;
-}
-
 // Данные для запроса get-offer
 const getOfferDataComponents = {
   DeliveryType: {
     text: "Тип доставки: ",
-    value: "Air (до г. [город])",
+    value: "Авто",
     unit: "",
+    value2: "",
+    unit2: "",
   },
-  ExchangeRateYuan: { text: "Курс юаня SAIDE: ", value: "6.5", unit: "₽" },
-  ExchangeRateDollar: { text: "Курс доллара SAIDE: ", value: "1.0", unit: "₽" },
-  TOTAL: { text: "Стоимость до г. [город]: ", value: "1000", unit: "$; 950₽" },
+  ExchangeRateYuan: {
+    text: "Курс юаня: ",
+    value: "",
+    unit: "₽",
+    value2: "",
+    unit2: "",
+  },
+  ExchangeRateDollar: {
+    text: "Курс доллара: ",
+    value: "",
+    unit: "₽",
+    value2: "",
+    unit2: "",
+  },
+  TOTAL: {
+    text: "Стоимость до г. Москва (ТК «Южные ворота»): ",
+    value: "",
+    unit: "₽",
+    value2: "",
+    unit2: "$",
+  },
   TOTALTK: {
-    text: "Стоимость до г. [город] (Терм. ТК [тип]): ",
-    value: "1000",
-    unit: "$; 950₽",
+    text: "",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
   },
-  GoodsCost: { text: "Стоимость товара: ", value: "500", unit: "₽" },
-  Weight: { text: "Вес: ", value: "200", unit: "кг" },
-  Volume: { text: "Объем: ", value: "1.5", unit: "м³" },
-  Count: { text: "Количество: ", value: "10", unit: "" },
-  RedeemCommissionFirst: { text: "Комиссия SAIDE ", value: "5", unit: "%" },
+  GoodsCost: {
+    text: "Стоимость товара: ",
+    value: "",
+    unit: "₽",
+    value2: "",
+    unit2: "$",
+  },
+  Weight: {
+    text: "Вес: ",
+    value: "",
+    unit: "кг",
+    value2: "",
+    unit2: "",
+  },
+  Volume: {
+    text: "Объем: ",
+    value: "1.5",
+    unit: "м³",
+    value2: "",
+    unit2: "",
+  },
+  Count: {
+    text: "Количество: ",
+    value: "10",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
+  RedeemCommissionFirst: {
+    text: "",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
   RedeemCommission: {
-    text: "от стоимости товара: ",
-    value: "50.00",
-    unit: "$; 10.00₽",
+    text: "",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
   },
-  PackageType: { text: "Упаковка: ", value: "Box", unit: "" },
-  PackageCost: { text: "За упаковку: ", value: "100", unit: "₽" },
-  Insurance: { text: "Страховка: ", value: "50.00", unit: "$; 100.00₽" },
-  Kg: { text: "За кг: ", value: "200.00", unit: "$; 200.00₽ (до г. [город])" },
-  Sum: { text: "Стоимость до г. [город] ", value: "1000", unit: "$; 950₽" },
-  tkType: { text: "", value: "[тип]", unit: "" },
-  // Вложенные данные tkData
+  PackageType: {
+    text: "Упаковка: ",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
+  PackageCost: {
+    text: "За упаковку: ",
+    value: "100",
+    unit: "₽",
+    value2: "",
+    unit2: "$",
+  },
+  Insurance: {
+    text: "Страховка: ",
+    value: "50.00",
+    unit: "₽",
+    value2: "100.00",
+    unit2: "$",
+  },
+  Kg: {
+    text: "За кг: ",
+    value: "200.00",
+    unit: "₽",
+    value2: "200.00",
+    unit2: "$",
+  },
+  Sum: {
+    text: "Стоимость до Москва (ТК «Южные ворота») ",
+    value: "1000",
+    unit: "₽",
+    value2: "950",
+    unit2: "$",
+  },
+  tkType: {
+    text: "",
+    value: "[тип]",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
   tkData: {
     kgTk: {
       text: "За кг: ",
       value: "50.00",
-      unit: "$; 50.00₽ (г. [город] - г. [город])",
+      unit: "₽",
+      value2: "50.00",
+      unit2: "$",
     },
     sumTk: {
       text: "Стоимость: ",
       value: "100.00",
-      unit: "$; 100.00₽ (г. [город] - г. [город])",
+      unit: "₽",
+      value2: "100.00",
+      unit2: "$",
     },
     kgTotal: {
-      text: "За кг до г. [город] (Терм. ТК [тип]): ",
+      text: "За кг: ",
       value: "50.00",
-      unit: "$; 50.00₽",
+      unit: "₽",
+      value2: "50.00",
+      unit2: "$",
     },
     sumTotal: {
-      text: "Общая стоимость до г. [город] (Терм. ТК [тип]): ",
+      text: "Общая стоимость: ",
       value: "100.00",
-      unit: "$; 100.00₽",
+      unit: "₽",
+      value2: "100.00",
+      unit2: "$",
     },
-    varyKg: { text: "", value: "", unit: "(стоимость может варьир.)" },
-    varySum: { text: "", value: "", unit: "(стоимость может варьир.)" },
+    varyKg: {
+      text: "",
+      value: "",
+      unit: "",
+      value2: "",
+      unit2: "",
+    },
+    varySum: {
+      text: "",
+      value: "",
+      unit: "",
+      value2: "",
+      unit2: "",
+    },
   },
-  USD_RATE: { value: 75 },
-  Items: [], // Пустой массив Items
+  USD_RATE: { value: 100 },
+  Items: [],
 };
 
 // Данные для запроса get-offer-white
 const getOfferWhiteDataComponents = {
-  sumDuty: { text: "ПОШЛИНА: ", value: "200", unit: "$" },
-  NDS: { text: "НДС: ", value: "20", unit: "%" },
-  Saide: { text: "ПЕРЕВОЗКА SAIDE: ", value: "0.7", unit: "$/кг" },
-  totalDuty: { text: "СУММ. ПОШЛИНА: ", value: "200", unit: "$" },
-  totalNds: { text: "CУММ. НДС: ", value: "400", unit: "$" },
-  totalCustoms: { text: "ТАМОЖНЯ: ", value: "600", unit: "$; 45000 ₽" },
-  fees: { text: "Сборы: ", value: "50", unit: "$" },
-  ExchangeRateYuan: { text: "Курс юаня SAIDE: ", value: "11", unit: " ₽" },
-  ExchangeRateDollar: { text: "Курс доллара SAIDE: ", value: "75", unit: " ₽" },
-  TOTAL: {
-    text: "Стоимость до г. Благовещенск (Тамож.+Saide): ",
-    value: "250",
-    unit: "$; 56250 ₽",
+  ExchangeRateYuan: {
+    text: "Курс юаня: ",
+    value: State.calculatedData.yuan,
+    unit: "₽ ",
+    value2: "",
+    unit2: "",
   },
-  TOTALTK: {
-    text: "Стоимость до г. Благовещенск (Тамож.+Saide): ",
-    value: "250",
-    unit: "$; 56250 ₽",
+  ExchangeRateDollar: {
+    text: "Курс доллара: ",
+    value: State.calculatedData.dollar,
+    unit: "₽ ",
+    value2: "",
+    unit2: "",
   },
-  GoodsCost: { text: "Стоимость товара: ", value: "2000", unit: "$; 150000 ₽" },
-  Weight: { text: "Вес: ", value: "100", unit: "кг" },
-  Volume: { text: "Объем: ", value: "1.5", unit: " м³" },
-  RedeemCommissionFirst: { text: "", value: "", unit: "" },
-  RedeemCommission: { text: "", value: "", unit: "" },
+  sumDuty: {
+    text: "ПОШЛИНА: ",
+    value: State.clientData.tnvedSelectedImp,
+    unit: "%",
+    value2: "",
+    unit2: "",
+  },
+  NDS: {
+    text: "НДС: ",
+    value: State.nds,
+    unit: "%",
+    value2: "",
+    unit2: "",
+  },
+  Saide: {
+    text: "ПЕРЕВОЗКА: ",
+    value: State.whiteCargoRate,
+    unit: "$/кг",
+    value2: "",
+    unit2: "",
+  },
+  totalDuty: {
+    text: "СУММ. ПОШЛИНА: ",
+    value: State.calculatedData.auto.duty.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.duty.dollar,
+    unit2: "$",
+  },
+  totalNds: {
+    text: "CУММ. НДС: ",
+    value: State.calculatedData.auto.nds.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.nds.dollar,
+    unit2: "$",
+  },
+
+  fees: {
+    text: "Сборы: ",
+    value: State.calculatedData.auto.declaration.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.declaration.dollar,
+    unit2: "$",
+  },
   SumSaide: {
-    text: "Стоимость перевозки SAIDE (до г. Благовещенск 0.7$/кг): ",
-    value: "70",
-    unit: "$; 5250 ₽",
+    text: "СУММ. ПЕРЕВОЗКА (до г. Благовещенск): ",
+    value: State.calculatedData.auto.cargoCost.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.cargoCost.dollar,
+    unit2: "$",
   },
-  PackageType: { text: "Упаковка: ", value: "Картонная коробка", unit: "" },
-  PackageCost: { text: "За упаковку: ", value: "50", unit: "₽" },
+
+  totalCustoms: {
+    text: "СУММ. ТАМОЖНЯ: ",
+    value: State.calculatedData.auto.customsCost.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.customsCost.dollar,
+    unit2: "$",
+  },
+
+  TOTAL: {
+    text: "Стоимость до г. Благовещенск (Тамож.+ Перевозка): ",
+    value: State.calculatedData.auto.totalCost.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.totalCost.dollar,
+    unit2: "$",
+  },
+
+  PackageType: {
+    text: "Упаковка: ",
+    value: State.clientData.packingType,
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
+  PackageCost: {
+    text: "За упаковку: ",
+    value: State.calculatedData.auto.packagingCost.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.packagingCost.dollar,
+    unit2: "$",
+  },
   Kg: {
-    text: "За кг: ",
-    value: "2.50",
-    unit: "$; 187.50 ₽ (Тамож. + SAIDE до г. Благовещенск)",
+    text: "Страховка: ",
+    value: State.calculatedData.auto.insuranceCost.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.insuranceCost.dollar,
+    unit2: "$",
   },
   Sum: {
-    text: "Стоимость: ",
-    value: "250",
-    unit: "$; 56250 ₽ (Тамож. + SAIDE до г. Благовещенск)",
+    text: "Общая стоимость (Перевозка + Таможня): ",
+    value: State.calculatedData.auto.totalCost.ruble,
+    unit: "₽",
+    value2: State.calculatedData.auto.totalCost.dollar,
+    unit2: "$",
   },
-  tkType: { text: "", value: "ТК Пример", unit: "" },
-  tkData: null, // Пустое поле
-  USD_RATE: { value: 105 },
+
+  GoodsCost: {
+    text: "Стоимость товара: ",
+    value: State.calculatedData.clientCostDollar,
+    unit: "$",
+    value2: "",
+    unit2: "",
+  },
+
+  Weight: {
+    text: "Вес: ",
+    value: State.clientData.totalWeight,
+    unit: "кг",
+    value2: "",
+    unit2: "",
+  },
+
+  Volume: {
+    text: "Объем: ",
+    value: State.clientData.totalVolume,
+    unit: "м³",
+    value2: "",
+    unit2: "",
+  },
+
   Items: [
     {
-      TNVED_NAME: "[12345678] Наименование товара 1",
-      IMP_PRINT: "IMP1",
-      DUTY: 200,
-      NDS_PRINT: "NDS1",
-      NDS: 400,
+      TNVED_NAME: `[${State.clientData.tnvedSelectedCode}] ${State.clientData.tnvedSelectedName}`,
+      IMP_PRINT: "",
+      DUTY: State.calculatedData.auto.duty.ruble,
+      NDS_PRINT: "",
+      NDS: State.calculatedData.auto.duty.ruble,
       LICENSE: "",
       SAFETY_PR: "",
       SAFETY: "",
       LICIMP_PR: false,
     },
   ],
+
+  tkType: {
+    text: "",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
+
+  TOTALTK: {
+    text: "",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
+
+  RedeemCommissionFirst: {
+    text: "",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
+
+  RedeemCommission: {
+    text: "",
+    value: "",
+    unit: "",
+    value2: "",
+    unit2: "",
+  },
+
+  tkData: null,
+
+  USD_RATE: { value: 105 },
 };
 
+function formatData(text, number1, unit1, number2 = "", unit2 = "") {
+  return `${text}${number1} ${unit1} ${number2} ${unit2}`.trim();
+}
+
 function buildString(component) {
-  if (component.text || component.unit) {
-    return `${component.text}${component.value}${component.unit}`;
-  }
-  return component.value;
+  const number1 = component.value || "";
+  const unit1 = component.unit || "";
+  const number2 = component.value2 || "";
+  const unit2 = component.unit2 || "";
+
+  return formatData(component.text || "", number1, unit1, number2, unit2);
 }
 
 function generateParams(dataComponents) {
@@ -237,12 +475,62 @@ async function sendPostRequest(url, dataComponents) {
   }
 }
 
-/* // Обработчик для кнопки "Получить предложение"
-document.getElementById("getOfferBtn").addEventListener("click", () => {
-  sendPostRequest(API_ENDPOINTS.getOffer, getOfferDataComponents);
-});
+// Функция для подготовки данных и отправки запроса
+async function prepareAndSendRequest(selectedType) {
+  if (selectedType === "calc-cargo") {
+    // Аналогично для getOfferDataComponents
+    offerManager.updateOfferDataComponentsFromState(State);
+    offerManager.sendPostRequest(
+      offerManager.API_ENDPOINTS.getOffer,
+      offerManager.getOfferDataComponents
+    );
+  } else if (selectedType === "calc-customs") {
+    // 1) Подтянуть актуальные данные из State:
+    offerManager.updateOfferWhiteDataComponentsFromState(State);
+    // 2) Отправить запрос:
+    offerManager.sendPostRequest(
+      offerManager.API_ENDPOINTS.getOfferWhite,
+      offerManager.getOfferWhiteDataComponents
+    );
+  }
+}
 
-// Обработчик для кнопки "Получить белое предложение"
-document.getElementById("getOfferWhiteBtn").addEventListener("click", () => {
-  sendPostRequest(API_ENDPOINTS.getOfferWhite, getOfferWhiteDataComponents);
-}); */
+// Функция для обработки выбора типа расчета
+function handleCalcTypeChange() {
+  const calcTypeInputs = document.querySelectorAll('input[name="calc-type"]');
+  const button = document.querySelector(".js-get-pdf");
+
+  calcTypeInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      // Активируем кнопку при выборе любого типа
+      button.disabled = false;
+    });
+  });
+}
+
+// Функция для обработки нажатия кнопки
+function handleButtonClick() {
+  const button = document.querySelector(".js-get-pdf");
+
+  button.addEventListener("click", async () => {
+    const selectedInput = document.querySelector(
+      'input[name="calc-type"]:checked'
+    );
+
+    if (!selectedInput) {
+      alert("Пожалуйста, выберите тип расчета.");
+      return;
+    }
+
+    const selectedType = selectedInput.value;
+    console.log(State);
+    // Вызываем функцию подготовки и отправки запроса
+    await prepareAndSendRequest(selectedType);
+  });
+}
+
+// Инициализация обработчиков событий после загрузки DOM
+document.addEventListener("DOMContentLoaded", () => {
+  handleCalcTypeChange();
+  handleButtonClick();
+});
