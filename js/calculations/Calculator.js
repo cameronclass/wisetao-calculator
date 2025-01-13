@@ -26,7 +26,13 @@ export class Calculator {
       usedDollarRate,
       usedYuanRate
     );
-    State.calculatedData.clientCostDollar = Number(costInDollar.toFixed(2));
+    State.calculatedData.clientCost.dollar = Number(costInDollar.toFixed(2));
+    State.calculatedData.clientCost.ruble = Number(
+      costInDollar.toFixed(2) * usedDollarRate
+    );
+    State.calculatedData.clientCost.yuan = Number(
+      costInDollar.toFixed(2) * usedYuanRate
+    );
 
     const weight = parseFloat(cd.totalWeight) || 0;
     const volume = parseFloat(cd.totalVolume) || 0;
@@ -70,7 +76,7 @@ export class Calculator {
 
       // 3) InsuranceCost
       const shippingDollar = State.calculatedData[dir].shippingCost.dollar || 0;
-      const goodsDollar = State.calculatedData.clientCostDollar || 0;
+      const goodsDollar = State.calculatedData.clientCost.dollar || 0;
       const insuranceDollar = this.calculateInsuranceDollar(
         shippingDollar,
         goodsDollar,
@@ -92,7 +98,7 @@ export class Calculator {
   // ================== TAMOZHNYA ==================
   runCustomsLogic() {
     const directions = ["auto", "train", "avia"];
-    const costInDollar = State.calculatedData.clientCostDollar;
+    const costInDollar = State.calculatedData.clientCost.dollar;
     const dutyValuePct = parseFloat(State.clientData.tnvedSelectedImp);
     const cbrRateDollar = State.calculatedData.dollar;
     const cbrRateYuan = State.calculatedData.yuan;
@@ -399,6 +405,20 @@ export class Calculator {
     } else {
       stdCost = stdPack.price * vol;
     }
+
+    // Присваиваем значение в State.calculatedData.packingType
+    const packingTypeMap = {
+      std_pack: "Стандартная упаковка",
+      pack_corner: "Упаковка с углами",
+      wood_crate: "Деревянная обрешетка",
+      tri_frame: "Треугольная деревянная рама",
+      wood_pallet: "Деревянный поддон",
+      pallet_water: "Поддон с водонепроницаемой упаковкой",
+      wood_boxes: "Деревянные коробки",
+    };
+
+    State.calculatedData.packingType =
+      packingTypeMap[packingType] || "Неизвестный тип упаковки";
 
     if (packingType === "std_pack") {
       return mainCost;

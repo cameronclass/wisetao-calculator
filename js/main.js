@@ -1,8 +1,8 @@
 // main.js
 import { State } from "./data/State.js";
 import { CalculatorApp } from "./calculations/App.js";
-import { offerManager } from "./calculations/PdfClass.js";
-import { UIManager } from "./calculations/PdfUI.js";
+import { PdfPrepared } from "./calculations/PdfPrepare.js";
+import { PdfGenerate } from "./calculations/PdfGenerate.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),
@@ -27,10 +27,9 @@ const fields = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  const calculatorApp = new CalculatorApp(fields);
-  calculatorApp.init();
+  /* Калькулятор */
+  new CalculatorApp(fields);
 
-  /* PDF Генерация */
-  const uiManager = new UIManager(offerManager, State);
-  uiManager.init();
+  /* PDF */
+  new PdfGenerate(PdfPrepared, State);
 });

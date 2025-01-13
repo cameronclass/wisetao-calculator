@@ -43,7 +43,14 @@ export const State = {
   },
 
   calculatedData: {
-    clientCostDollar: "",
+    packingType: "",
+    selectedDirection: "",
+    selectedDirectionRus: "",
+    clientCost: {
+      dollar: "",
+      ruble: "",
+      yuan: "",
+    },
     dollar: 100,
     yuan: 15,
     density: "",
@@ -65,6 +72,62 @@ export const State = {
         yuan: "",
       },
 
+      insuranceCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      cargoCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      declaration: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      duty: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      nds: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      customsCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+
+      totalCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+    },
+    train: {
+      calculationMode: "",
+      shippingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      pricePerKg: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
+      packagingCost: {
+        dollar: "",
+        ruble: "",
+        yuan: "",
+      },
       insuranceCost: {
         dollar: "",
         ruble: "",
@@ -126,62 +189,6 @@ export const State = {
         ruble: "",
         yuan: "",
       },
-      cargoCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-
-      declaration: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-      duty: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-      nds: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-      customsCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-
-      totalCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-    },
-    train: {
-      calculationMode: "",
-      shippingCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-      pricePerKg: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-      packagingCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-      insuranceCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
-      },
-
       cargoCost: {
         dollar: "",
         ruble: "",

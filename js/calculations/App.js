@@ -24,12 +24,10 @@ export class CalculatorApp {
 
     const valid = this.formValidation.validateAll();
     if (valid) {
-      console.log("State.clientData:", State.clientData);
-
       this.calculator.runBaseLogic();
       this.calculator.runShippingLogic();
 
-      console.log("State.calculatedData:", State.calculatedData);
+      console.log("State:", State);
 
       this.uiRenderer.renderAll();
 

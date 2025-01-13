@@ -1,9 +1,4 @@
-// Пример: OfferManager.js
-
-// Обратите внимание: прямой импорт State убран, чтобы не "подтягивать" значения из State при загрузке
-// import { State } from "../data/State.js";
-
-class OfferManager {
+class PdfPrepare {
   constructor() {
     // Храним эндпоинты в свойстве класса
     this.API_ENDPOINTS = {
@@ -11,17 +6,10 @@ class OfferManager {
       getOfferWhite: "https://api-calc.wisetao.com:4343/api/get-offer-white",
     };
 
-    /**
-     * Объект с данными для запроса get-offer.
-     * Изначально заданы «жёсткие» значения, так как в оригинальном коде
-     * они не берутся ниоткуда, кроме как из этого объекта (нет ссылок на State).
-     * Если когда-нибудь понадобится получать их из State, можно воспользоваться
-     * методом updateOfferDataComponentsFromState(...).
-     */
     this.getOfferDataComponents = {
       DeliveryType: {
         text: "Тип доставки: ",
-        value: "Авто",
+        value: "",
         unit: "",
         value2: "",
         unit2: "",
@@ -29,21 +17,21 @@ class OfferManager {
       ExchangeRateYuan: {
         text: "Курс юаня: ",
         value: "",
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "",
       },
       ExchangeRateDollar: {
         text: "Курс доллара: ",
         value: "",
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "",
       },
       TOTAL: {
         text: "Стоимость до г. Москва (ТК «Южные ворота»): ",
         value: "",
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
@@ -57,7 +45,7 @@ class OfferManager {
       GoodsCost: {
         text: "Стоимость товара: ",
         value: "",
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
@@ -70,14 +58,14 @@ class OfferManager {
       },
       Volume: {
         text: "Объем: ",
-        value: "1.5",
+        value: "",
         unit: "м³",
         value2: "",
         unit2: "",
       },
       Count: {
         text: "Количество: ",
-        value: "10",
+        value: "",
         unit: "",
         value2: "",
         unit2: "",
@@ -105,67 +93,67 @@ class OfferManager {
       },
       PackageCost: {
         text: "За упаковку: ",
-        value: "100",
-        unit: "₽",
+        value: "",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       Insurance: {
         text: "Страховка: ",
-        value: "50.00",
-        unit: "₽",
-        value2: "100.00",
+        value: "",
+        unit: "₽ ",
+        value2: "",
         unit2: "$",
       },
       Kg: {
         text: "За кг: ",
-        value: "200.00",
-        unit: "₽",
-        value2: "200.00",
+        value: "",
+        unit: "₽ ",
+        value2: "",
         unit2: "$",
       },
       Sum: {
-        text: "Стоимость до Москва (ТК «Южные ворота») ",
-        value: "1000",
-        unit: "₽",
-        value2: "950",
+        text: "Стоимость до г. Москва (ТК «Южные ворота») ",
+        value: "",
+        unit: "₽ ",
+        value2: "",
         unit2: "$",
       },
       tkType: {
         text: "",
-        value: "[тип]",
+        value: "",
         unit: "",
         value2: "",
         unit2: "",
       },
       tkData: {
         kgTk: {
-          text: "За кг: ",
-          value: "50.00",
-          unit: "₽",
-          value2: "50.00",
-          unit2: "$",
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
         },
         sumTk: {
-          text: "Стоимость: ",
-          value: "100.00",
-          unit: "₽",
-          value2: "100.00",
-          unit2: "$",
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
         },
         kgTotal: {
-          text: "За кг: ",
-          value: "50.00",
-          unit: "₽",
-          value2: "50.00",
-          unit2: "$",
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
         },
         sumTotal: {
-          text: "Общая стоимость: ",
-          value: "100.00",
-          unit: "₽",
-          value2: "100.00",
-          unit2: "$",
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
         },
         varyKg: {
           text: "",
@@ -186,11 +174,6 @@ class OfferManager {
       Items: [],
     };
 
-    /**
-     * Объект с данными для запроса get-offer-white.
-     * В оригинале здесь было много ссылок на State. Теперь они заменены
-     * на пустые/нулевые значения, которые будут установлены методом updateOfferWhiteDataComponentsFromState(...)
-     */
     this.getOfferWhiteDataComponents = {
       ExchangeRateYuan: {
         text: "Курс юаня: ",
@@ -230,42 +213,42 @@ class OfferManager {
       totalDuty: {
         text: "СУММ. ПОШЛИНА: ",
         value: "", // State.calculatedData.auto.duty.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       totalNds: {
         text: "CУММ. НДС: ",
         value: "", // State.calculatedData.auto.nds.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       fees: {
         text: "Сборы: ",
         value: "", // State.calculatedData.auto.declaration.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       SumSaide: {
         text: "СУММ. ПЕРЕВОЗКА (до г. Благовещенск): ",
         value: "", // State.calculatedData.auto.cargoCost.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       totalCustoms: {
         text: "СУММ. ТАМОЖНЯ: ",
         value: "", // State.calculatedData.auto.customsCost.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       TOTAL: {
         text: "Стоимость до г. Благовещенск (Тамож.+ Перевозка): ",
         value: "", // State.calculatedData.auto.totalCost.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
@@ -279,21 +262,21 @@ class OfferManager {
       PackageCost: {
         text: "За упаковку: ",
         value: "", // State.calculatedData.auto.packagingCost.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       Kg: {
         text: "Страховка: ",
         value: "", // State.calculatedData.auto.insuranceCost.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       Sum: {
         text: "Общая стоимость (Перевозка + Таможня): ",
         value: "", // State.calculatedData.auto.totalCost.ruble
-        unit: "₽",
+        unit: "₽ ",
         value2: "",
         unit2: "$",
       },
@@ -367,16 +350,54 @@ class OfferManager {
   /**
    * Метод, который при необходимости можно вызвать,
    * чтобы «подтянуть» из внешнего state актуальные данные
-   * для обычного коммерческого предложения (если потребуется).
+   * для get-offer
    */
   /* Обычная Доставка */
   updateOfferDataComponentsFromState(state) {
-    // Пример (закомментировано, т.к. в исходном коде не было ссылок на State).
-    // При желании раскомментируйте и подставьте нужные поля.
-    //
-    // this.getOfferDataComponents.ExchangeRateYuan.value = state.calculatedData.yuan;
-    // this.getOfferDataComponents.ExchangeRateDollar.value = state.calculatedData.dollar;
-    // ... и т.д.
+    const direction = state.calculatedData.selectedDirection;
+
+    this.getOfferDataComponents.ExchangeRateYuan.value =
+      state.calculatedData.yuan;
+    this.getOfferDataComponents.ExchangeRateDollar.value =
+      state.calculatedData.dollar;
+
+    this.getOfferDataComponents.GoodsCost.value =
+      state.calculatedData.clientCost.ruble;
+    this.getOfferDataComponents.GoodsCost.value2 =
+      state.calculatedData.clientCost.dollar;
+
+    this.getOfferDataComponents.Weight.value = state.clientData.totalWeight;
+    this.getOfferDataComponents.Volume.value = state.clientData.totalVolume;
+    this.getOfferDataComponents.Count.value = state.clientData.quantity;
+    this.getOfferDataComponents.PackageType.value =
+      state.calculatedData.packingType;
+    this.getOfferDataComponents.DeliveryType.value =
+      state.calculatedData.selectedDirectionRus;
+
+    this.getOfferDataComponents.TOTAL.value =
+      state.calculatedData[direction].cargoCost.ruble;
+    this.getOfferDataComponents.TOTAL.value2 =
+      state.calculatedData[direction].cargoCost.dollar;
+
+    this.getOfferDataComponents.Sum.value =
+      state.calculatedData[direction].cargoCost.ruble;
+    this.getOfferDataComponents.Sum.value2 =
+      state.calculatedData[direction].cargoCost.dollar;
+
+    this.getOfferDataComponents.Kg.value =
+      state.calculatedData[direction].pricePerKg.ruble;
+    this.getOfferDataComponents.Kg.value2 =
+      state.calculatedData[direction].pricePerKg.dollar;
+
+    this.getOfferDataComponents.Insurance.value =
+      state.calculatedData[direction].insuranceCost.ruble;
+    this.getOfferDataComponents.Insurance.value2 =
+      state.calculatedData[direction].insuranceCost.dollar;
+
+    this.getOfferDataComponents.PackageCost.value =
+      state.calculatedData[direction].cargoCost.ruble;
+    this.getOfferDataComponents.PackageCost.value2 =
+      state.calculatedData[direction].cargoCost.dollar;
   }
 
   /**
@@ -567,6 +588,14 @@ class OfferManager {
       openLink.click();
       document.body.removeChild(openLink);
 
+      // Если нужно скачать сразу:
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = "Коммерческое предложение.pdf";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
       // Освобождаем URL
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -580,7 +609,6 @@ class OfferManager {
    */
   async sendPostRequest(url, dataComponents) {
     const params = this.generateParams(dataComponents);
-    console.log("Отправляемые параметры:", params.toString()); // Для отладки
 
     try {
       const response = await fetch(url, {
@@ -599,8 +627,4 @@ class OfferManager {
   }
 }
 
-// По необходимости можно экспортировать либо класс, либо сразу экземпляр.
-// export default OfferManager;
-export const offerManager = new OfferManager();
-
-
+export const PdfPrepared = new PdfPrepare();
