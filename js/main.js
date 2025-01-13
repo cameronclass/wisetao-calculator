@@ -1,8 +1,6 @@
 // main.js
-import { Calculator } from "./calculations/Calculator.js";
-import { FormValidation } from "./calculations/FormValidation.js";
 import { State } from "./data/State.js";
-import { UiRenderer } from "./ui/UiRenderer.js";
+import { CalculatorApp } from "./calculations/App.js";
 import { offerManager } from "./calculations/PdfClass.js";
 import { UIManager } from "./calculations/PdfUI.js";
 
@@ -28,43 +26,9 @@ const fields = {
   tnvedInput: document.querySelector('input[name="tnved_input"]'),
 };
 
-const formValidation = new FormValidation(fields);
-
 document.addEventListener("DOMContentLoaded", () => {
-  // при клике на кнопку «Рассчитать»
-  document
-    .querySelector(".js-calculate-result")
-    .addEventListener("click", (e) => {
-      e.preventDefault();
-
-      const valid = formValidation.validateAll();
-      if (valid) {
-        console.log("State.clientData:", State.clientData);
-
-        const calculator = new Calculator();
-        calculator.runBaseLogic();
-        calculator.runShippingLogic();
-
-        console.log("State.calculatedData:", State.calculatedData);
-
-        const uiRenderer = new UiRenderer();
-        uiRenderer.renderAll();
-
-        const resultBlock = document.querySelector(".main-calc-result");
-
-        if (resultBlock) {
-          resultBlock.classList.add("active");
-          resultBlock.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      } else {
-        console.log("Форма заполнена с ошибками");
-
-        const wrapperBlock = document.querySelector(".main-calc__wrapper");
-        if (wrapperBlock) {
-          wrapperBlock.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
-    });
+  const calculatorApp = new CalculatorApp(fields);
+  calculatorApp.init();
 
   /* PDF Генерация */
   const uiManager = new UIManager(offerManager, State);
