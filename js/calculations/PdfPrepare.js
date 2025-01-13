@@ -283,9 +283,9 @@ class PdfPrepare {
       GoodsCost: {
         text: "Стоимость товара: ",
         value: "", // State.calculatedData.clientCostDollar
-        unit: "$",
+        unit: "₽ ",
         value2: "",
-        unit2: "",
+        unit2: "$",
       },
       Weight: {
         text: "Вес: ",
@@ -447,7 +447,7 @@ class PdfPrepare {
       state.calculatedData.auto.totalCost.dollar;
 
     this.getOfferWhiteDataComponents.PackageType.value =
-      state.clientData.packingType;
+      state.calculatedData.packingType;
 
     this.getOfferWhiteDataComponents.PackageCost.value =
       state.calculatedData.auto.packagingCost.ruble;
@@ -465,7 +465,9 @@ class PdfPrepare {
       state.calculatedData.auto.totalCost.dollar;
 
     this.getOfferWhiteDataComponents.GoodsCost.value =
-      state.calculatedData.clientCostDollar;
+      state.calculatedData.clientCost.ruble;
+    this.getOfferWhiteDataComponents.GoodsCost.value2 =
+      state.calculatedData.clientCost.dollar;
 
     this.getOfferWhiteDataComponents.Weight.value =
       state.clientData.totalWeight;

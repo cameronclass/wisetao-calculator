@@ -28,10 +28,10 @@ export class Calculator {
     );
     State.calculatedData.clientCost.dollar = Number(costInDollar.toFixed(2));
     State.calculatedData.clientCost.ruble = Number(
-      costInDollar.toFixed(2) * usedDollarRate
+      (costInDollar.toFixed(2) * usedDollarRate.toFixed(2)).toFixed(2)
     );
     State.calculatedData.clientCost.yuan = Number(
-      costInDollar.toFixed(2) * usedYuanRate
+      (costInDollar.toFixed(2) * usedYuanRate.toFixed(2)).toFixed(2)
     );
 
     const weight = parseFloat(cd.totalWeight) || 0;
