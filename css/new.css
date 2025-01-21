@@ -12,6 +12,48 @@ body {
   box-sizing: border-box;
 }
 
+/* HTML: <div class="loader"></div> */
+.loader {
+  width: 30px;
+  aspect-ratio: 1;
+  display: grid;
+  -webkit-mask: conic-gradient(from 15deg, #0000, #000);
+  animation: l26 1s infinite steps(12);
+  position: absolute;
+  left: 44%;
+  top: 38%;
+  z-index: 2;
+  visibility: hidden;
+  opacity: 0;
+}
+.loader._load{
+  visibility: visible;
+  opacity: 1;
+}
+.loader,
+.loader:before,
+.loader:after {
+  background: radial-gradient(closest-side at 50% 12.5%, #f09123 96%, #0000) 50%
+      0/20% 80% repeat-y,
+    radial-gradient(closest-side at 12.5% 50%, #f09123 96%, #0000) 0 50%/80% 20%
+      repeat-x;
+}
+.loader:before,
+.loader:after {
+  content: "";
+  grid-area: 1/1;
+  transform: rotate(30deg);
+}
+.loader:after {
+  transform: rotate(60deg);
+}
+
+@keyframes l26 {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
 /*Hide Arrows*/
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -696,8 +738,6 @@ input[type="number"] {
   box-sizing: border-box;
   border: 1px solid transparent;
   outline: none;
-  z-index: 50000;
-  position: relative;
 }
 .group-input__input input:focus,
 .group-input__inputs input:focus {
@@ -1078,6 +1118,18 @@ input[type="number"] {
 }
 .main-calc-result__cell._off::after {
   content: "Н/Д";
+  color: #c0c5cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #212731;
+  border-radius: 10px;
+}
+.main-calc-result__cell._load::after {
+  content: "";
   color: #c0c5cc;
   display: flex;
   align-items: center;
@@ -2072,7 +2124,7 @@ input[type="number"] {
 .ymaps-2-1-79-search__suggest-item:hover {
   background-color: #f09023;
 }
-.group-input__input > ymaps{
+.group-input__input > ymaps {
   top: 35px !important;
   left: -1px !important;
 }

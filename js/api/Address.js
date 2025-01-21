@@ -1,4 +1,3 @@
-// Address.js
 import { State } from "../data/State.js";
 
 /**
@@ -16,11 +15,26 @@ class AddressHandler {
       return;
     }
 
-    // Инициализируем подсказки Яндекс.Карт
-    this.suggestView = new ymaps.SuggestView(this.input, { results: 5 });
+    // Ждем, пока ymaps будет готов
+    ymaps.ready(() => {
+      // Проверяем, доступен ли SuggestView
+      if (typeof ymaps.SuggestView !== "function") {
+        console.error(
+          "ymaps.SuggestView не доступен. Проверьте подключение API Яндекс.Карт."
+        );
+        return;
+      }
 
-    // Привязываем событие выбора подсказки
-    this.suggestView.events.add("select", this.onSelect.bind(this));
+      try {
+        // Инициализируем подсказки Яндекс.Карт
+        this.suggestView = new ymaps.SuggestView(this.input, { results: 5 });
+
+        // Привязываем событие выбора подсказки
+        this.suggestView.events.add("select", this.onSelect.bind(this));
+      } catch (error) {
+        console.error("Ошибка при инициализации SuggestView:", error);
+      }
+    });
   }
 
   /**
@@ -59,7 +73,7 @@ class AddressHandler {
               lon: coordinates[1],
             };
 
-            console.log("Обновленное состояние (State):", State.address);
+            console.log("Обновленное состояние (State):", State);
           } else {
             console.warn("Выбранный адрес не находится в России.");
             // Здесь можно добавить уведомление для пользователя

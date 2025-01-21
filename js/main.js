@@ -1,10 +1,11 @@
 // main.js
-import { State } from "./data/State.js";
+
 import { CalculatorApp } from "./calculations/App.js";
 import { PdfPrepared } from "./calculations/PdfPrepare.js";
 import { PdfGenerate } from "./calculations/PdfGenerate.js";
-import { AddressHandler } from "./api/Address.js";
-import { RailwayExpeditionCalculator } from "./calculations/RailwayExpeditionCalculator.js";
+import RailwayExpeditionCalculator from "./calculations/RailwayExpeditionCalculator.js";
+import AddressHandler from "./api/Address.js";
+import { State } from "./data/State.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),

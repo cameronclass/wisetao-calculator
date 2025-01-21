@@ -79,9 +79,9 @@ export const State = {
       },
 
       cargoCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
+        dollar: 0,
+        ruble: 0,
+        yuan: 0,
       },
 
       declaration: {
@@ -100,15 +100,15 @@ export const State = {
         yuan: "",
       },
       customsCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
+        dollar: 0,
+        ruble: 0,
+        yuan: 0,
       },
 
       totalCost: {
-        dollar: "",
-        ruble: "",
-        yuan: "",
+        dollar: 0,
+        ruble: 0,
+        yuan: 0,
       },
     },
     train: {
@@ -233,7 +233,17 @@ export const State = {
   },
 
   jde: {
-    cost_price: "",
-    sum_cost_price: "",
+    kg: {
+      dollar: "",
+      ruble: "",
+    },
+    all: {
+      dollar: "",
+      ruble: "",
+    },
+    calculated: {
+      kg: {},
+      all: {},
+    },
   },
 };
