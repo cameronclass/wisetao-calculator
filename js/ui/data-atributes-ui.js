@@ -280,4 +280,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // Получаем элементы по классам
+  const addressInput = document.querySelector(
+    ".main-calc__from-to_adress .group-input__input input"
+  );
+  const addressCheckbox = document.querySelector(
+    ".main-calc__from-to_adress_check .main-calc-checkbox__input"
+  );
+  const addressIcon = document.querySelector(
+    ".main-calc__from-to_adress .group-input__input_svg"
+  );
+
+  // Функция для обновления состояния поля ввода и иконки
+  function toggleAddressInput() {
+    if (addressCheckbox.checked) {
+      addressInput.disabled = false; // Активируем поле ввода
+      addressIcon.style.display = "none"; // Скрываем иконку
+    } else {
+      addressInput.disabled = true; // Деактивируем поле ввода
+      addressIcon.style.display = "block"; // Показываем иконку
+    }
+  }
+
+  // Добавляем обработчик события на чекбокс
+  addressCheckbox.addEventListener("change", toggleAddressInput);
 });

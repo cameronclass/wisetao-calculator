@@ -157,6 +157,13 @@ input[type="number"] {
   margin-bottom: 8px;
 }
 
+.main-calc__from-to_adress {
+  grid-column-start: 1;
+  grid-column-end: 4;
+}
+.main-calc__from-to_adress_check {
+}
+
 .label-text.active {
   color: white;
 }
@@ -277,7 +284,8 @@ input[type="number"] {
   fill: #f09123;
 }
 
-.main-calc__from-to_check {
+.main-calc__from-to_check,
+.main-calc__from-to_adress_check {
   margin-bottom: 9px;
 }
 .main-calc-bordered {
@@ -688,6 +696,8 @@ input[type="number"] {
   box-sizing: border-box;
   border: 1px solid transparent;
   outline: none;
+  z-index: 50000;
+  position: relative;
 }
 .group-input__input input:focus,
 .group-input__inputs input:focus {
@@ -1065,6 +1075,18 @@ input[type="number"] {
   align-items: center;
   justify-content: center;
   position: relative;
+}
+.main-calc-result__cell._off::after {
+  content: "Н/Д";
+  color: #c0c5cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #212731;
+  border-radius: 10px;
 }
 .price-cell {
   background: #212731;
@@ -1863,8 +1885,6 @@ input[type="number"] {
   top: 10px;
 }
 
-
-
 /* Mobile */
 @media screen and (max-width: 768px) {
   body {
@@ -2036,4 +2056,23 @@ input[type="number"] {
   .white-cargo__justinfo .group-input {
     display: flex;
   }
+}
+
+.ymaps-2-1-79-search__suggest {
+  background-color: #2f3743 !important;
+  border: 1px solid #f09023 !important;
+  border-top: 1px solid transparent !important;
+  border-radius: 0 0 20px 20px !important;
+  overflow: hidden;
+}
+.ymaps-2-1-79-search__suggest-item {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.ymaps-2-1-79-search__suggest-item:hover {
+  background-color: #f09023;
+}
+.group-input__input > ymaps{
+  top: 35px !important;
+  left: -1px !important;
 }

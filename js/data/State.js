@@ -223,4 +223,17 @@ export const State = {
       },
     },
   },
+
+  address: {
+    city: "",
+    region: "",
+    country: "",
+    lat: 0,
+    lon: 0,
+  },
+
+  jde: {
+    cost_price: "",
+    sum_cost_price: "",
+  },
 };

@@ -3,6 +3,8 @@ import { State } from "./data/State.js";
 import { CalculatorApp } from "./calculations/App.js";
 import { PdfPrepared } from "./calculations/PdfPrepare.js";
 import { PdfGenerate } from "./calculations/PdfGenerate.js";
+import { AddressHandler } from "./api/Address.js";
+import { RailwayExpeditionCalculator } from "./calculations/RailwayExpeditionCalculator.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),
@@ -24,6 +26,7 @@ const fields = {
   insurance: document.querySelector('input[name="insurance"]'),
   brand: document.querySelector('input[name="brand"]'),
   tnvedInput: document.querySelector('input[name="tnved_input"]'),
+  adress: document.querySelector('input[name="address"]'),
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -32,4 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* PDF */
   new PdfGenerate(PdfPrepared, State);
+
+  /* Address */
+  new AddressHandler('input[name="address"]');
+
+  /* Railway */
+  const apiUrl =
+    "https://api-calc.wisetao.com:4343/api/calculate-railway-expedition-delivery";
+  new RailwayExpeditionCalculator(".js-calculate-result", apiUrl);
 });
