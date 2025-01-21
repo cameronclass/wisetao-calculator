@@ -143,7 +143,7 @@ class RailwayExpeditionCalculator {
       // Обновляем дополнительные результаты по направлениям
       this.updateDirectionResults();
 
-      this.showNotification("Расчет выполнен успешно.");
+      console.log("Расчет выполнен успешно.", State.jde);
     } catch (error) {
       console.error("Ошибка при расчете доставки:", error.message);
       this.showNotification(
@@ -264,12 +264,6 @@ class RailwayExpeditionCalculator {
         dollar: Number(calculatedAllDollar.toFixed(2)),
         ruble: Number(calculatedAllRuble.toFixed(2)),
       };
-
-      console.log(
-        `Обновленное (State.jde.calculated.kg.${direction.name}):`,
-        State.jde.calculated.kg[direction.name]
-      );
-      console.log(State.jde);
 
       // Обновляем DOM элементы
       kgDollarElement.textContent = State.jde.calculated.kg[direction.name]

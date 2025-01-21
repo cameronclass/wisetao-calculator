@@ -73,7 +73,6 @@ class AddressHandler {
               lon: coordinates[1],
             };
 
-            console.log("Обновленное состояние (State):", State);
           } else {
             console.warn("Выбранный адрес не находится в России.");
             // Здесь можно добавить уведомление для пользователя
