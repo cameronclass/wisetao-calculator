@@ -95,6 +95,9 @@ class RailwayExpeditionCalculator {
       // Парсим JSON-ответ
       const result = await response.json();
 
+      // Выводим полный результат запроса в консоль
+      console.log("Полный результат API:", result);
+
       // Проверка структуры ответа
       if (
         !result.cost_price?.auto_regular ||
@@ -103,9 +106,15 @@ class RailwayExpeditionCalculator {
         throw new Error("Неверный формат ответа от API.");
       }
 
+      // Проверка, что полученные значения являются числами
+      const costPrice = result.cost_price.auto_regular;
+      const sumCostPrice = result.sum_cost_price.auto_regular;
+
+      if (isNaN(Number(costPrice)) || isNaN(Number(sumCostPrice))) {
+        throw new Error("Получены недопустимые значения от API.");
+      }
+
       // Обновляем состояние с результатами
-      const { auto_regular: costPrice } = result.cost_price;
-      const { auto_regular: sumCostPrice } = result.sum_cost_price;
       const { dollar: dollarRate } = State.calculatedData;
 
       // Явное преобразование в числа
@@ -138,6 +147,9 @@ class RailwayExpeditionCalculator {
       this.showNotification(
         "Произошла ошибка при расчете доставки. Пожалуйста, попробуйте позже."
       );
+
+      // Добавляем класс _off к элементам .jde при ошибке
+      this.addOffClassToJdeElements();
     } finally {
       // Убираем состояние загрузки
       this.setLoading(false);
@@ -202,7 +214,7 @@ class RailwayExpeditionCalculator {
         !allRubleElement
       ) {
         console.warn(
-          `Внутри блока ".jde" не найдены элементы ".calculate-result__kg" ".calculate-result__kg_ruble" ".calculate-result__dollar" ".calculate-result__ruble"`
+          `Внутри блока ".jde" не найдены элементы ".calculate-result__kg", ".calculate-result__kg_ruble", ".calculate-result__dollar", ".calculate-result__ruble"`
         );
         return;
       }
@@ -293,6 +305,13 @@ class RailwayExpeditionCalculator {
         .ruble
         ? `${State.jde.calculated.all[direction.name].ruble}₽`
         : "0₽";
+
+      // **Добавляем класс _off для result_train и result_avia**
+      if (direction.name === "train" || direction.name === "avia") {
+        jdeElement.classList.add("_off");
+      } else {
+        jdeElement.classList.remove("_off");
+      }
     });
   }
 
@@ -305,6 +324,7 @@ class RailwayExpeditionCalculator {
     jdeElements.forEach((el) => {
       if (isLoading) {
         el.classList.add("_load");
+        el.classList.remove("_off"); // Убираем _off при загрузке
       } else {
         el.classList.remove("_load");
       }
@@ -317,6 +337,16 @@ class RailwayExpeditionCalculator {
           loader.classList.remove("_load");
         }
       }
+    });
+  }
+
+  /**
+   * Добавляет класс _off к элементам .jde.
+   */
+  addOffClassToJdeElements() {
+    const jdeElements = document.querySelectorAll(".jde");
+    jdeElements.forEach((el) => {
+      el.classList.add("_off");
     });
   }
 
