@@ -34,6 +34,7 @@ export const State = {
     tnvedSelectedName: "",
     tnvedSelectedCode: "",
     tnvedSelectedImp: "",
+    addressCheck: "",
   },
 
   tnvedSelection: {
@@ -224,13 +225,8 @@ export const State = {
     },
   },
 
-  address: {
-    city: "",
-    region: "",
-    country: "",
-    lat: 0,
-    lon: 0,
-  },
+  address: null,
+  addressError: null,
 
   jde: {
     kg: {

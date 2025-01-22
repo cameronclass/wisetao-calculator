@@ -1,3 +1,5 @@
+import { State } from "../data/State.js";
+
 class PdfPrepare {
   constructor() {
     // Храним эндпоинты в свойстве класса
@@ -36,7 +38,12 @@ class PdfPrepare {
         unit2: "$",
       },
       TOTALTK: {
-        text: "",
+        text: "" /* text:
+          "Стоимость до " +
+          State.address.city +
+          ", " +
+          State.address.region +
+          ":", */,
         value: "",
         unit: "",
         value2: "",
@@ -378,6 +385,11 @@ class PdfPrepare {
       state.calculatedData[direction].cargoCost.ruble;
     this.getOfferDataComponents.TOTAL.value2 =
       state.calculatedData[direction].cargoCost.dollar;
+
+    /*     this.getOfferDataComponents.TOTALTK.value =
+      state.jde.calculated.all[direction].ruble;
+    this.getOfferDataComponents.TOTALTK.value2 =
+      state.jde.calculated.all[direction].dollar; */
 
     this.getOfferDataComponents.Sum.value =
       state.calculatedData[direction].cargoCost.ruble;

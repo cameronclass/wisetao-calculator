@@ -1,40 +1,38 @@
+// Address.js
 import { State } from "../data/State.js";
 
 /**
- * Класс для обработки ввода адреса и взаимодействия с Яндекс.Картами.
+ * Класс для управления подсказками адресов с использованием Яндекс.Карт.
  */
-class AddressHandler {
+class Address {
   /**
-   * Создает экземпляр обработчика адреса.
+   * Создает экземпляр Address.
    * @param {string} inputSelector - CSS-селектор поля ввода адреса.
    */
   constructor(inputSelector) {
     this.input = document.querySelector(inputSelector);
+    this.suggestView = null;
+
     if (!this.input) {
       console.error(`Элемент ввода с селектором "${inputSelector}" не найден.`);
       return;
     }
 
-    // Ждем, пока ymaps будет готов
-    ymaps.ready(() => {
-      // Проверяем, доступен ли SuggestView
-      if (typeof ymaps.SuggestView !== "function") {
-        console.error(
-          "ymaps.SuggestView не доступен. Проверьте подключение API Яндекс.Карт."
-        );
-        return;
-      }
+    // Добавляем обработчик очистки ошибок при вводе
+    this.input.addEventListener("input", this.onInput.bind(this));
+  }
 
-      try {
-        // Инициализируем подсказки Яндекс.Карт
-        this.suggestView = new ymaps.SuggestView(this.input, { results: 5 });
-
-        // Привязываем событие выбора подсказки
-        this.suggestView.events.add("select", this.onSelect.bind(this));
-      } catch (error) {
-        console.error("Ошибка при инициализации SuggestView:", error);
-      }
+  /**
+   * Helper method to update state and dispatch event
+   * @param {string} prop - Property name in State
+   * @param {*} value - New value for the property
+   */
+  updateState(prop, value) {
+    State[prop] = value;
+    const event = new CustomEvent("stateChange", {
+      detail: { prop, value },
     });
+    document.dispatchEvent(event);
   }
 
   /**
@@ -64,29 +62,103 @@ class AddressHandler {
                 : "Неизвестный регион";
             const coordinates = geoObject.geometry.getCoordinates(); // [широта, долгота]
 
-            // Обновляем состояние
-            State.address = {
+            // Обновляем состояние через helper
+            this.updateState("address", {
               city,
               region,
               country,
               lat: coordinates[0],
               lon: coordinates[1],
-            };
+            });
 
+            // Убираем ошибку, если она была
+            this.updateState("addressError", null);
+
+            console.log("Обновленное состояние адреса:", State.address);
           } else {
             console.warn("Выбранный адрес не находится в России.");
-            // Здесь можно добавить уведомление для пользователя
+            // Очистка поля ввода и состояния через helper
+            this.input.value = "";
+            this.updateState("address", null);
+            this.updateState(
+              "addressError",
+              "Пожалуйста, выберите адрес, находящийся в России."
+            );
           }
         } else {
           console.warn("Геокодирование не дало результатов.");
-          // Здесь можно добавить уведомление для пользователя
+          // Добавляем в State информацию об ошибке через helper
+          this.updateState("addressError", "Не удалось найти указанный адрес.");
         }
       })
       .catch((error) => {
         console.error("Ошибка геокодирования:", error);
-        // Здесь можно добавить уведомление для пользователя
+        // Добавляем в State информацию об ошибке через helper
+        this.updateState(
+          "addressError",
+          "Произошла ошибка при геокодировании адреса."
+        );
       });
+  }
+
+  /**
+   * Обработчик события ввода в поле адреса.
+   */
+  onInput() {
+    // Очищаем адрес и ошибки через helper
+    this.updateState("address", null);
+    this.updateState("addressError", null);
+    // Вызываем hideCalculationResult, если он определен
+    if (typeof State.hideCalculationResult === "function") {
+      State.hideCalculationResult();
+    }
+  }
+
+  /**
+   * Инициализирует SuggestView для поля ввода адреса с ограничением на Россию.
+   */
+  initSuggestView() {
+    ymaps.ready(() => {
+      // Проверяем, доступен ли SuggestView
+      if (typeof ymaps.SuggestView !== "function") {
+        console.error(
+          "ymaps.SuggestView не доступен. Проверьте подключение API Яндекс.Карт."
+        );
+        return;
+      }
+
+      try {
+        // Определяем границы России (примерные координаты)
+        const russiaBounds = [
+          [41.185, 19.638], // Нижняя левая точка
+          [81.25, 169.154], // Верхняя правая точка
+        ];
+
+        // Инициализируем подсказки Яндекс.Карт с ограничением по границам
+        this.suggestView = new ymaps.SuggestView(this.input, {
+          results: 5,
+          boundedBy: russiaBounds,
+          strictBounds: true,
+        });
+
+        // Привязываем событие выбора подсказки
+        this.suggestView.events.add("select", this.onSelect.bind(this));
+      } catch (error) {
+        console.error("Ошибка при инициализации SuggestView:", error);
+      }
+    });
+  }
+
+  /**
+   * Уничтожает SuggestView, если он инициализирован.
+   */
+  destroySuggestView() {
+    if (this.suggestView) {
+      this.suggestView.events.remove("select", this.onSelect.bind(this));
+      this.suggestView.destroy();
+      this.suggestView = null;
+    }
   }
 }
 
-export default AddressHandler;
+export default Address;

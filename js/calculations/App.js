@@ -1,8 +1,9 @@
 // CalculatorApp.js
 import { Calculator } from "./Calculator.js";
 import { FormValidation } from "./FormValidation.js";
-import { State } from "../data/State.js";
 import { UiRenderer } from "../ui/UiRenderer.js";
+import RailwayExpeditionCalculator from "./RailwayExpeditionCalculator.js";
+import { CONFIG } from "../data/config.js";
 
 export class CalculatorApp {
   constructor(fields) {
@@ -10,28 +11,33 @@ export class CalculatorApp {
     this.formValidation = new FormValidation(fields);
     this.calculator = new Calculator();
     this.uiRenderer = new UiRenderer();
+    this.railwayCalculator = new RailwayExpeditionCalculator(CONFIG.railwayUrl);
     this.init();
   }
 
   init() {
-    document
-      .querySelector(".js-calculate-result")
-      .addEventListener("click", (e) => this.handleCalculate(e));
+    const calculateButton = document.querySelector(".js-calculate-result");
+    if (calculateButton) {
+      calculateButton.addEventListener("click", (e) => this.handleCalculate(e));
+    } else {
+      console.error(
+        'Кнопка "Рассчитать" с селектором ".js-calculate-result" не найдена.'
+      );
+    }
   }
 
-  handleCalculate(e) {
+  async handleCalculate(e) {
     e.preventDefault();
 
-    const valid = this.formValidation.validateAll();
-    if (valid) {
+    const isValid = this.formValidation.validateAll();
+    if (isValid) {
       this.calculator.runBaseLogic();
       this.calculator.runShippingLogic();
 
-      console.log("State:", State);
-
+      this.showResult();
       this.uiRenderer.renderAll();
 
-      this.showResult();
+      await this.railwayCalculator.calculate();
     } else {
       console.log("Форма заполнена с ошибками");
       this.scrollToWrapper();
@@ -53,3 +59,5 @@ export class CalculatorApp {
     }
   }
 }
+
+export default CalculatorApp;

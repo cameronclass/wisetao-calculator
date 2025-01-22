@@ -149,17 +149,18 @@
                     <div class="main-calc__from-to_adress group-input">
                         <div class="group-input__title">Ваш адрес</div>
                         <div class="group-input__input">
-                            <input type="text" name="address" placeholder="" disabled>
+                            <input type="text" name="address" class="" placeholder="" disabled>
                             <svg class="group-input__input_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="6" y="10" width="12" height="8" rx="2" fill="#91969b"></rect>
                                 <path d="M9 10V9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9V10" stroke="#91969b" stroke-width="2"></path>
                             </svg>
+                            <span class="error-message"></span>
                         </div>
                     </div>
                     <!-- Адресс Включатель -->
                     <div class="main-calc__from-to_adress_check">
                         <label class="main-calc-checkbox">
-                            <input type="checkbox" name="adress_checkbox" class="main-calc-checkbox__input">
+                            <input type="checkbox" name="address_checkbox" class="main-calc-checkbox__input">
                             <span class="main-calc-checkbox__mark"></span>
                             <span class="main-calc-checkbox__title">Указать точный адрес</span>
                         </label>
@@ -619,7 +620,7 @@
                                 </div>
                             </div>
 
-                            <div class="main-calc-result__cell cargo-cell">
+                            <div class="main-calc-result__cell cargo-cell to-address">
                                 <div class="cargo-cell__title">ЖДЭ</div>
                                 <div class="tooltip">
                                     <span class="tooltip-icon">?</span>
@@ -791,7 +792,7 @@
                                 </div>
                             </div>
 
-                            <div class="main-calc-result__cell price-cell jde _load">
+                            <div class="main-calc-result__cell price-cell to-address jde _load">
                                 <div class="loader _load"></div>
                                 <label class="main-calc-result__price">
                                     <input class="main-calc-result__price_input" type="radio" name="all-price" value="jde-auto">
@@ -1101,7 +1102,7 @@
                                 </div>
                             </div>
 
-                            <div class="main-calc-result__cell price-cell jde _off">
+                            <div class="main-calc-result__cell price-cell to-address jde _off">
                                 <div class="loader"></div>
                                 <label class="main-calc-result__price">
                                     <input class="main-calc-result__price_input" type="radio" name="all-price" value="jde-train">
@@ -1415,7 +1416,7 @@
                                 </div>
                             </div>
 
-                            <div class="main-calc-result__cell price-cell jde _off">
+                            <div class="main-calc-result__cell price-cell to-address jde _off">
                                 <div class="loader"></div>
                                 <label class="main-calc-result__price">
                                     <input class="main-calc-result__price_input" type="radio" name="all-price" value="jde-avia">

@@ -7,20 +7,10 @@ import { State } from "../data/State.js";
 class RailwayExpeditionCalculator {
   /**
    * Создает экземпляр калькулятора доставки.
-   * @param {string} buttonSelector - CSS-селектор кнопки для расчета.
    * @param {string} apiUrl - URL внешнего API для расчета доставки.
    */
-  constructor(buttonSelector, apiUrl) {
-    this.button = document.querySelector(buttonSelector);
+  constructor(apiUrl) {
     this.apiUrl = apiUrl;
-
-    if (!this.button) {
-      console.error(`Кнопка с селектором "${buttonSelector}" не найдена.`);
-      return;
-    }
-
-    // Привязываем обработчик события клика
-    this.button.addEventListener("click", this.onCalculate.bind(this));
   }
 
   /**
@@ -40,11 +30,11 @@ class RailwayExpeditionCalculator {
   }
 
   /**
-   * Обработчик события клика на кнопку расчета.
+   * Выполняет расчет доставки.
    */
-  async onCalculate() {
+  async calculate() {
     // Проверяем, что координаты адреса заполнены
-    if (!State.address.lat || !State.address.lon) {
+    if (!State.address || !State.address.lat || !State.address.lon) {
       console.warn("Координаты адреса не заполнены.");
       this.showNotification("Пожалуйста, укажите адрес доставки.");
       return;
@@ -114,7 +104,6 @@ class RailwayExpeditionCalculator {
       }
 
       // Обновляем состояние с результатами
-      // В методе onCalculate(), после получения данных из API:
       const { auto_regular: costPrice } = result.cost_price;
       const { auto_regular: sumCostPrice } = result.sum_cost_price;
       const { dollar: dollarRate } = State.calculatedData;
@@ -194,7 +183,7 @@ class RailwayExpeditionCalculator {
       const allRubleElement = jdeElement.querySelector(
         ".calculate-result__ruble"
       );
-      /* Tolltip */
+      /* Tooltip */
       const jdeDollar = jdeElement.querySelector("._jde_dollar");
       const jdeRuble = jdeElement.querySelector("._jde_ruble");
       const jdeAllDollar = jdeElement.querySelector("._jde_all_dollar");
@@ -268,42 +257,42 @@ class RailwayExpeditionCalculator {
       // Обновляем DOM элементы
       kgDollarElement.textContent = State.jde.calculated.kg[direction.name]
         .dollar
-        ? State.jde.calculated.kg[direction.name].dollar
+        ? `${State.jde.calculated.kg[direction.name].dollar}$`
         : "0$";
       kgRubleElement.textContent = State.jde.calculated.kg[direction.name].ruble
-        ? State.jde.calculated.kg[direction.name].ruble
-        : "0$";
+        ? `${State.jde.calculated.kg[direction.name].ruble}₽`
+        : "0₽";
 
       allDollarElement.textContent = State.jde.calculated.all[direction.name]
         .dollar
-        ? State.jde.calculated.all[direction.name].dollar
+        ? `${State.jde.calculated.all[direction.name].dollar}$`
         : "0$";
       allRubleElement.textContent = State.jde.calculated.all[direction.name]
         .ruble
-        ? State.jde.calculated.all[direction.name].ruble
-        : "0$";
+        ? `${State.jde.calculated.all[direction.name].ruble}₽`
+        : "0₽";
 
-      /* Tolltip */
+      /* Tooltip */
       jdeDollar.textContent = State.jde.kg.dollar
-        ? State.jde.kg.dollar + "$"
+        ? `${State.jde.kg.dollar}$`
         : "0$";
       jdeRuble.textContent = State.jde.kg.ruble
-        ? State.jde.kg.ruble + "₽"
+        ? `${State.jde.kg.ruble}₽`
         : "0₽";
       jdeAllDollar.textContent = State.jde.all.dollar
-        ? State.jde.all.dollar + "$"
+        ? `${State.jde.all.dollar}$`
         : "0$";
       jdeAllRuble.textContent = State.jde.all.ruble
-        ? State.jde.all.ruble + "₽"
-        : "0$";
+        ? `${State.jde.all.ruble}₽`
+        : "0₽";
       everythingDollar.textContent = State.jde.calculated.all[direction.name]
         .dollar
-        ? State.jde.calculated.all[direction.name].dollar + "$"
+        ? `${State.jde.calculated.all[direction.name].dollar}$`
         : "0$";
       everythingRuble.textContent = State.jde.calculated.all[direction.name]
         .ruble
-        ? State.jde.calculated.all[direction.name].ruble + "₽"
-        : "0$";
+        ? `${State.jde.calculated.all[direction.name].ruble}₽`
+        : "0₽";
     });
   }
 

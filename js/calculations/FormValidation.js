@@ -1,7 +1,12 @@
 // FormValidation.js
+import Address from "../api/Address.js";
 import { State } from "../data/State.js";
 
 export class FormValidation {
+  /**
+   * Создает экземпляр FormValidation.
+   * @param {Object} fields - Объект, содержащий ссылки на элементы полей формы.
+   */
   constructor(fields) {
     this.fields = fields;
     this.errors = {};
@@ -17,7 +22,14 @@ export class FormValidation {
       this.fields.volumeHeight,
       this.fields.tnvedInput,
       this.fields.brand,
+      this.fields.address, // Добавляем поле адреса для сброса
     ];
+
+    this.updateState("addressError", null);
+
+    // Инициализация Address.js
+    this.addressHandler = new Address('input[name="address"]');
+    this.addressHandler.initSuggestView();
 
     // -- Базовая валидация --
     this.setupInputRestrictions(); // (1) Ограничение ввода для totalVolume, totalWeight, ...
@@ -26,7 +38,26 @@ export class FormValidation {
 
     // -- Логика объёма (volumeLength/Width/Height vs. totalVolume) --
     this.setupNumericVolumeRestrictions(); // Ограничения для объёмных полей
-    this.setupVolumeModeListeners(); // Инициализация листенеров на weightVolumeChange и inputs
+    this.setupVolumeModeListeners(); // Слушатели для объёмных полей
+
+    // -- Слушатели пользовательских событий для State --
+    this.setupStateEventListener(); // Устанавливаем слушатель stateChange раньше
+
+    // -- Управление видимостью элементов `.to-address` --
+    this.setupAddressCheckboxListener(); // Затем устанавливаем слушатель чекбокса
+  }
+
+  /**
+   * Helper method to update state and dispatch event
+   * @param {string} prop - Property name in State
+   * @param {*} value - New value for the property
+   */
+  updateState(prop, value) {
+    State[prop] = value;
+    const event = new CustomEvent("stateChange", {
+      detail: { prop, value },
+    });
+    document.dispatchEvent(event);
   }
 
   // --------------------------------------------------
@@ -79,6 +110,7 @@ export class FormValidation {
         fieldEl.addEventListener("input", () => {
           this.removeError(fieldEl);
           this.validateSingleField(fieldName);
+          this.hideCalculationResult(); // Вызов hideCalculationResult при изменении любого поля
         });
       }
     });
@@ -89,6 +121,7 @@ export class FormValidation {
       radio.addEventListener("change", () => {
         this.clearCategoryError();
         this.validateCategory();
+        this.hideCalculationResult(); // Вызов hideCalculationResult при изменении категории
       });
     });
 
@@ -117,13 +150,14 @@ export class FormValidation {
   }
 
   // --------------------------------------------------
-  // === 3) Сброс формы при переключении calc-type ====
+  // =========== 3) Сброс формы при переключении calc-type ====
   // --------------------------------------------------
   setupCalcTypeReset() {
     const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
     calcTypeRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
         this.resetAll();
+        this.hideCalculationResult(); // Вызов hideCalculationResult при сбросе формы
       });
     });
   }
@@ -158,11 +192,23 @@ export class FormValidation {
         tnvedSelectedName: null,
         tnvedSelectedCode: null,
         tnvedSelectedImp: null,
+        address: null, // Сброс адреса
       };
     }
 
+    // Сброс состояния адреса
+    this.updateState("address", null);
+    this.updateState("addressError", null);
+
+    // Очистка поля адреса в форме
+    if (this.fields.address) {
+      this.fields.address.value = "";
+    }
+
     const tnvedBlock = document.querySelector(".white-cargo__justinfo");
-    tnvedBlock.classList.remove("active");
+    if (tnvedBlock) {
+      tnvedBlock.classList.remove("active");
+    }
 
     console.log("Форма и State.clientData сброшены при переключении calc-type");
   }
@@ -217,6 +263,7 @@ export class FormValidation {
           this.clearErrors();
           this.clearFields([this.fields.totalVolume]);
         }
+        this.hideCalculationResult(); // Вызов hideCalculationResult при переключении режима объёма
       });
     }
 
@@ -225,6 +272,7 @@ export class FormValidation {
       if (!field) return;
       field.addEventListener("input", () => {
         this.calculateVolume(); // пересчитываем totalVolumeCalculated
+        this.hideCalculationResult(); // Вызов hideCalculationResult при изменении объёма
       });
     });
   }
@@ -437,11 +485,17 @@ export class FormValidation {
     const errorBlock = document.querySelector(".js-error-category");
 
     if (!isChecked) {
-      if (errorSpan) errorSpan.textContent = "Необходимо выбрать категорию";
+      if (errorSpan) {
+        errorSpan.textContent = "Необходимо выбрать категорию";
+        errorSpan.style.display = "block";
+      }
       if (errorBlock) errorBlock.classList.add("active");
       return false;
     }
-    if (errorSpan) errorSpan.textContent = "";
+    if (errorSpan) {
+      errorSpan.textContent = "";
+      errorSpan.style.display = "none";
+    }
     if (errorBlock) errorBlock.classList.remove("active");
     return true;
   }
@@ -455,6 +509,7 @@ export class FormValidation {
     const errorSpan = parent?.querySelector(".error-message");
     if (errorSpan) {
       errorSpan.textContent = message;
+      errorSpan.style.display = "block";
     }
     field.classList.add("error-input");
   }
@@ -466,14 +521,20 @@ export class FormValidation {
     const errorSpan = parent?.querySelector(".error-message");
     if (errorSpan) {
       errorSpan.textContent = "";
+      errorSpan.style.display = "none";
     }
   }
 
   clearCategoryError() {
     const errorSpan = document.querySelector(".error-message-category");
     const errorBlock = document.querySelector(".js-error-category");
-    if (errorSpan) errorSpan.textContent = "";
-    if (errorBlock) errorBlock.classList.remove("active");
+    if (errorSpan) {
+      errorSpan.textContent = "";
+      errorSpan.style.display = "none";
+    }
+    if (errorBlock) {
+      errorBlock.classList.remove("active");
+    }
   }
 
   clearErrors() {
@@ -481,9 +542,10 @@ export class FormValidation {
     document
       .querySelectorAll(".error-input")
       .forEach((el) => el.classList.remove("error-input"));
-    document
-      .querySelectorAll(".error-message")
-      .forEach((el) => (el.textContent = ""));
+    document.querySelectorAll(".error-message").forEach((el) => {
+      el.textContent = "";
+      el.style.display = "none";
+    });
     this.clearCategoryError();
   }
 
@@ -523,12 +585,40 @@ export class FormValidation {
       calcType === "calc-cargo" ? this.validateCategory() : true,
       this.validateRadio("packing-type"),
       calcType === "calc-customs" ? this.validateTnvedInput() : true,
+      this.validateAddress(), // Добавляем валидацию адреса
     ].every(Boolean);
 
     if (isValid) {
       this.saveToState();
     }
     return isValid;
+  }
+
+  /**
+   * validateAddress(): Проверяет, выбран ли адрес и нет ли ошибок.
+   */
+  validateAddress() {
+    const addressField = this.fields.address;
+    const addressError = State.addressError;
+
+    if (this.fields.addressCheck?.checked && !State.address) {
+      // Если чекбокс активен, но адрес не выбран
+      this.addError(
+        addressField,
+        addressError || "Пожалуйста, выберите адрес."
+      );
+      return false;
+    }
+
+    // Если есть ошибка, отображаем её
+    if (addressError) {
+      this.addError(addressField, addressError);
+      return false;
+    }
+
+    // Убираем ошибку, если всё хорошо
+    this.removeError(addressField);
+    return true;
   }
 
   // --------------------------------------------------
@@ -590,5 +680,123 @@ export class FormValidation {
 
     // ТНВЭД ввод пользователя (или State.tnvedSelection.selectedItem)
     State.clientData.tnvedInput = this.fields.tnvedInput.value.trim();
+
+    // Адрес
+    if (State.address) {
+      State.clientData.address = { ...State.address };
+    } else {
+      State.clientData.address = null;
+    }
+
+    console.log("State.clientData обновлён:", State.clientData);
+  }
+
+  // --------------------------------------------------
+  // =========== 12) Управление Видимостью `.to-address` ===
+  // --------------------------------------------------
+  setupAddressCheckboxListener() {
+    const addressCheckbox = this.fields.addressCheck;
+    if (!addressCheckbox) {
+      console.warn(
+        "Чекбокс адреса с селектором 'input[name=\"address_checkbox\"]' не найден."
+      );
+      return;
+    }
+
+    addressCheckbox.addEventListener("change", (event) => {
+      const isChecked = event.target.checked;
+      this.toggleToAddressElements(isChecked);
+      this.handleAddressCheckboxChange(isChecked); // Обработка изменения чекбокса
+      this.hideCalculationResult(); // Вызов hideCalculationResult при изменении чекбокса адреса
+
+      // Дополнительная валидация при изменении чекбокса
+      if (isChecked && !State.address) {
+        // Если чекбокс активен, но адрес не выбран, устанавливаем ошибку
+        this.updateState("addressError", "Пожалуйста, выберите адрес.");
+      } else if (!isChecked) {
+        // Если чекбокс деактивирован, убираем ошибку
+        this.updateState("addressError", null);
+      }
+    });
+  }
+
+  /**
+   * Управляет видимостью элементов с классом `.to-address` в зависимости от состояния чекбокса.
+   * @param {boolean} isVisible - Нужно ли показывать элементы (`true`) или скрывать (`false`).
+   */
+  toggleToAddressElements(isVisible) {
+    const toAddressElements = document.querySelectorAll(".to-address");
+    toAddressElements.forEach((element) => {
+      if (isVisible) {
+        element.classList.remove("hidden");
+      } else {
+        element.classList.add("hidden");
+      }
+    });
+  }
+
+  /**
+   * Обрабатывает изменение состояния чекбокса адреса.
+   * Если чекбокс отключен и адрес выбран, очищает поле адреса.
+   * @param {boolean} isChecked - Состояние чекбокса.
+   */
+  handleAddressCheckboxChange(isChecked) {
+    if (!isChecked && State.address) {
+      // Если чекбокс отключен и адрес выбран
+      this.fields.address.value = "";
+      this.updateState("address", null);
+      this.updateState("addressError", null);
+      this.removeError(this.fields.address);
+    }
+  }
+
+  /**
+   * Добавляет слушатель пользовательских событий 'stateChange'.
+   */
+  setupStateEventListener() {
+    document.addEventListener("stateChange", this.handleStateChange.bind(this));
+  }
+
+  /**
+   * Обрабатывает события изменения State.
+   * @param {CustomEvent} event - Событие 'stateChange'.
+   */
+  handleStateChange(event) {
+    const { prop, value } = event.detail;
+    console.log(`State changed: ${prop} = ${value}`);
+    this.handleAddressStateChange(prop, value);
+  }
+
+  /**
+   * Обрабатывает изменения в State.address и State.addressError.
+   * @param {string} prop - Имя изменённого свойства.
+   * @param {*} value - Новое значение свойства.
+   */
+  handleAddressStateChange(prop, value) {
+    console.log(`Handling state change for ${prop} with value: ${value}`);
+    if (prop === "address") {
+      if (value) {
+        // Адрес выбран и валиден
+        this.removeError(this.fields.address);
+      } else if (State.addressError) {
+        // Адрес не выбран или ошибка
+        this.addError(this.fields.address, State.addressError);
+      }
+    }
+
+    if (prop === "addressError") {
+      if (value) {
+        // Есть ошибка
+        this.addError(this.fields.address, value);
+      } else {
+        // Ошибки нет
+        this.removeError(this.fields.address);
+      }
+    }
+
+    // При изменении адреса или ошибки скрываем результат расчёта
+    this.hideCalculationResult();
   }
 }
+
+export default FormValidation;

@@ -282,11 +282,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Получаем элементы по классам
-  const addressInput = document.querySelector(
-    ".main-calc__from-to_adress .group-input__input input"
-  );
+  const addressInput = document.querySelector('input[name="address"]');
   const addressCheckbox = document.querySelector(
-    ".main-calc__from-to_adress_check .main-calc-checkbox__input"
+    'input[name="address_checkbox"]'
   );
   const addressIcon = document.querySelector(
     ".main-calc__from-to_adress .group-input__input_svg"
