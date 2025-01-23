@@ -34,7 +34,7 @@ export const State = {
     tnvedSelectedName: "",
     tnvedSelectedCode: "",
     tnvedSelectedImp: "",
-    addressCheck: "",
+    addressCheck: false,
   },
 
   tnvedSelection: {
@@ -47,6 +47,8 @@ export const State = {
     packingType: "",
     selectedDirection: "",
     selectedDirectionRus: "",
+    russiaSelectedCargo: "",
+    russiaSelectedCargoRus: "",
     clientCost: {
       dollar: "",
       ruble: "",

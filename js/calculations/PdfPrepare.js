@@ -31,19 +31,14 @@ class PdfPrepare {
         unit2: "",
       },
       TOTAL: {
-        text: "Стоимость до г. Москва (ТК «Южные ворота»): ",
+        text: "Стоимость до: г. Москва (ТК «Южные ворота»): ",
         value: "",
         unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       TOTALTK: {
-        text: "" /* text:
-          "Стоимость до " +
-          State.address.city +
-          ", " +
-          State.address.region +
-          ":", */,
+        text: "",
         value: "",
         unit: "",
         value2: "",
@@ -120,7 +115,7 @@ class PdfPrepare {
         unit2: "$",
       },
       Sum: {
-        text: "Стоимость до г. Москва (ТК «Южные ворота») ",
+        text: "Стоимость до: г. Москва (ТК «Южные ворота») ",
         value: "",
         unit: "₽ ",
         value2: "",
@@ -253,7 +248,7 @@ class PdfPrepare {
         unit2: "$",
       },
       TOTAL: {
-        text: "Стоимость до г. Благовещенск (Тамож.+ Перевозка): ",
+        text: "Стоимость до: г. Благовещенск (Тамож.+ Перевозка): ",
         value: "", // State.calculatedData.auto.totalCost.ruble
         unit: "₽ ",
         value2: "",
@@ -281,7 +276,7 @@ class PdfPrepare {
         unit2: "$",
       },
       Sum: {
-        text: "Общая стоимость (Перевозка + Таможня): ",
+        text: "Стоимость (Перевозка + Таможня): ",
         value: "", // State.calculatedData.auto.totalCost.ruble
         unit: "₽ ",
         value2: "",
@@ -349,7 +344,50 @@ class PdfPrepare {
         value2: "",
         unit2: "",
       },
-      tkData: null,
+      tkData: {
+        kgTk: {
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
+        },
+        sumTk: {
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
+        },
+        kgTotal: {
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
+        },
+        sumTotal: {
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
+        },
+        varyKg: {
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
+        },
+        varySum: {
+          text: "",
+          value: "",
+          unit: "",
+          value2: "",
+          unit2: "",
+        },
+      },
       USD_RATE: { value: 105 }, // Это сохранено как в оригинале
     };
   }
@@ -362,6 +400,7 @@ class PdfPrepare {
   /* Обычная Доставка */
   updateOfferDataComponentsFromState(state) {
     const direction = state.calculatedData.selectedDirection;
+    const directionRussia = state.calculatedData.russiaSelectedCargo;
 
     this.getOfferDataComponents.ExchangeRateYuan.value =
       state.calculatedData.yuan;
@@ -386,11 +425,6 @@ class PdfPrepare {
     this.getOfferDataComponents.TOTAL.value2 =
       state.calculatedData[direction].cargoCost.dollar;
 
-    /*     this.getOfferDataComponents.TOTALTK.value =
-      state.jde.calculated.all[direction].ruble;
-    this.getOfferDataComponents.TOTALTK.value2 =
-      state.jde.calculated.all[direction].dollar; */
-
     this.getOfferDataComponents.Sum.value =
       state.calculatedData[direction].cargoCost.ruble;
     this.getOfferDataComponents.Sum.value2 =
@@ -410,6 +444,53 @@ class PdfPrepare {
       state.calculatedData[direction].cargoCost.ruble;
     this.getOfferDataComponents.PackageCost.value2 =
       state.calculatedData[direction].cargoCost.dollar;
+
+    // Обработка По России
+    if (directionRussia !== null) {
+      this.getOfferDataComponents.TOTALTK.text = `Стоимость до: ${State.address.city}: `; /* , ${State.address.region} */
+      this.getOfferDataComponents.tkData.kgTk.text = `За кг (${State.address.city}): `;
+      this.getOfferDataComponents.tkData.sumTk.text = `Стоимость до: ${State.address.city}: `;
+      this.getOfferDataComponents.tkData.varyKg.text = ` (стоимость может варьир.)`;
+      this.getOfferDataComponents.tkData.varySum.text = ` (стоимость может варьир.)`;
+      this.getOfferDataComponents.tkData.sumTotal.text = `Общая стоимость до ${State.address.city}: `;
+
+      if (directionRussia === "jde") {
+        this.getOfferDataComponents.TOTALTK.value = state.jde.all.ruble;
+        this.getOfferDataComponents.TOTALTK.value2 = state.jde.all.dollar;
+
+        this.getOfferDataComponents.tkData.kgTk.value = state.jde.kg.ruble;
+        this.getOfferDataComponents.tkData.kgTk.value2 = state.jde.kg.dollar;
+
+        this.getOfferDataComponents.tkData.sumTk.value = state.jde.all.ruble;
+        this.getOfferDataComponents.tkData.sumTk.value2 = state.jde.all.dollar;
+
+        this.getOfferDataComponents.tkData.sumTotal.value =
+          state.jde.calculated.all[direction].ruble;
+        this.getOfferDataComponents.tkData.sumTotal.value2 =
+          state.jde.calculated.all[direction].dollar;
+
+        this.getOfferDataComponents.DeliveryType.value =
+          state.calculatedData.selectedDirectionRus +
+          ` | ${state.calculatedData.russiaSelectedCargoRus}`;
+      } else {
+        this.getOfferDataComponents.TOTALTK.value = "";
+        this.getOfferDataComponents.TOTALTK.value2 = "";
+      }
+
+      // Сохраняем оригинальные единицы измерения
+      this.getOfferDataComponents.TOTALTK.unit = "₽ ";
+      this.getOfferDataComponents.TOTALTK.unit2 = "$";
+
+      this.getOfferDataComponents.tkData.kgTk.unit = "₽ ";
+      this.getOfferDataComponents.tkData.kgTk.unit2 = "$";
+    } else {
+      // Полный сброс если нет грузового направления
+      this.getOfferDataComponents.TOTALTK.text = "";
+      this.getOfferDataComponents.TOTALTK.value = "";
+      this.getOfferDataComponents.TOTALTK.unit = "";
+      this.getOfferDataComponents.TOTALTK.value2 = "";
+      this.getOfferDataComponents.TOTALTK.unit2 = "";
+    }
   }
 
   /**
@@ -419,6 +500,9 @@ class PdfPrepare {
    */
   /* Белая доставка */
   updateOfferWhiteDataComponentsFromState(state) {
+    const direction = state.calculatedData.selectedDirection;
+    const directionRussia = state.calculatedData.russiaSelectedCargo;
+
     this.getOfferWhiteDataComponents.ExchangeRateYuan.value =
       state.calculatedData.yuan;
     this.getOfferWhiteDataComponents.ExchangeRateDollar.value =
@@ -500,6 +584,55 @@ class PdfPrepare {
         LICIMP_PR: false,
       },
     ];
+
+    // Обработка По России
+    if (directionRussia !== null) {
+      this.getOfferWhiteDataComponents.TOTALTK.text = `Стоимость до: ${State.address.city} | ${state.calculatedData.russiaSelectedCargoRus}: `; /* , ${State.address.region} */
+      this.getOfferWhiteDataComponents.tkData.kgTk.text = `За кг (${State.address.city}): `;
+      this.getOfferWhiteDataComponents.tkData.sumTk.text = `Стоимость до: ${State.address.city}: `;
+      this.getOfferWhiteDataComponents.tkData.varyKg.text = ` (стоимость может варьир.)`;
+      this.getOfferWhiteDataComponents.tkData.varySum.text = ` (стоимость может варьир.)`;
+      this.getOfferWhiteDataComponents.tkData.sumTotal.text = `Общая стоимость до ${State.address.city}: `;
+
+      if (directionRussia === "jde") {
+        this.getOfferWhiteDataComponents.TOTALTK.value = state.jde.all.ruble;
+        this.getOfferWhiteDataComponents.TOTALTK.value2 = state.jde.all.dollar;
+
+        this.getOfferWhiteDataComponents.tkData.kgTk.value = state.jde.kg.ruble;
+        this.getOfferWhiteDataComponents.tkData.kgTk.value2 =
+          state.jde.kg.dollar;
+
+        this.getOfferWhiteDataComponents.tkData.sumTk.value =
+          state.jde.all.ruble;
+        this.getOfferWhiteDataComponents.tkData.sumTk.value2 =
+          state.jde.all.dollar;
+
+        this.getOfferWhiteDataComponents.tkData.sumTotal.value =
+          state.jde.calculated.all[direction].ruble;
+        this.getOfferWhiteDataComponents.tkData.sumTotal.value2 =
+          state.jde.calculated.all[direction].dollar;
+      } else {
+        this.getOfferWhiteDataComponents.TOTALTK.value = "";
+        this.getOfferWhiteDataComponents.TOTALTK.value2 = "";
+      }
+
+      // Сохраняем оригинальные единицы измерения
+      this.getOfferWhiteDataComponents.TOTALTK.unit = "₽ ";
+      this.getOfferWhiteDataComponents.TOTALTK.unit2 = "$";
+
+      this.getOfferWhiteDataComponents.tkData.kgTk.unit = "₽ ";
+      this.getOfferWhiteDataComponents.tkData.kgTk.unit2 = "$";
+
+      this.getOfferWhiteDataComponents.tkData.sumTk.unit = "₽ ";
+      this.getOfferWhiteDataComponents.tkData.sumTk.unit2 = "$";
+    } else {
+      // Полный сброс если нет грузового направления
+      this.getOfferWhiteDataComponents.TOTALTK.text = "";
+      this.getOfferWhiteDataComponents.TOTALTK.value = "";
+      this.getOfferWhiteDataComponents.TOTALTK.unit = "";
+      this.getOfferWhiteDataComponents.TOTALTK.value2 = "";
+      this.getOfferWhiteDataComponents.TOTALTK.unit2 = "";
+    }
   }
 
   /**

@@ -6,6 +6,19 @@ class PriceSelector {
     this.pdfButton = document.querySelector(buttonSelector);
     this.state = state;
 
+    // Маппинг для русских названий направлений
+    this.directionRusMap = {
+      auto: "Авто",
+      train: "ЖД",
+      avia: "Авиа",
+    };
+
+    // Маппинг для русских названий грузовых направлений
+    this.cargoRusMap = {
+      jde: "ЖэлДорЭспедиция",
+      // Добавьте другие направления при необходимости
+    };
+
     this.init();
   }
 
@@ -34,18 +47,34 @@ class PriceSelector {
   }
 
   handleRadioChange(radio) {
-    this.updateButtonState();
-    this.state.calculatedData.selectedDirection = radio.value; // Обновление значения в состоянии
+    const value = radio.value;
+    let transportPart = value;
+    let cargoPart = null;
 
-    // Обновление значения на русском языке
-    const directionRusMap = {
-      auto: "Авто",
-      train: "ЖД",
-      avia: "Авиа",
-    };
+    // Разбиваем значение на части по дефису
+    if (value.includes("-")) {
+      const parts = value.split("-");
+      if (parts.length === 2) {
+        [cargoPart, transportPart] = parts;
+      }
+    }
 
+    // Обновление данных о транспорте
+    this.state.calculatedData.selectedDirection = transportPart;
     this.state.calculatedData.selectedDirectionRus =
-      directionRusMap[radio.value] || "Неизвестное направление";
+      this.directionRusMap[transportPart] || "Неизвестное направление";
+
+    // Обновление данных о грузовом направлении
+    if (cargoPart && this.cargoRusMap[cargoPart]) {
+      this.state.calculatedData.russiaSelectedCargo = cargoPart;
+      this.state.calculatedData.russiaSelectedCargoRus =
+        this.cargoRusMap[cargoPart];
+    } else {
+      this.state.calculatedData.russiaSelectedCargo = null;
+      this.state.calculatedData.russiaSelectedCargoRus = null;
+    }
+
+    this.updateButtonState();
   }
 
   updateButtonState() {

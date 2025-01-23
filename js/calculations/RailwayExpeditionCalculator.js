@@ -35,8 +35,8 @@ class RailwayExpeditionCalculator {
   async calculate() {
     // Проверяем, что координаты адреса заполнены
     if (!State.address || !State.address.lat || !State.address.lon) {
-      console.warn("Координаты адреса не заполнены.");
-      this.showNotification("Пожалуйста, укажите адрес доставки.");
+/*       console.warn("Координаты адреса не заполнены.");
+      this.showNotification("Пожалуйста, укажите адрес доставки."); */
       return;
     }
 
@@ -96,7 +96,7 @@ class RailwayExpeditionCalculator {
       const result = await response.json();
 
       // Выводим полный результат запроса в консоль
-      console.log("Полный результат API:", result);
+      /* console.log("Полный результат API:", result); */
 
       // Проверка структуры ответа
       if (
@@ -141,7 +141,7 @@ class RailwayExpeditionCalculator {
       // Обновляем дополнительные результаты по направлениям
       this.updateDirectionResults();
 
-      console.log("Расчет выполнен успешно.", State.jde);
+      /* console.log("Расчет выполнен успешно.", State.jde); */
     } catch (error) {
       console.error("Ошибка при расчете доставки:", error.message);
       this.showNotification(

@@ -112,7 +112,10 @@ class PdfGenerate {
 
   handleOverlayClick() {
     this.overlayCalc.addEventListener("click", (event) => {
-      if (this.overlayMessageCalc.textContent.includes("Успешно получено")) {
+      if (
+        this.overlayMessageCalc.textContent.includes("Успешно получено") ||
+        this.overlayMessageCalc.textContent.includes("Произошла ошибка")
+      ) {
         this.overlayCalc.classList.remove("active");
       }
     });

@@ -688,7 +688,7 @@ export class FormValidation {
       State.clientData.address = null;
     }
 
-    console.log("State.clientData обновлён:", State.clientData);
+    /* console.log("State.clientData обновлён:", State.clientData); */
   }
 
   // --------------------------------------------------
@@ -703,6 +703,11 @@ export class FormValidation {
       return;
     }
 
+    // Если не выбрано при загрузке страницы то не показываем .to-address
+    this.toggleToAddressElements(State.clientData.addressCheck);
+    this.handleAddressCheckboxChange(State.clientData.addressCheck);
+
+
     addressCheckbox.addEventListener("change", (event) => {
       const isChecked = event.target.checked;
       this.toggleToAddressElements(isChecked);
@@ -712,7 +717,7 @@ export class FormValidation {
       // Дополнительная валидация при изменении чекбокса
       if (isChecked && !State.address) {
         // Если чекбокс активен, но адрес не выбран, устанавливаем ошибку
-        this.updateState("addressError", "Пожалуйста, выберите адрес.");
+        this.updateState("addressError", "Пожалуйста, выберите адрес из списка.");
       } else if (!isChecked) {
         // Если чекбокс деактивирован, убираем ошибку
         this.updateState("addressError", null);
@@ -763,7 +768,6 @@ export class FormValidation {
    */
   handleStateChange(event) {
     const { prop, value } = event.detail;
-    console.log(`State changed: ${prop} = ${value}`);
     this.handleAddressStateChange(prop, value);
   }
 
@@ -773,7 +777,6 @@ export class FormValidation {
    * @param {*} value - Новое значение свойства.
    */
   handleAddressStateChange(prop, value) {
-    console.log(`Handling state change for ${prop} with value: ${value}`);
     if (prop === "address") {
       if (value) {
         // Адрес выбран и валиден

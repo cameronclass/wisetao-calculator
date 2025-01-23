@@ -74,7 +74,7 @@ class Address {
             // Убираем ошибку, если она была
             this.updateState("addressError", null);
 
-            console.log("Обновленное состояние адреса:", State.address);
+            /* console.log("Обновленное состояние адреса:", State.address); */
           } else {
             console.warn("Выбранный адрес не находится в России.");
             // Очистка поля ввода и состояния через helper
