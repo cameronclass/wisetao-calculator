@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор адреса с получением кода</title>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=daa45afb-a989-4163-8df6-1b1edba1137d&suggest_apikey=5e11305c-8d8a-4669-9069-5c56422200c1"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #addressList {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 600px;
+        }
+
+        .address-item {
+            cursor: pointer;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .address-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Выбор адреса и получение кода</h1>
+    <div>
+        <input type="text" id="addressInput" placeholder="Введите адрес для поиска" style="width: 600px; padding: 8px;">
+        <div id="addressList"></div>
+    </div>
+    <div class="output">
+        <p><strong>Выбранный адрес:</strong> <span id="selectedAddress">—</span></p>
+        <p><strong>Широта:</strong> <span id="latitude">—</span></p>
+        <p><strong>Долгота:</strong> <span id="longitude">—</span></p>
+        <p><strong>Код адреса (например, OSM ID):</strong> <span id="addressCode">—</span></p>
+    </div>
+
+    <script>
+        ymaps.ready(function () {
+            const addressInput = document.getElementById('addressInput');
+            const addressList = document.getElementById('addressList');
+            const selectedAddress = document.getElementById('selectedAddress');
+            const latitude = document.getElementById('latitude');
+            const longitude = document.getElementById('longitude');
+            const addressCode = document.getElementById('addressCode');
+
+            // Событие ввода текста
+            addressInput.addEventListener('input', function () {
+                const query = this.value.trim();
+                if (query.length < 3) {
+                    addressList.innerHTML = '';
+                    return;
+                }
+
+                // Получение подсказок
+                ymaps.suggest(query).then(function (items) {
+                    addressList.innerHTML = ''; // Очищаем список
+                    items.forEach(function (item) {
+                        const div = document.createElement('div');
+                        div.className = 'address-item';
+                        div.textContent = item.displayName;
+                        div.dataset.address = item.displayName;
+                        addressList.appendChild(div);
+                    });
+                }).catch(function (error) {
+                    console.error("Ошибка при получении подсказок:", error);
+                });
+            });
+
+            // Обработка выбора адреса
+            addressList.addEventListener('click', function (e) {
+                if (e.target && e.target.classList.contains('address-item')) {
+                    const selected = e.target.dataset.address;
+
+                    // Подставляем выбранный адрес в поле ввода
+                    addressInput.value = selected;
+                    addressList.innerHTML = '';
+
+                    // Геокодирование для получения координат и кода
+                    getCoordinatesAndCode(selected);
+                }
+            });
+
+            // Функция для получения координат и кода
+            function getCoordinatesAndCode(address) {
+                ymaps.geocode(address, { results: 1 }).then(function (res) {
+                    const geoObject = res.geoObjects.get(0);
+                    if (geoObject) {
+                        const coords = geoObject.geometry.getCoordinates(); // [Широта, Долгота]
+
+                        // Попробуем извлечь уникальный код
+                        const properties = geoObject.properties.getAll();
+                        let code = null;
+
+                        // Пример: использование OSM ID, если доступно
+                        if (properties.hasOwnProperty('osm_id')) {
+                            code = properties.osm_id;
+                        } else if (
+                            properties.metaDataProperty &&
+                            properties.metaDataProperty.GeocoderMetaData &&
+                            properties.metaDataProperty.GeocoderMetaData.Address
+                        ) {
+                            // Пример: использование альтернативных идентификаторов
+                            const metadata = properties.metaDataProperty.GeocoderMetaData;
+                            if (metadata.Address.KLADRCode) {
+                                code = metadata.Address.KLADRCode; // Код КЛАДР
+                            } else if (metadata.Address.FIASID) {
+                                code = metadata.Address.FIASID; // Код ФИАС
+                            }
+                        }
+
+                        if (!code) {
+                            code = "Не удалось определить код адреса";
+                        }
+
+                        // Отображаем результаты
+                        selectedAddress.textContent = address;
+                        latitude.textContent = coords[0];
+                        longitude.textContent = coords[1];
+                        addressCode.textContent = code;
+                    } else {
+                        alert("Не удалось найти данные для данного адреса.");
+                    }
+                }).catch(function (error) {
+                    console.error("Ошибка геокодирования:", error);
+                    alert("Произошла ошибка при получении данных.");
+                });
+            }
+        });
+
+        var url = "http://suggestions.dadata.ru/suggestions/api/4_1/rs/geolocate/address";
+        var token = "9faf0df4e5f608e5e0f42f750b27009d5b4847ae";
+        var query = { lat: 55.878, lon: 37.653 };
+
+        var options = {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "Token " + token
+            },
+            body: JSON.stringify(query)
+        }
+
+        fetch(url, options)
+            .then(response => response.text())
+            .then(result => console.log(result))
+            .catch(error => console.log("error", error));
+    </script>
+</body>
+</html>
+<!-- area_kladr_id -->

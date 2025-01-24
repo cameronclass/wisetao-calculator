@@ -26,7 +26,7 @@ body {
   visibility: hidden;
   opacity: 0;
 }
-.loader._load{
+.loader._load {
   visibility: visible;
   opacity: 1;
 }
@@ -1148,8 +1148,17 @@ input[type="number"] {
 }
 .cargo-cell__title {
   font-weight: 600;
+  text-align: center;
   font-size: 24px;
+  line-height: 1.5;
   font-family: "Roboto Condensed", sans-serif;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+.cargo-cell__title_span {
+  font-size: 13px;
 }
 .cargo-cell .tooltip {
   right: 5px;

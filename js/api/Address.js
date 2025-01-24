@@ -1,125 +1,221 @@
-// Address.js
 import { State } from "../data/State.js";
 
-/**
- * Класс для управления подсказками адресов с использованием Яндекс.Карт.
- */
 class Address {
-  /**
-   * Создает экземпляр Address.
-   * @param {string} inputSelector - CSS-селектор поля ввода адреса.
-   */
   constructor(inputSelector) {
     this.input = document.querySelector(inputSelector);
     this.suggestView = null;
+    this.WISETAO_API_URL =
+      "https://api-calc.wisetao.com:4343/api/search-city-kit";
+    this.KLADR_PRIORITY = [
+      "area_kladr",
+      "city_kladr",
+      "settlement_kladr",
+      "kladr",
+      "house_kladr",
+    ];
 
     if (!this.input) {
       console.error(`Элемент ввода с селектором "${inputSelector}" не найден.`);
       return;
     }
 
-    // Добавляем обработчик очистки ошибок при вводе
     this.input.addEventListener("input", this.onInput.bind(this));
   }
 
-  /**
-   * Helper method to update state and dispatch event
-   * @param {string} prop - Property name in State
-   * @param {*} value - New value for the property
-   */
   updateState(prop, value) {
     State[prop] = value;
-    const event = new CustomEvent("stateChange", {
-      detail: { prop, value },
-    });
+    const event = new CustomEvent("stateChange", { detail: { prop, value } });
     document.dispatchEvent(event);
   }
 
-  /**
-   * Обработчик события выбора адреса из подсказок.
-   * @param {Object} event - Объект события.
-   */
-  onSelect(event) {
+  async onSelect(event) {
+    console.log("Этап: Выбор адреса из Яндекс.Подсказок");
     const selectedAddress = event.get("item").value;
-    console.log("Выбранный адрес:", selectedAddress);
 
-    // Выполняем геокодирование выбранного адреса
-    ymaps
-      .geocode(selectedAddress, { results: 1 })
-      .then((response) => {
-        const geoObject = response.geoObjects.get(0);
+    try {
+      const response = await ymaps.geocode(selectedAddress, { results: 1 });
+      const geoObject = response.geoObjects.get(0);
 
-        if (geoObject) {
-          const country = geoObject.getCountry();
-          if (country === "Россия") {
-            const city =
-              geoObject.getLocalities().length > 0
-                ? geoObject.getLocalities()[0]
-                : "Неизвестный город";
-            const region =
-              geoObject.getAdministrativeAreas().length > 0
-                ? geoObject.getAdministrativeAreas()[0]
-                : "Неизвестный регион";
-            const coordinates = geoObject.geometry.getCoordinates(); // [широта, долгота]
+      if (!geoObject) {
+        this.clearAddressWithError("Не удалось найти указанный адрес.");
+        return;
+      }
 
-            // Обновляем состояние через helper
-            this.updateState("address", {
-              city,
-              region,
-              country,
-              lat: coordinates[0],
-              lon: coordinates[1],
-            });
-
-            // Убираем ошибку, если она была
-            this.updateState("addressError", null);
-
-            /* console.log("Обновленное состояние адреса:", State.address); */
-          } else {
-            console.warn("Выбранный адрес не находится в России.");
-            // Очистка поля ввода и состояния через helper
-            this.input.value = "";
-            this.updateState("address", null);
-            this.updateState(
-              "addressError",
-              "Пожалуйста, выберите адрес, находящийся в России."
-            );
-          }
-        } else {
-          console.warn("Геокодирование не дало результатов.");
-          // Добавляем в State информацию об ошибке через helper
-          this.updateState("addressError", "Не удалось найти указанный адрес.");
-        }
-      })
-      .catch((error) => {
-        console.error("Ошибка геокодирования:", error);
-        // Добавляем в State информацию об ошибке через helper
-        this.updateState(
-          "addressError",
-          "Произошла ошибка при геокодировании адреса."
+      const country = geoObject.getCountry();
+      if (country !== "Россия") {
+        this.clearAddressWithError(
+          "Пожалуйста, выберите адрес, находящийся в России."
         );
-      });
+        return;
+      }
+
+      const city = geoObject.getLocalities()[0] || "Неизвестный город";
+      const region =
+        geoObject.getAdministrativeAreas()[0] || "Неизвестный регион";
+      const coordinates = geoObject.geometry.getCoordinates();
+
+      // Сохраняем базовые данные
+      const addressData = {
+        city,
+        region,
+        country,
+        lat: coordinates[0],
+        lon: coordinates[1],
+      };
+
+      this.updateState("address", addressData);
+      console.log("Этап: Данные из Яндекс сохранены в State:", State.address);
+
+      // Запускаем запрос к DaData
+      console.log("Этап: Запуск запроса к DaData...");
+      await this.fetchAdditionalData(coordinates[0], coordinates[1]);
+
+      // Запускаем поиск кодов Kit
+      console.log("Этап: Начинаем поиск kit_to_code");
+      await this.findKitCode();
+
+      console.log("Финальный State.address:", State.address);
+    } catch (error) {
+      console.error("Ошибка геокодирования:", error);
+      this.clearAddressWithError("Произошла ошибка при геокодировании адреса.");
+    }
   }
 
-  /**
-   * Обработчик события ввода в поле адреса.
-   */
+  async fetchAdditionalData(lat, lon) {
+    const url =
+      "https://suggestions.dadata.ru/suggestions/api/4_1/rs/geolocate/address";
+    const token = "9faf0df4e5f608e5e0f42f750b27009d5b4847ae";
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ lat, lon }),
+      });
+
+      const result = await response.json();
+
+      if (result.suggestions?.length > 0) {
+        const data = result.suggestions[0].data;
+        console.log("Этап: Получены данные от DaData:", data);
+
+        // Формируем KLADR-данные без "id" в названиях полей
+        const kladrFields = {
+          area_kladr: data.area_kladr_id?.slice(0, 13) || null,
+          city_kladr: data.city_kladr_id?.slice(0, 13) || null,
+          settlement_kladr: data.settlement_kladr_id?.slice(0, 13) || null,
+          kladr: data.kladr_id?.slice(0, 13) || null,
+          house_kladr: data.house_kladr_id?.slice(0, 13) || null,
+        };
+
+        // Обновляем State.address
+        this.updateState("address", {
+          ...State.address,
+          ...kladrFields,
+        });
+
+        console.log(
+          "Этап: Обновленный State.address после DaData:",
+          State.address
+        );
+      } else {
+        console.warn("Этап: Нет данных от DaData");
+        this.updateState(
+          "addressError",
+          "Дополнительные данные не найдены в DaData."
+        );
+      }
+    } catch (error) {
+      console.error("Ошибка запроса к DaData:", error);
+      this.updateState(
+        "addressError",
+        "Произошла ошибка при запросе к DaData API."
+      );
+    }
+  }
+
+  async findKitCode() {
+    const address = State.address;
+    let foundCode = null;
+
+    for (const kladrField of this.KLADR_PRIORITY) {
+      const kladrCode = address[kladrField];
+
+      if (!kladrCode) {
+        console.log(`Этап: Пропускаем ${kladrField} - значение отсутствует`);
+        continue;
+      }
+
+      console.log(`Этап: Проверяем ${kladrField} (${kladrCode})`);
+
+      try {
+        const code = await this.fetchKitCode(kladrCode);
+        if (code) {
+          foundCode = code;
+          console.log(`Этап: Найден код ${code} в ${kladrField}`);
+          break;
+        }
+      } catch (error) {
+        console.error(`Ошибка при проверке ${kladrField}:`, error);
+      }
+    }
+
+    // Обновляем State
+    this.updateState("address", {
+      ...address,
+      kit_to_code: foundCode,
+    });
+  }
+
+  async fetchKitCode(kladr) {
+    try {
+      console.log(`Отправка запроса для kladr: ${kladr}`);
+
+      const response = await fetch(this.WISETAO_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ kladr }),
+      });
+
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+
+      const data = await response.json();
+      console.log("Ответ от API Wisetao:", data);
+
+      if (data.code) {
+        return data.code;
+      }
+      return null;
+    } catch (error) {
+      console.error("Ошибка запроса к Wisetao API:", error);
+      return null;
+    }
+  }
+
+  clearAddressWithError(errorMessage) {
+    this.input.value = "";
+    this.updateState("address", null);
+    this.updateState("addressError", errorMessage);
+  }
+
   onInput() {
-    // Очищаем адрес и ошибки через helper
     this.updateState("address", null);
     this.updateState("addressError", null);
-    // Вызываем hideCalculationResult, если он определен
     if (typeof State.hideCalculationResult === "function") {
       State.hideCalculationResult();
     }
   }
 
-  /**
-   * Инициализирует SuggestView для поля ввода адреса с ограничением на Россию.
-   */
   initSuggestView() {
     ymaps.ready(() => {
-      // Проверяем, доступен ли SuggestView
       if (typeof ymaps.SuggestView !== "function") {
         console.error(
           "ymaps.SuggestView не доступен. Проверьте подключение API Яндекс.Карт."
@@ -128,30 +224,22 @@ class Address {
       }
 
       try {
-        // Определяем границы России (примерные координаты)
-        const russiaBounds = [
-          [41.185, 19.638], // Нижняя левая точка
-          [81.25, 169.154], // Верхняя правая точка
-        ];
-
-        // Инициализируем подсказки Яндекс.Карт с ограничением по границам
         this.suggestView = new ymaps.SuggestView(this.input, {
           results: 5,
-          boundedBy: russiaBounds,
+          boundedBy: [
+            [41.185, 19.638],
+            [81.25, 169.154],
+          ],
           strictBounds: true,
         });
 
-        // Привязываем событие выбора подсказки
-        this.suggestView.events.add("select", this.onSelect.bind(this));
+        this.suggestView.events.add("select", (e) => this.onSelect(e));
       } catch (error) {
         console.error("Ошибка при инициализации SuggestView:", error);
       }
     });
   }
 
-  /**
-   * Уничтожает SuggestView, если он инициализирован.
-   */
   destroySuggestView() {
     if (this.suggestView) {
       this.suggestView.events.remove("select", this.onSelect.bind(this));

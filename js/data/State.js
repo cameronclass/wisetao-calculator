@@ -244,4 +244,20 @@ export const State = {
       all: {},
     },
   },
+  kit: {
+    from_msk: "770000000000",
+    from_blv: "280000100000",
+    /*
+    https://api-calc.wisetao.com:4343/api/calculate-kit-delivery?Content-Type=application/json&Accept=application/json
+    {
+    "city_pickup_code": "770000000000",
+    "city_delivery_code": "250000100000",
+    "price": 40000,
+    "total_weight": 20,
+    "total_volume": 1,
+    "count": 1,
+    "dollar": 100
+}
+    */
+  },
 };
