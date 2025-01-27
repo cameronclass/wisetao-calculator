@@ -1,7 +1,7 @@
 // TnvedManager.js
 import { State } from "../data/State.js";
 
-class TnvedManager {
+export class TnvedManager {
   constructor(config) {
     this.apiBase = config.apiBase;
 
@@ -429,23 +429,3 @@ class TnvedManager {
     container.appendChild(emptyLi);
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const config = {
-    apiBase: "https://api-calc.wisetao.com:4343/api",
-
-    tnvedInput: document.querySelector(".tnved-input"),
-    suggestionContainer: document.querySelector(".suggestion"),
-    nameInput: document.querySelector(".tnved-name-input"),
-    codeInput: document.querySelector(".tnved-code-input"),
-    nameCodeContainer: document.querySelector(".name-code-container"),
-
-    treeContainer: document.querySelector(".tnved-tree-container"),
-    overlay: document.querySelector(".overlay"),
-    closeButton: document.querySelector(".tnved-tree-close-button"),
-    treeList: document.querySelector(".tnved-tree-list"),
-  };
-
-  const tnvedManager = new TnvedManager(config);
-  tnvedManager.init();
-});

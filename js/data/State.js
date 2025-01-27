@@ -229,35 +229,17 @@ export const State = {
 
   address: null,
   addressError: null,
+  jde_from_msk: {
+    lat: 55.621761,
+    lon: 37.786385,
+  },
+  jde_from_blv: {
+    lat: 50.29287,
+    lon: 127.54059,
+  },
+  jde: {},
 
-  jde: {
-    kg: {
-      dollar: "",
-      ruble: "",
-    },
-    all: {
-      dollar: "",
-      ruble: "",
-    },
-    calculated: {
-      kg: {},
-      all: {},
-    },
-  },
-  kit: {
-    from_msk: "770000000000",
-    from_blv: "280000100000",
-    /*
-    https://api-calc.wisetao.com:4343/api/calculate-kit-delivery?Content-Type=application/json&Accept=application/json
-    {
-    "city_pickup_code": "770000000000",
-    "city_delivery_code": "250000100000",
-    "price": 40000,
-    "total_weight": 20,
-    "total_volume": 1,
-    "count": 1,
-    "dollar": 100
-}
-    */
-  },
+  kit_from_msk: "770000000000",
+  kit_from_blv: "280000100000",
+  kit: {},
 };

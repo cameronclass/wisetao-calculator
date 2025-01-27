@@ -1,54 +1,68 @@
-// RailwayExpeditionCalculator.js
 import { State } from "../data/State.js";
 
-/**
- * Класс для расчета стоимости железнодорожной экспедиции.
- */
+const CALC_TYPE_COORDINATES = {
+  "calc-cargo": {
+    lat: State.jde_from_msk.lat,
+    lon: State.jde_from_msk.lon,
+  },
+  "calc-customs": {
+    lat: State.jde_from_blv.lat,
+    lon: State.jde_from_blv.lon,
+  },
+};
+
+const DIRECTIONS = [
+  { name: "auto", className: "result_auto" },
+  { name: "train", className: "result_train" },
+  { name: "avia", className: "result_avia" },
+];
+
+const DEFAULT_COORDINATES = {
+  lat: State.jde_from_msk.lat,
+  lon: State.jde_from_msk.lon,
+};
+
 class RailwayExpeditionCalculator {
-  /**
-   * Создает экземпляр калькулятора доставки.
-   * @param {string} apiUrl - URL внешнего API для расчета доставки.
-   */
   constructor(apiUrl) {
     this.apiUrl = apiUrl;
   }
 
-  /**
-   * Определяет координаты отправления на основе типа расчета.
-   * @param {string} calcType - Тип расчета.
-   * @returns {Object} Объект с lat и lon.
-   */
   getCoordinates(calcType) {
-    const calcTypeMap = {
-      "calc-cargo": { lat: 55.621761, lon: 37.786385 },
-      "calc-customs": { lat: 50.29287, lon: 127.54059 },
-      // Добавьте новые типы расчета здесь
-    };
-
-    const defaultCoordinates = { lat: 55.621761, lon: 37.786385 };
-    return calcTypeMap[calcType] || defaultCoordinates;
+    return CALC_TYPE_COORDINATES[calcType] || DEFAULT_COORDINATES;
   }
 
-  /**
-   * Выполняет расчет доставки.
-   */
   async calculate() {
-    // Проверяем, что координаты адреса заполнены
-    if (!State.address || !State.address.lat || !State.address.lon) {
-/*       console.warn("Координаты адреса не заполнены.");
-      this.showNotification("Пожалуйста, укажите адрес доставки."); */
-      return;
-    }
+    if (!this.validateAddressCoordinates()) return;
 
+    try {
+      this.setLoading(true);
+      const response = await this.fetchCalculation();
+      this.processApiResponse(response);
+      this.updateDirectionResults();
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.setLoading(false);
+    }
+  }
+
+  validateAddressCoordinates() {
+    if (!State.address?.lat || !State.address?.lon) {
+      this.showNotification("Пожалуйста, укажите адрес доставки.");
+      return false;
+    }
+    return true;
+  }
+
+  buildRequestData() {
     const { lat: lat_from, lon: lon_from } = this.getCoordinates(
       State.clientData.calcType
     );
 
-    // Формируем данные для запроса на основе состояния
-    const requestData = {
+    return {
       dollar_rate: State.calculatedData.dollar,
-      from: "Москва", // всегда этот город
-      to: "Москва", // всегда этот город
+      from: "Москва",
+      to: "Москва",
       lat_from,
       lon_from,
       lat_to: State.address.lat,
@@ -57,306 +71,164 @@ class RailwayExpeditionCalculator {
       total_weight: State.clientData.totalWeight,
       count: State.clientData.quantity,
     };
+  }
 
-    // Валидация данных
-    const missingFields = Object.entries(requestData)
-      .filter(
-        ([key, value]) => value === undefined || value === null || value === ""
-      )
-      .map(([key]) => key);
+  async fetchCalculation() {
+    const requestData = this.buildRequestData();
+    const missingFields = this.validateRequestData(requestData);
 
     if (missingFields.length > 0) {
-      console.warn(
-        `Отсутствуют обязательные поля: ${missingFields.join(", ")}`
-      );
-      this.showNotification(
-        `Пожалуйста, заполните поля: ${missingFields.join(", ")}.`
-      );
-      return;
+      throw new Error(`Missing fields: ${missingFields.join(", ")}`);
     }
 
-    // Показываем состояние загрузки
-    this.setLoading(true);
+    const queryString = new URLSearchParams(requestData).toString();
+    const response = await fetch(`${this.apiUrl}?${queryString}`);
 
-    try {
-      // Формируем строку запроса
-      const queryString = new URLSearchParams(requestData).toString();
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-      // Отправляем GET-запрос на внешний API
-      const response = await fetch(`${this.apiUrl}?${queryString}`, {
-        method: "GET",
-      });
-
-      // Проверяем статус ответа
-      if (!response.ok) {
-        throw new Error(`Ошибка API: ${response.status}`);
-      }
-
-      // Парсим JSON-ответ
-      const result = await response.json();
-
-      // Выводим полный результат запроса в консоль
-      /* console.log("Полный результат API:", result); */
-
-      // Проверка структуры ответа
-      if (
-        !result.cost_price?.auto_regular ||
-        !result.sum_cost_price?.auto_regular
-      ) {
-        throw new Error("Неверный формат ответа от API.");
-      }
-
-      // Проверка, что полученные значения являются числами
-      const costPrice = result.cost_price.auto_regular;
-      const sumCostPrice = result.sum_cost_price.auto_regular;
-
-      if (isNaN(Number(costPrice)) || isNaN(Number(sumCostPrice))) {
-        throw new Error("Получены недопустимые значения от API.");
-      }
-
-      // Обновляем состояние с результатами
-      const { dollar: dollarRate } = State.calculatedData;
-
-      // Явное преобразование в числа
-      const costPriceNum = Number(costPrice);
-      const sumCostPriceNum = Number(sumCostPrice);
-
-      // Проверка на валидность чисел
-      State.jde.kg = {
-        dollar: !isNaN(costPriceNum) ? Number(costPriceNum.toFixed(2)) : "",
-        ruble: !isNaN(costPriceNum)
-          ? Number((costPriceNum * dollarRate).toFixed(2))
-          : "",
-      };
-
-      State.jde.all = {
-        dollar: !isNaN(sumCostPriceNum)
-          ? Number(sumCostPriceNum.toFixed(2))
-          : "",
-        ruble: !isNaN(sumCostPriceNum)
-          ? Number((sumCostPriceNum * dollarRate).toFixed(2))
-          : "",
-      };
-
-      // Обновляем дополнительные результаты по направлениям
-      this.updateDirectionResults();
-
-      /* console.log("Расчет выполнен успешно.", State.jde); */
-    } catch (error) {
-      console.error("Ошибка при расчете доставки:", error.message);
-      this.showNotification(
-        "Произошла ошибка при расчете доставки. Пожалуйста, попробуйте позже."
-      );
-
-      // Добавляем класс _off к элементам .jde при ошибке
-      this.addOffClassToJdeElements();
-    } finally {
-      // Убираем состояние загрузки
-      this.setLoading(false);
-    }
+    return response.json();
   }
 
-  /**
-   * Обновляет результаты по направлениям (.result_auto, .result_train, .result_avia).
-   */
+  validateRequestData(data) {
+    return Object.entries(data)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+  }
+
+  processApiResponse(result) {
+    if (
+      !result.cost_price?.auto_regular ||
+      !result.sum_cost_price?.auto_regular
+    ) {
+      throw new Error("Invalid API response format");
+    }
+
+    const dollarRate = State.calculatedData.dollar;
+    const costPrice = Number(result.cost_price.auto_regular);
+    const sumCostPrice = Number(result.sum_cost_price.auto_regular);
+
+    State.jde = this.calculateStateValues(costPrice, sumCostPrice, dollarRate);
+  }
+
+  calculateStateValues(costPrice, sumCostPrice, dollarRate) {
+    return {
+      kg: this.calculateCurrencyValues(costPrice, dollarRate),
+      all: this.calculateCurrencyValues(sumCostPrice, dollarRate),
+      calculated: {},
+    };
+  }
+
+  calculateCurrencyValues(value, rate) {
+    return {
+      dollar: Number(value.toFixed(2)),
+      ruble: Number((value * rate).toFixed(2)),
+    };
+  }
+
   updateDirectionResults() {
-    // Определяем направления и соответствующие классы
-    const directions = [
-      { name: "auto", className: "result_auto" },
-      { name: "train", className: "result_train" },
-      { name: "avia", className: "result_avia" },
-    ];
+    DIRECTIONS.forEach((direction) => {
+      const jdeElement = document.querySelector(`.${direction.className} .jde`);
+      if (!jdeElement) return;
 
-    directions.forEach((direction) => {
-      // Находим блок направления
-      const directionBlock = document.querySelector(`.${direction.className}`);
-      if (!directionBlock) {
-        console.warn(`Блок с классом "${direction.className}" не найден.`);
-        return;
-      }
+      const elements = this.getDirectionElements(jdeElement);
+      const calculatedValues = this.calculateDirectionValues(direction.name);
 
-      // Находим вложенный блок .jde
-      const jdeElement = directionBlock.querySelector(".jde");
-      if (!jdeElement) {
-        console.warn(
-          `Внутри блока "${direction.className}" не найден элемент с классом ".jde".`
-        );
-        return;
-      }
+      this.updateStateWithCalculatedValues(direction.name, calculatedValues);
+      this.updateDomElements(elements, calculatedValues);
 
-      // Находим элементы для отображения результатов
-      const kgDollarElement = jdeElement.querySelector(".calculate-result__kg");
-      const kgRubleElement = jdeElement.querySelector(
-        ".calculate-result__kg_ruble"
-      );
-      const allDollarElement = jdeElement.querySelector(
-        ".calculate-result__dollar"
-      );
-      const allRubleElement = jdeElement.querySelector(
-        ".calculate-result__ruble"
-      );
-      /* Tooltip */
-      const jdeDollar = jdeElement.querySelector("._jde_dollar");
-      const jdeRuble = jdeElement.querySelector("._jde_ruble");
-      const jdeAllDollar = jdeElement.querySelector("._jde_all_dollar");
-      const jdeAllRuble = jdeElement.querySelector("._jde_all_ruble");
-      const everythingDollar = jdeElement.querySelector(
-        "._everything_price_dollar"
-      );
-      const everythingRuble = jdeElement.querySelector(
-        "._everything_price_ruble"
-      );
-
-      if (
-        !kgDollarElement ||
-        !kgRubleElement ||
-        !allDollarElement ||
-        !allRubleElement
-      ) {
-        console.warn(
-          `Внутри блока ".jde" не найдены элементы ".calculate-result__kg", ".calculate-result__kg_ruble", ".calculate-result__dollar", ".calculate-result__ruble"`
-        );
-        return;
-      }
-
-      // Получаем цену за кг для направления
-      const pricePerKgDollar =
-        State.calculatedData[direction.name]?.pricePerKg?.dollar;
-
-      // Получаем цену за все для направления
-      const allCargoDollar =
-        State.calculatedData[direction.name]?.cargoCost?.dollar;
-      const allCustomsDollar =
-        State.calculatedData[direction.name]?.customsCost?.dollar;
-
-      // Расчет значения в долларах
-      const calculatedKgDollar =
-        (State.jde.kg.dollar || 0) + (pricePerKgDollar || 0);
-      const calculatedAllDollar =
-        (State.jde.all.dollar || 0) +
-        (allCargoDollar || 0) +
-        (allCustomsDollar || 0);
-
-      // Расчет значения в рублях
-      const calculatedKgRuble =
-        (calculatedKgDollar || 0) * (State.calculatedData.dollar || 0);
-      const calculatedAllRuble =
-        (calculatedAllDollar || 0) * (State.calculatedData.dollar || 0);
-
-      // Сохраняем результаты в State
-      if (!State.jde.calculated) {
-        State.jde.calculated = {};
-      }
-
-      if (!State.jde.calculated.kg) {
-        State.jde.calculated.kg = {};
-      }
-
-      if (!State.jde.calculated.all) {
-        State.jde.calculated.all = {};
-      }
-
-      State.jde.calculated.kg[direction.name] = {
-        dollar: Number(calculatedKgDollar.toFixed(2)),
-        ruble: Number(calculatedKgRuble.toFixed(2)),
-      };
-
-      State.jde.calculated.all[direction.name] = {
-        dollar: Number(calculatedAllDollar.toFixed(2)),
-        ruble: Number(calculatedAllRuble.toFixed(2)),
-      };
-
-      // Обновляем DOM элементы
-      kgDollarElement.textContent = State.jde.calculated.kg[direction.name]
-        .dollar
-        ? `${State.jde.calculated.kg[direction.name].dollar}$`
-        : "0$";
-      kgRubleElement.textContent = State.jde.calculated.kg[direction.name].ruble
-        ? `${State.jde.calculated.kg[direction.name].ruble}₽`
-        : "0₽";
-
-      allDollarElement.textContent = State.jde.calculated.all[direction.name]
-        .dollar
-        ? `${State.jde.calculated.all[direction.name].dollar}$`
-        : "0$";
-      allRubleElement.textContent = State.jde.calculated.all[direction.name]
-        .ruble
-        ? `${State.jde.calculated.all[direction.name].ruble}₽`
-        : "0₽";
-
-      /* Tooltip */
-      jdeDollar.textContent = State.jde.kg.dollar
-        ? `${State.jde.kg.dollar}$`
-        : "0$";
-      jdeRuble.textContent = State.jde.kg.ruble
-        ? `${State.jde.kg.ruble}₽`
-        : "0₽";
-      jdeAllDollar.textContent = State.jde.all.dollar
-        ? `${State.jde.all.dollar}$`
-        : "0$";
-      jdeAllRuble.textContent = State.jde.all.ruble
-        ? `${State.jde.all.ruble}₽`
-        : "0₽";
-      everythingDollar.textContent = State.jde.calculated.all[direction.name]
-        .dollar
-        ? `${State.jde.calculated.all[direction.name].dollar}$`
-        : "0$";
-      everythingRuble.textContent = State.jde.calculated.all[direction.name]
-        .ruble
-        ? `${State.jde.calculated.all[direction.name].ruble}₽`
-        : "0₽";
-
-      // **Добавляем класс _off для result_train и result_avia**
-      if (direction.name === "train" || direction.name === "avia") {
-        jdeElement.classList.add("_off");
-      } else {
-        jdeElement.classList.remove("_off");
-      }
+      this.toggleDirectionVisibility(jdeElement, direction.name);
     });
   }
 
-  /**
-   * Устанавливает состояние загрузки для элементов .jde и .loader.
-   * @param {boolean} isLoading - Состояние загрузки.
-   */
+  getDirectionElements(container) {
+    return {
+      kgDollar: container.querySelector(".calculate-result__kg"),
+      kgRuble: container.querySelector(".calculate-result__kg_ruble"),
+      allDollar: container.querySelector(".calculate-result__dollar"),
+      allRuble: container.querySelector(".calculate-result__ruble"),
+      tooltipDollar: container.querySelector("._jde_dollar"),
+      tooltipRuble: container.querySelector("._jde_ruble"),
+      allDollarTooltip: container.querySelector("._jde_all_dollar"),
+      allRubleTooltip: container.querySelector("._jde_all_ruble"),
+      everythingDollar: container.querySelector("._everything_price_dollar"),
+      everythingRuble: container.querySelector("._everything_price_ruble"),
+    };
+  }
+
+  calculateDirectionValues(direction) {
+    const pricePerKg = State.calculatedData[direction]?.pricePerKg?.dollar || 0;
+    const allCargo = State.calculatedData[direction]?.cargoCost?.dollar || 0;
+    const allCustoms =
+      State.calculatedData[direction]?.customsCost?.dollar || 0;
+    const dollarRate = State.calculatedData.dollar || 0;
+
+    return {
+      kgDollar: State.jde.kg.dollar + pricePerKg,
+      kgRuble: (State.jde.kg.dollar + pricePerKg) * dollarRate,
+      allDollar: State.jde.all.dollar + allCargo + allCustoms,
+      allRuble: (State.jde.all.dollar + allCargo + allCustoms) * dollarRate,
+    };
+  }
+
+  updateStateWithCalculatedValues(direction, values) {
+    State.jde.calculated.kg = {
+      ...State.jde.calculated.kg,
+      [direction]: this.formatCalculatedValues(values.kgDollar, values.kgRuble),
+    };
+
+    State.jde.calculated.all = {
+      ...State.jde.calculated.all,
+      [direction]: this.formatCalculatedValues(
+        values.allDollar,
+        values.allRuble
+      ),
+    };
+  }
+
+  formatCalculatedValues(dollar, ruble) {
+    return {
+      dollar: Number(dollar.toFixed(2)),
+      ruble: Number(ruble.toFixed(2)),
+    };
+  }
+
+  updateDomElements(elements, values) {
+    const format = (value, symbol) =>
+      value ? `${value.toFixed(2)}${symbol}` : `0${symbol}`;
+
+    elements.kgDollar.textContent = format(values.kgDollar, "$");
+    elements.kgRuble.textContent = format(values.kgRuble, "₽");
+    elements.allDollar.textContent = format(values.allDollar, "$");
+    elements.allRuble.textContent = format(values.allRuble, "₽");
+
+    elements.tooltipDollar.textContent = format(State.jde.kg.dollar, "$");
+    elements.tooltipRuble.textContent = format(State.jde.kg.ruble, "₽");
+    elements.allDollarTooltip.textContent = format(State.jde.all.dollar, "$");
+    elements.allRubleTooltip.textContent = format(State.jde.all.ruble, "₽");
+    elements.everythingDollar.textContent = format(values.allDollar, "$");
+    elements.everythingRuble.textContent = format(values.allRuble, "₽");
+  }
+
+  toggleDirectionVisibility(element, direction) {
+    const shouldBeOff = direction !== "auto";
+    element.classList.toggle("_off", shouldBeOff);
+  }
+
   setLoading(isLoading) {
-    const jdeElements = document.querySelectorAll(".jde");
-    jdeElements.forEach((el) => {
-      if (isLoading) {
-        el.classList.add("_load");
-        el.classList.remove("_off"); // Убираем _off при загрузке
-      } else {
-        el.classList.remove("_load");
-      }
-
-      const loader = el.querySelector(".loader");
-      if (loader) {
-        if (isLoading) {
-          loader.classList.add("_load");
-        } else {
-          loader.classList.remove("_load");
-        }
-      }
+    document.querySelectorAll(".jde").forEach((el) => {
+      el.classList.toggle("_load", isLoading);
+      el.querySelector(".loader")?.classList.toggle("_load", isLoading);
     });
   }
 
-  /**
-   * Добавляет класс _off к элементам .jde.
-   */
-  addOffClassToJdeElements() {
-    const jdeElements = document.querySelectorAll(".jde");
-    jdeElements.forEach((el) => {
-      el.classList.add("_off");
-    });
+  handleError(error) {
+    console.error("Calculation error:", error);
+    this.showNotification("Ошибка при расчете доставки. Попробуйте позже.");
+    document.querySelectorAll(".jde").forEach((el) => el.classList.add("_off"));
   }
 
-  /**
-   * Показывает уведомление пользователю.
-   * @param {string} message - Сообщение для отображения.
-   */
   showNotification(message) {
-    // Реализуйте отображение уведомления (например, с помощью библиотеки Toastr)
-    console.log(message); // Пример простого уведомления
+    console.log(message);
   }
 }
 

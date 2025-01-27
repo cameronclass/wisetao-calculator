@@ -29,7 +29,6 @@ export class FormValidation {
 
     // Инициализация Address.js
     this.addressHandler = new Address('input[name="address"]');
-    this.addressHandler.initSuggestView();
 
     // -- Базовая валидация --
     this.setupInputRestrictions(); // (1) Ограничение ввода для totalVolume, totalWeight, ...
@@ -707,7 +706,6 @@ export class FormValidation {
     this.toggleToAddressElements(State.clientData.addressCheck);
     this.handleAddressCheckboxChange(State.clientData.addressCheck);
 
-
     addressCheckbox.addEventListener("change", (event) => {
       const isChecked = event.target.checked;
       this.toggleToAddressElements(isChecked);
@@ -717,7 +715,10 @@ export class FormValidation {
       // Дополнительная валидация при изменении чекбокса
       if (isChecked && !State.address) {
         // Если чекбокс активен, но адрес не выбран, устанавливаем ошибку
-        this.updateState("addressError", "Пожалуйста, выберите адрес из списка.");
+        this.updateState(
+          "addressError",
+          "Пожалуйста, выберите адрес из списка."
+        );
       } else if (!isChecked) {
         // Если чекбокс деактивирован, убираем ошибку
         this.updateState("addressError", null);

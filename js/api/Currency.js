@@ -1,9 +1,7 @@
 // Currency.js
-import { CONFIG } from "../data/config.js";
 import { State } from "../data/State.js";
 
-
-class Currency {
+export class Currency {
   constructor(botToken, chatId, multiplier = 7.3) {
     this.botToken = botToken;
     this.chatId = chatId;
@@ -123,9 +121,3 @@ class Currency {
     }
   }
 }
-
-(async () => {
-  const currency = new Currency(CONFIG.botToken, CONFIG.chatId, 7.3);
-  await currency.loadAndSaveRates();
-  console.log("Курсы успешно сохранены в State:", State.currencyRates);
-})();

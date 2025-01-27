@@ -2,7 +2,7 @@
 import { CONFIG } from "./config.js";
 import { State } from "./State.js";
 
-class DataProvider {
+export class DataProvider {
   constructor(jsonPath = CONFIG.jsonPath) {
     this.jsonPath = jsonPath;
   }
@@ -97,10 +97,3 @@ class DataProvider {
     return State.directionsData?.categories?.[direction] || null;
   }
 }
-
-(async () => {
-  const dataProvider = new DataProvider();
-  await dataProvider.loadAndSave();
-
-  console.log("Тарифы успешно сохранены в State:", State.directionsData);
-})();

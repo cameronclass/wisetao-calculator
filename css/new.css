@@ -1143,8 +1143,12 @@ input[type="number"] {
 .price-cell {
   background: #212731;
   padding: 5px;
+  max-height: 110px;
+  min-height: 110px;
 }
 .cargo-cell {
+  max-height: 110px;
+  min-height: 110px;
 }
 .cargo-cell__title {
   font-weight: 600;

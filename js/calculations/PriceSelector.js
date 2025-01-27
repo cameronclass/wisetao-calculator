@@ -1,6 +1,4 @@
-import { State } from "../data/State.js";
-
-class PriceSelector {
+export class PriceSelector {
   constructor(radioSelector, buttonSelector, state) {
     this.radioButtons = document.querySelectorAll(radioSelector);
     this.pdfButton = document.querySelector(buttonSelector);
@@ -16,6 +14,7 @@ class PriceSelector {
     // Маппинг для русских названий грузовых направлений
     this.cargoRusMap = {
       jde: "ЖэлДорЭспедиция",
+      kit: "KIT",
       // Добавьте другие направления при необходимости
     };
 
@@ -91,11 +90,3 @@ class PriceSelector {
     this.updateButtonState(); // Обновляем состояние кнопки
   }
 }
-
-const priceSelector = new PriceSelector(
-  'input[name="all-price"]',
-  ".js-get-pdf",
-  State
-);
-
-priceSelector.init();

@@ -456,8 +456,8 @@ class PdfPrepare {
       this.getOfferDataComponents.TOTALTK.text = `Стоимость до: ${State.address.city}: `; /* , ${State.address.region} */
       this.getOfferDataComponents.tkData.kgTk.text = `За кг: `;
       this.getOfferDataComponents.tkData.sumTk.text = `Стоимость до: ${State.address.city}: `;
-      this.getOfferDataComponents.tkData.varyKg.text = `  (стоимость может варьир.)`;
-      this.getOfferDataComponents.tkData.varySum.text = `  (стоимость может варьир.)`;
+      this.getOfferDataComponents.tkData.varyKg.text = `  (цена варьир.)`;
+      this.getOfferDataComponents.tkData.varySum.text = `  (цена варьир.)`;
       this.getOfferDataComponents.tkData.sumTotal.text = `Общая стоимость до ${State.address.city}: `;
 
       if (directionRussia === "jde") {
@@ -481,6 +481,36 @@ class PdfPrepare {
         );
         this.getOfferDataComponents.tkData.sumTotal.value2 =
           state.jde.calculated.all[direction].dollar;
+
+        this.getOfferDataComponents.DeliveryType.value =
+          state.calculatedData.selectedDirectionRus +
+          ` | ${state.calculatedData.russiaSelectedCargoRus}`;
+      } else {
+        this.getOfferDataComponents.TOTALTK.value = "";
+        this.getOfferDataComponents.TOTALTK.value2 = "";
+      }
+
+      if (directionRussia === "kit") {
+        this.getOfferDataComponents.TOTALTK.value = Math.round(
+          state.kit.all.ruble
+        );
+        this.getOfferDataComponents.TOTALTK.value2 = state.kit.all.dollar;
+
+        this.getOfferDataComponents.tkData.kgTk.value = Math.round(
+          state.kit.kg.ruble
+        );
+        this.getOfferDataComponents.tkData.kgTk.value2 = state.kit.kg.dollar;
+
+        this.getOfferDataComponents.tkData.sumTk.value = Math.round(
+          state.kit.all.ruble
+        );
+        this.getOfferDataComponents.tkData.sumTk.value2 = state.kit.all.dollar;
+
+        this.getOfferDataComponents.tkData.sumTotal.value = Math.round(
+          state.kit.calculated.all[direction].ruble
+        );
+        this.getOfferDataComponents.tkData.sumTotal.value2 =
+          state.kit.calculated.all[direction].dollar;
 
         this.getOfferDataComponents.DeliveryType.value =
           state.calculatedData.selectedDirectionRus +
@@ -619,8 +649,8 @@ class PdfPrepare {
       this.getOfferWhiteDataComponents.TOTALTK.text = `Стоимость до: ${State.address.city} | ${state.calculatedData.russiaSelectedCargoRus}: `; /* , ${State.address.region} */
       this.getOfferWhiteDataComponents.tkData.kgTk.text = `За кг: `;
       this.getOfferWhiteDataComponents.tkData.sumTk.text = `Стоимость до: ${State.address.city}: `;
-      this.getOfferWhiteDataComponents.tkData.varyKg.text = `  (стоимость может варьир.)`;
-      this.getOfferWhiteDataComponents.tkData.varySum.text = `  (стоимость может варьир.)`;
+      this.getOfferWhiteDataComponents.tkData.varyKg.text = ` (цена варьир.)`;
+      this.getOfferWhiteDataComponents.tkData.varySum.text = ` (цена варьир.)`;
       this.getOfferWhiteDataComponents.tkData.sumTotal.text = `Общая стоимость до ${State.address.city}: `;
 
       if (directionRussia === "jde") {
@@ -646,6 +676,34 @@ class PdfPrepare {
         );
         this.getOfferWhiteDataComponents.tkData.sumTotal.value2 =
           state.jde.calculated.all[direction].dollar;
+      } else {
+        this.getOfferWhiteDataComponents.TOTALTK.value = "";
+        this.getOfferWhiteDataComponents.TOTALTK.value2 = "";
+      }
+
+      if (directionRussia === "kit") {
+        this.getOfferWhiteDataComponents.TOTALTK.value = Math.round(
+          state.kit.all.ruble
+        );
+        this.getOfferWhiteDataComponents.TOTALTK.value2 = state.kit.all.dollar;
+
+        this.getOfferWhiteDataComponents.tkData.kgTk.value = Math.round(
+          state.kit.kg.ruble
+        );
+        this.getOfferWhiteDataComponents.tkData.kgTk.value2 =
+          state.kit.kg.dollar;
+
+        this.getOfferWhiteDataComponents.tkData.sumTk.value = Math.round(
+          state.kit.all.ruble
+        );
+        this.getOfferWhiteDataComponents.tkData.sumTk.value2 =
+          state.kit.all.dollar;
+
+        this.getOfferWhiteDataComponents.tkData.sumTotal.value = Math.round(
+          state.kit.calculated.all[direction].ruble
+        );
+        this.getOfferWhiteDataComponents.tkData.sumTotal.value2 =
+          state.kit.calculated.all[direction].dollar;
       } else {
         this.getOfferWhiteDataComponents.TOTALTK.value = "";
         this.getOfferWhiteDataComponents.TOTALTK.value2 = "";
