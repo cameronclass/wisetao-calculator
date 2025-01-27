@@ -17,7 +17,7 @@ class KitDeliveryCalculator {
   }
 
   async calculate() {
-    if (!this.shouldCalculate()) {
+/*     if (!this.shouldCalculate()) {
       this.hideAllElements();
       return;
     }
@@ -25,7 +25,7 @@ class KitDeliveryCalculator {
     if (!this.validateRequiredFields()) {
       this.hideAllElements();
       return;
-    }
+    } */
 
     this.setLoading(true);
 
@@ -102,7 +102,7 @@ class KitDeliveryCalculator {
    * и логгируем результат в консоль
    */
   processApiResponse(response) {
-    console.log("API Response:", response);
+    /* console.log("API Response:", response); */
 
     const dollarRate = State.calculatedData.dollar;
 
@@ -156,7 +156,7 @@ class KitDeliveryCalculator {
       },
     };
 
-    console.log("Updated State.kit:", State.kit);
+    /* console.log("Updated State.kit:", State.kit); */
   }
 
   /**

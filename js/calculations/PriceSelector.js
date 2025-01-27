@@ -1,3 +1,5 @@
+import { State } from "../data/State.js";
+
 export class PriceSelector {
   constructor(radioSelector, buttonSelector, state) {
     this.radioButtons = document.querySelectorAll(radioSelector);
@@ -61,7 +63,7 @@ export class PriceSelector {
     // Обновление данных о транспорте
     this.state.calculatedData.selectedDirection = transportPart;
     this.state.calculatedData.selectedDirectionRus =
-      this.directionRusMap[transportPart] || "Неизвестное направление";
+      this.directionRusMap[transportPart];
 
     // Обновление данных о грузовом направлении
     if (cargoPart && this.cargoRusMap[cargoPart]) {

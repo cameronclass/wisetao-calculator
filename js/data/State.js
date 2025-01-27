@@ -241,5 +241,52 @@ export const State = {
 
   kit_from_msk: "770000000000",
   kit_from_blv: "280000100000",
-  kit: {},
+  kit: {
+    /*
+
+{
+  "auto": {
+    "all": {
+      "dollar": 132.28,
+      "ruble": 14388.1
+    },
+    "kg": {
+      "dollar": 13.23,
+      "ruble": 1439.03
+    }
+  },
+  "avia": {
+    "all": {
+      "dollar": 596.91,
+      "ruble": 64925.9
+    },
+    "kg": {
+      "dollar": 59.69,
+      "ruble": 6492.48
+    }
+  },
+  "calculated": {
+    "auto": {
+      "dollar": 585.08,
+      "ruble": 63639.15
+    },
+    "avia": {
+      "dollar": 1263.91,
+      "ruble": 137475.49
+    }
+  },
+  "kg": {
+    "auto": {
+      "dollar": 13.23,
+      "ruble": 1439.03
+    },
+    "avia": {
+      "dollar": 59.69,
+      "ruble": 6492.48
+    }
+  }
+}
+
+*/
+  },
 };

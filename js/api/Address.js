@@ -114,8 +114,8 @@ class Address {
   parseGeoObject(geoObject) {
     const coordinates = geoObject.geometry.getCoordinates();
     return {
-      city: geoObject.getLocalities()[0] || "Неизвестный город",
-      region: geoObject.getAdministrativeAreas()[0] || "Неизвестный регион",
+      city: geoObject.getLocalities()[0] || null,
+      region: geoObject.getAdministrativeAreas()[0] || null,
       country: geoObject.getCountry(),
       lat: coordinates[0],
       lon: coordinates[1],

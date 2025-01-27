@@ -453,12 +453,40 @@ class PdfPrepare {
 
     // Обработка По России
     if (directionRussia !== null) {
-      this.getOfferDataComponents.TOTALTK.text = `Стоимость до: ${State.address.city}: `; /* , ${State.address.region} */
+      const city = State.address.city;
+      const region = State.address.region;
+
+      if (city) {
+        this.getOfferDataComponents.TOTALTK.text = `Стоимость до: ${city}: `;
+        this.getOfferDataComponents.tkData.sumTk.text = `Стоимость до: ${city}: `;
+        this.getOfferDataComponents.tkData.sumTotal.text = `Общая стоимость до ${city}: `;
+        this.getOfferDataComponents.tkData.kgTk.unit2 = `$ (до ${city})`;
+      } else if (region) {
+        this.getOfferDataComponents.TOTALTK.text = `Стоимость до: ${region}: `;
+        this.getOfferDataComponents.tkData.sumTk.text = `Стоимость до: ${region}: `;
+        this.getOfferDataComponents.tkData.sumTotal.text = `Общая стоимость до ${region}: `;
+        this.getOfferDataComponents.tkData.kgTk.unit2 = `$ (до ${region})`;
+      } else {
+        this.getOfferDataComponents.TOTALTK.text = "";
+        this.getOfferDataComponents.tkData.sumTk.text = "";
+        this.getOfferDataComponents.tkData.sumTotal.text = "";
+        this.getOfferDataComponents.tkData.kgTk.unit2 = "";
+      }
+
       this.getOfferDataComponents.tkData.kgTk.text = `За кг: `;
-      this.getOfferDataComponents.tkData.sumTk.text = `Стоимость до: ${State.address.city}: `;
       this.getOfferDataComponents.tkData.varyKg.text = `  (цена варьир.)`;
       this.getOfferDataComponents.tkData.varySum.text = `  (цена варьир.)`;
-      this.getOfferDataComponents.tkData.sumTotal.text = `Общая стоимость до ${State.address.city}: `;
+
+      this.getOfferDataComponents.TOTALTK.unit = "₽ ";
+      this.getOfferDataComponents.TOTALTK.unit2 = "$";
+
+      this.getOfferDataComponents.tkData.sumTk.unit = "₽ ";
+      this.getOfferDataComponents.tkData.sumTk.unit2 = "$";
+
+      this.getOfferDataComponents.tkData.sumTotal.unit = "₽ ";
+      this.getOfferDataComponents.tkData.sumTotal.unit2 = "$";
+
+      this.getOfferDataComponents.tkData.kgTk.unit = "₽ ";
 
       if (directionRussia === "jde") {
         this.getOfferDataComponents.TOTALTK.value = Math.round(
@@ -485,26 +513,23 @@ class PdfPrepare {
         this.getOfferDataComponents.DeliveryType.value =
           state.calculatedData.selectedDirectionRus +
           ` | ${state.calculatedData.russiaSelectedCargoRus}`;
-      } else {
-        this.getOfferDataComponents.TOTALTK.value = "";
-        this.getOfferDataComponents.TOTALTK.value2 = "";
       }
 
       if (directionRussia === "kit") {
         this.getOfferDataComponents.TOTALTK.value = Math.round(
-          state.kit.all.ruble
+          state.kit[direction].all.ruble
         );
-        this.getOfferDataComponents.TOTALTK.value2 = state.kit.all.dollar;
+        this.getOfferDataComponents.TOTALTK.value2 = state.kit[direction].all.dollar;
 
         this.getOfferDataComponents.tkData.kgTk.value = Math.round(
-          state.kit.kg.ruble
+          state.kit[direction].kg.ruble
         );
-        this.getOfferDataComponents.tkData.kgTk.value2 = state.kit.kg.dollar;
+        this.getOfferDataComponents.tkData.kgTk.value2 = state.kit[direction].kg.dollar;
 
         this.getOfferDataComponents.tkData.sumTk.value = Math.round(
-          state.kit.all.ruble
+          state.kit[direction].all.ruble
         );
-        this.getOfferDataComponents.tkData.sumTk.value2 = state.kit.all.dollar;
+        this.getOfferDataComponents.tkData.sumTk.value2 = state.kit[direction].all.dollar;
 
         this.getOfferDataComponents.tkData.sumTotal.value = Math.round(
           state.kit.calculated.all[direction].ruble
@@ -515,23 +540,7 @@ class PdfPrepare {
         this.getOfferDataComponents.DeliveryType.value =
           state.calculatedData.selectedDirectionRus +
           ` | ${state.calculatedData.russiaSelectedCargoRus}`;
-      } else {
-        this.getOfferDataComponents.TOTALTK.value = "";
-        this.getOfferDataComponents.TOTALTK.value2 = "";
       }
-
-      // Сохраняем оригинальные единицы измерения
-      this.getOfferDataComponents.TOTALTK.unit = "₽ ";
-      this.getOfferDataComponents.TOTALTK.unit2 = "$";
-
-      this.getOfferDataComponents.tkData.sumTk.unit = "₽ ";
-      this.getOfferDataComponents.tkData.sumTk.unit2 = "$";
-
-      this.getOfferDataComponents.tkData.sumTotal.unit = "₽ ";
-      this.getOfferDataComponents.tkData.sumTotal.unit2 = "$";
-
-      this.getOfferDataComponents.tkData.kgTk.unit = "₽ ";
-      this.getOfferDataComponents.tkData.kgTk.unit2 = `$ (до ${State.address.city})`;
     } else {
       // Полный сброс если нет грузового направления
       this.getOfferDataComponents.TOTALTK.text = "";
@@ -539,6 +548,27 @@ class PdfPrepare {
       this.getOfferDataComponents.TOTALTK.unit = "";
       this.getOfferDataComponents.TOTALTK.value2 = "";
       this.getOfferDataComponents.TOTALTK.unit2 = "";
+
+      this.getOfferDataComponents.tkData.sumTk.text = "";
+      this.getOfferDataComponents.tkData.sumTk.value = "";
+      this.getOfferDataComponents.tkData.sumTk.unit = "";
+      this.getOfferDataComponents.tkData.sumTk.value2 = "";
+      this.getOfferDataComponents.tkData.sumTk.unit2 = "";
+
+      this.getOfferDataComponents.tkData.sumTotal.text = "";
+      this.getOfferDataComponents.tkData.sumTotal.value = "";
+      this.getOfferDataComponents.tkData.sumTotal.unit = "";
+      this.getOfferDataComponents.tkData.sumTotal.value2 = "";
+      this.getOfferDataComponents.tkData.sumTotal.unit2 = "";
+
+      this.getOfferDataComponents.tkData.kgTk.text = "";
+      this.getOfferDataComponents.tkData.kgTk.value = "";
+      this.getOfferDataComponents.tkData.kgTk.unit = "";
+      this.getOfferDataComponents.tkData.kgTk.value2 = "";
+      this.getOfferDataComponents.tkData.kgTk.unit2 = "";
+
+      this.getOfferDataComponents.tkData.varyKg.text = "";
+      this.getOfferDataComponents.tkData.varySum.text = "";
     }
   }
 

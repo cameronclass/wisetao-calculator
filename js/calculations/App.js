@@ -69,10 +69,14 @@ export class CalculatorApp {
       this.showResult();
       this.uiRenderer.renderAll();
 
+      this.railwayCalculator.setLoading(true);
       this.kitCalculator.setLoading(true);
 
       await this.railwayCalculator.calculate();
       await this.kitCalculator.calculate();
+
+      console.log(State);
+      
     } else {
       console.log("Форма заполнена с ошибками");
       this.scrollToWrapper();
