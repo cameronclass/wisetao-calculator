@@ -267,6 +267,47 @@ export class FormValidation {
         });
       }
     });
+
+    // === NEW: Добавляем realtime-валидацию для client-name и client-phone ===
+    const nameField = document.querySelector('input[name="client-name"]');
+    const phoneField = document.querySelector('input[name="client-phone"]');
+
+    [nameField, phoneField].forEach((field) => {
+      if (field) {
+        field.addEventListener("input", () => {
+          // Удаляем ошибку при вводе, если была
+          this.removeError(field);
+
+          // Скрываем результат расчёта (как и при вводе других полей)
+          this.hideCalculationResult();
+        });
+      }
+    });
+
+    // (2) NEW: добавляем реалтайм-валидацию для redeem-полей
+    const redeemFieldNames = [
+      "data-name",
+      "data_cost",
+      "data-quantity",
+      "data-color",
+      "data-url",
+      "data-size",
+    ];
+
+    redeemFieldNames.forEach((fieldName) => {
+      // Найти все инпуты с этим именем (на случай, если у вас их несколько)
+      document
+        .querySelectorAll(`input[name="${fieldName}"]`)
+        .forEach((field) => {
+          field.addEventListener("input", () => {
+            // Убрать ошибку, если она была
+            this.removeError(field);
+
+            // Скрыть результат расчёта (как и для других полей)
+            this.hideCalculationResult();
+          });
+        });
+    });
   }
 
   // =====================================================
@@ -568,7 +609,10 @@ export class FormValidation {
       return false;
     }
     if (radio.value === "delivery-and-pickup") {
-      return this.validateRedeemItems(); // Если выбрано, проверяем товары
+      const isRedeemValid = this.validateRedeemItems();
+      const isClientValid = this.validateClientFields();
+
+      return isRedeemValid && isClientValid;
     }
     return true; // Если "delivery-only", ничего не требуем
   }
@@ -620,6 +664,35 @@ export class FormValidation {
         }
       }
     });
+
+    return isValid;
+  }
+
+  /**
+   * Проверка полей "Ваше имя" и "Контактный телефон"
+   * (только в режиме delivery-and-pickup)
+   */
+  validateClientFields() {
+    let isValid = true;
+
+    const nameEl = document.querySelector('input[name="client-name"]');
+    const phoneEl = document.querySelector('input[name="client-phone"]');
+
+    // Проверяем поле "Ваше имя"
+    if (nameEl && !nameEl.value.trim()) {
+      this.addError(nameEl, "Заполните поле");
+      isValid = false;
+    } else if (nameEl) {
+      this.removeError(nameEl);
+    }
+
+    // Проверяем поле "Контактный телефон"
+    if (phoneEl && !phoneEl.value.trim()) {
+      this.addError(phoneEl, "Заполните поле");
+      isValid = false;
+    } else if (phoneEl) {
+      this.removeError(phoneEl);
+    }
 
     return isValid;
   }

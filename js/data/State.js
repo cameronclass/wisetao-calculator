@@ -17,6 +17,8 @@ export const State = {
   },
 
   clientData: {
+    name: "",
+    phone: "",
     calcType: "",
     totalCost: "",
     currency: "",

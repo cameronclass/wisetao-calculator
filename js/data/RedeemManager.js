@@ -4,8 +4,7 @@ import { State } from "./State.js";
 
 export default class RedeemManager {
   constructor(options = {}) {
-    this.rootSelector =
-      options.rootSelector || ".data-redeem";
+    this.rootSelector = options.rootSelector || ".data-redeem";
     this.addButtonSelector = options.addButtonSelector || ".add-redeem";
     this.root = document.querySelector(this.rootSelector);
     this.addButton = document.querySelector(this.addButtonSelector);
@@ -156,7 +155,23 @@ export default class RedeemManager {
 
   onInputChange(e, index) {
     const name = e.target.name;
-    if (!name) return;
+    const fieldEl = e.target;
+
+    // (1) Если вдруг где-то висит ошибка - убираем её
+    // (заимствовав метод removeError из FormValidation или написав аналог)
+    if (typeof window.formValidation !== "undefined") {
+      // если FormValidation доступен глобально
+      window.formValidation.removeError(fieldEl);
+    } else {
+      // Либо своя логика удаления класса 'error-input' и очистки .error-message
+      fieldEl.classList.remove("error-input");
+      const parent = fieldEl.closest(".form-group") || fieldEl.parentElement;
+      const errorSpan = parent?.querySelector(".error-message");
+      if (errorSpan) {
+        errorSpan.textContent = "";
+        errorSpan.style.display = "none";
+      }
+    }
     const value = e.target.value;
     switch (name) {
       case "data-name":
@@ -191,8 +206,8 @@ export default class RedeemManager {
       State.redeemData[index] = this.getEmptyItem();
     }
     State.redeemData[index][field] = value;
-    console.log(`Обновление товара #${index}: поле ${field} ->`, value);
-    console.log("Текущее State.redeemData:", State.redeemData);
+    /* console.log(`Обновление товара #${index}: поле ${field} ->`, value);
+    console.log("Текущее State.redeemData:", State.redeemData); */
   }
 
   getEmptyItem() {

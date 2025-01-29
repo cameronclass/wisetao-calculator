@@ -1,75 +1,116 @@
 import { State } from "./State.js";
 
 /**
- * Класс, отвечающий за взаимодействие с полями ввода данных клиента (имя и телефон).
- * Маска телефона поддерживает номера:
- * - Россия/Казахстан: +7 (XXX) XXX-XX-XX (10 цифр после 7)
- * - Киргизия: +996 (XXX) XXX-XXX (9 цифр после 996)
- * - Китай: +86 (XXX) XXXX-XXXX (11 цифр после 86)
+ * Класс, отвечающий за ввод данных клиента.
+ * После создания экземпляра в конструкторе сразу:
+ * - ищет поля по селекторам,
+ * - навешивает обработчики (input / blur),
+ * - делает "маску" для ограниченных кодов стран (7, 996, 86).
  */
 export class ClientData {
   constructor() {
-    // Селекторы полей
+    // Селекторы — при необходимости подредактируйте под вашу вёрстку
     this._nameInputSelector = 'input[name="client-name"]';
     this._phoneInputSelector = 'input[name="client-phone"]';
 
-    // Карта допустимых форматов.
-    // Ключ — «код страны» без плюса,
-    // totalDigits — сколько цифр после кода нужно в полной версии,
-    // formatFn — функция, которая красиво подставляет скобки/пробелы/дефисы.
+    // Описание допустимых форматов
     this._phoneFormats = {
+      /**
+       * Россия / Казахстан
+       * Пример полного номера: +7 (999) 123-45-67
+       * => после "7" нужно 10 цифр
+       */
       7: {
-        totalDigits: 10, // Россия/Казахстан: всего 10 цифр после «7»
+        code: "7",
+        totalDigitsAfterCode: 10,
         formatFn: (digits) => {
-          // digits — массив цифр без ведущего кода (т.е. 10 цифр максимум)
-          // Формат: +7 (XXX) XXX-XX-XX
-          let [d1, d2, d3, d4, d5, d6, d7, d8, d9, d10] = digits;
+          // digits — массив цифр без учёта самой "7"
+          const len = digits.length;
           let result = "+7";
-          if (digits.length > 0) result += " (" + d1;
-          if (digits.length > 1) result += d2;
-          if (digits.length > 2) result += d3 + ")";
-          if (digits.length > 3) result += " " + d4 + d5 + d6;
-          if (digits.length > 6) result += "-" + d7 + d8;
-          if (digits.length > 8) result += "-" + d9 + d10;
+          // Ставим скобку после +7, если есть хотя бы 1 цифра
+          if (len >= 1) result += ` (${digits[0]}`;
+          if (len >= 2) result += digits[1];
+          if (len >= 3) result += digits[2];
+          if (len >= 3) result += `)`; // закрываем скобку после 3-й цифры
+          if (len >= 4) result += ` ${digits[3]}`;
+          if (len >= 5) result += digits[4];
+          if (len >= 6) result += digits[5];
+          if (len >= 6) result += `-`; // дефис после 6-й цифры
+          if (len >= 7) result += digits[6];
+          if (len >= 8) result += digits[7];
+          if (len >= 8) result += `-`; // дефис после 8-й цифры
+          if (len >= 9) result += digits[8];
+          if (len >= 10) result += digits[9];
           return result;
         },
       },
-      996: {
-        totalDigits: 9, // Киргизия: 9 цифр после «996»
+
+      /**
+       * Киргизия
+       * Пример полного номера: +996 (555) 123-456
+       * => после "996" нужно 9 цифр
+       */
+      9: {
+        code: "996",
+        totalDigitsAfterCode: 9,
         formatFn: (digits) => {
-          // Формат: +996 (XXX) XXX-XXX (условный вариант)
-          let [d1, d2, d3, d4, d5, d6, d7, d8, d9] = digits;
+          const len = digits.length;
           let result = "+996";
-          if (digits.length > 0) result += " (" + d1;
-          if (digits.length > 1) result += d2;
-          if (digits.length > 2) result += d3 + ")";
-          if (digits.length > 3) result += " " + d4 + d5 + d6;
-          if (digits.length > 6) result += "-" + d7 + d8 + d9;
+          if (len >= 1) result += ` (${digits[0]}`;
+          if (len >= 2) result += digits[1];
+          if (len >= 3) result += digits[2];
+          if (len >= 3) result += `)`;
+          if (len >= 4) result += ` ${digits[3]}`;
+          if (len >= 5) result += digits[4];
+          if (len >= 6) result += digits[5];
+          if (len >= 6) result += `-`;
+          if (len >= 7) result += digits[6];
+          if (len >= 8) result += digits[7];
+          if (len >= 9) result += digits[8];
           return result;
         },
       },
-      86: {
-        totalDigits: 11, // Китай: 11 цифр после «86»
+
+      /**
+       * Китай
+       * Пример полного номера: +86 (123) 4567-8901
+       * => после "86" нужно 11 цифр
+       */
+      8: {
+        code: "86",
+        totalDigitsAfterCode: 11,
         formatFn: (digits) => {
-          // Формат: +86 (XXX) XXXX-XXXX (условный вариант)
-          let [d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11] = digits;
+          const len = digits.length;
           let result = "+86";
-          if (digits.length > 0) result += " (" + d1;
-          if (digits.length > 1) result += d2;
-          if (digits.length > 2) result += d3 + ")";
-          if (digits.length > 3) result += " " + d4 + d5 + d6 + d7;
-          if (digits.length > 7) result += "-" + d8 + d9 + d10 + (d11 || "");
+          if (len >= 1) result += ` (${digits[0]}`;
+          if (len >= 2) result += digits[1];
+          if (len >= 3) result += digits[2];
+          if (len >= 3) result += `)`;
+          if (len >= 4) result += ` ${digits[3]}`;
+          if (len >= 5) result += digits[4];
+          if (len >= 6) result += digits[5];
+          if (len >= 7) result += digits[6];
+          if (len >= 7) result += `-`;
+          if (len >= 8) result += digits[7];
+          if (len >= 9) result += digits[8];
+          if (len >= 10) result += digits[9];
+          if (len >= 11) result += digits[10];
           return result;
         },
       },
     };
 
-    // Запускаем всё автоматически
+    this._phoneBuffer = {
+      digits: [], // Для хранения цифр
+      formatInfo: null, // Для хранения информации о текущем формате
+    };
+
+    // Автоматическая инициализация
     this._init();
   }
 
   /**
-   * Инициализация (кэширование DOM-элементов, навешивание слушателей).
+   * Основной метод инициализации.
    */
   _init() {
     this._cacheDOMElements();
@@ -77,181 +118,206 @@ export class ClientData {
   }
 
   /**
-   * Поиск и кеширование DOM-элементов.
+   * Находим DOM-элементы и кладём их в поля класса.
    */
   _cacheDOMElements() {
     this._nameInputElement = document.querySelector(this._nameInputSelector);
     this._phoneInputElement = document.querySelector(this._phoneInputSelector);
 
     if (!this._nameInputElement) {
-      console.warn(`Поле ввода имени не найдено: ${this._nameInputSelector}`);
+      console.warn(`Не найдено поле ввода имени: ${this._nameInputSelector}`);
     }
     if (!this._phoneInputElement) {
       console.warn(
-        `Поле ввода телефона не найдено: ${this._phoneInputSelector}`
+        `Не найдено поле ввода телефона: ${this._phoneInputSelector}`
       );
     }
   }
 
   /**
-   * Навешиваем обработчики на поля ввода.
+   * Навешиваем слушатели на поля.
    */
   _bindEvents() {
-    // Имя
     if (this._nameInputElement) {
       this._nameInputElement.addEventListener("input", (event) => {
         this._handleNameInput(event.target.value);
       });
     }
 
-    // Телефон
     if (this._phoneInputElement) {
-      // При вводе будем «маскировать» и записывать в State.
       this._phoneInputElement.addEventListener("input", () => {
         this._handlePhoneInput();
       });
 
-      // При потере фокуса (blur) проверяем, введён ли полный номер.
-      // Если нет — очищаем поле.
+      this._phoneInputElement.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" || e.key === "Delete") {
+          e.preventDefault();
+          this._handlePhoneDelete();
+        }
+      });
+
       this._phoneInputElement.addEventListener("blur", () => {
-        this._checkPhoneCompleted();
+        this._checkPhoneComplete();
       });
     }
   }
 
-  /**
-   * Обработка изменения имени. Обновляем State и выводим в консоль для наглядности.
-   */
-  _handleNameInput(name) {
-    State.clientData.name = name;
-    console.log("State.clientData (имя обновлено):", State.clientData);
+  _handlePhoneDelete() {
+    if (!this._phoneInputElement) return;
+
+    const start = this._phoneInputElement.selectionStart;
+    const value = this._phoneInputElement.value;
+
+    // Если курсор находится в конце строки, просто удаляем последний элемент из буфера
+    if (start === value.length) {
+      this._phoneBuffer.digits.pop();
+    } else {
+      // Если курсор не в конце, нужно удалить символ перед курсором
+      const before = value.slice(0, start);
+      const lastChar = before.slice(-1);
+
+      // Если последний символ - это символ форматирования, просто удаляем его
+      if (this._isFormatChar(lastChar)) {
+        // Удаляем символ форматирования
+        this._phoneBuffer.digits.pop();
+      } else {
+        // Если это цифра, удаляем её из буфера
+        this._phoneBuffer.digits.pop();
+      }
+    }
+
+    const formattedValue = this._applyFormat();
+    this._phoneInputElement.value = formattedValue;
   }
 
   /**
-   * Обработка изменения телефона.
-   * 1) Форматируем введённое значение.
-   * 2) Обновляем State.clientData.number.
-   * 3) Выводим в консоль.
+   * Обработка имени: сохраняем в State и выводим в консоль (для наглядности).
+   */
+  _handleNameInput(name) {
+    State.clientData.name = name;
+    /* console.log("State.clientData при вводе имени:", State.clientData.name); */
+  }
+
+  /**
+   * Обработка телефона:
+   * 1) извлекаем цифры
+   * 2) ищем подходящий формат (по коду)
+   * 3) форматируем «по месту»
+   * 4) сохраняем в State
    */
   _handlePhoneInput() {
     if (!this._phoneInputElement) return;
 
-    // Сырой ввод, например: "+7 (123) 45"
     const rawValue = this._phoneInputElement.value;
-
-    // Отформатированное значение (или пустая строка, если код неверный).
-    const formattedValue = this._formatPhone(rawValue);
-
-    // Устанавливаем результат обратно в инпут.
-    this._phoneInputElement.value = formattedValue;
-
-    // Записываем в State только то, что сейчас в поле (может быть частично).
-    State.clientData.number = formattedValue;
-    console.log("State.clientData (телефон обновлён):", State.clientData);
+    this._formatPhone(rawValue);
+    State.clientData.phone = this._phoneInputElement.value;
+    /* console.log("State.clientData при вводе имени:", State.clientData.phone); */
   }
 
   /**
-   * Проверка, введён ли полный номер при потере фокуса.
-   * Если нет — очистка поля и сброс state.
+   * Проверяем, введён ли полностью корректный номер (по количеству цифр)
+   * при потере фокуса. Если нет — очищаем поле.
    */
-  _checkPhoneCompleted() {
+  _checkPhoneComplete() {
     if (!this._phoneInputElement) return;
     const currentValue = this._phoneInputElement.value;
+    // Извлекаем только цифры
+    const digits = currentValue.replace(/\D+/g, "");
 
-    // Проверяем, является ли текущее значение "полным":
-    // 1) Удаляем всё, кроме цифр.
-    // 2) Определяем код страны.
-    // 3) Смотрим, достаточно ли цифр.
-    const digits = currentValue.replace(/\D+/g, ""); // все цифры без "+"
-    // Например, если пользователь ввёл "+7 (123) 456-78-90", digits будет "71234567890".
-
-    // Если в строке меньше 2 цифр — точно некорректно, сразу очищаем.
+    // Меньше 2 цифр — точно не подходит ни под один код
     if (digits.length < 2) {
       this._clearPhone();
       return;
     }
 
-    // Ищем подходящий формат
-    const matchedFormat = this._matchFormat(digits);
-
-    if (!matchedFormat) {
-      // Код страны неправильный — очищаем
+    // Ищем, какой формат подходит
+    const format = this._findFormatByDigits(digits);
+    if (!format) {
+      // Код неправильный
       this._clearPhone();
       return;
     }
 
-    // Проверяем, хватает ли цифр после кода
-    const { code, totalDigits } = matchedFormat;
-    const codeLength = code.length; // например, "7" => length 1, "996" => length 3
-    const localDigitsCount = digits.length - codeLength; // сколько цифр после кода
+    // Сколько цифр нужно после кода
+    const needed = format.totalDigitsAfterCode;
+    const actual = digits.length - format.code.length;
 
-    // Если пользователь не ввёл все необходимые цифры, очищаем
-    if (localDigitsCount < totalDigits) {
+    // Если пользователь не добрал нужное количество
+    if (actual < needed) {
       this._clearPhone();
     }
   }
 
   /**
-   * Форматирование строки телефона в соответствии с одним из допустимых кодов.
-   * Если код не подходит (или введено не то), возвращается пустая строка.
-   *
-   * @param {string} rawValue - строка (может содержать +, скобки, пробелы и т.д.).
-   * @returns {string} отформатированная строка или "" (если код не совпал).
+   * Форматируем строку телефона в «живую маску»:
+   * - Если код страны не совпал, возвращаем пустую строку
+   * - Иначе применяем функции форматирования
    */
   _formatPhone(rawValue) {
-    // Извлекаем все цифры (без '+', пробелов и т.д.).
-    // Например, из "+7 (123) 45" получим "712345".
-    const digits = rawValue.replace(/\D+/g, "");
+    const digits = rawValue.replace(/\D/g, "");
+    const format = this._findFormatByDigits(digits);
 
-    // Если пользователь вообще не ввёл цифр — возвращаем пустое значение
-    if (!digits) {
-      return "";
+    if (!format) {
+      this._clearPhone();
+      return;
     }
 
-    // Сопоставляем введённые цифры с одним из кодов
-    const matchedFormat = this._matchFormat(digits);
-    if (!matchedFormat) {
-      // Код страны неверный => не даём вводить дальше
-      return "";
+    this._phoneBuffer.formatInfo = format;
+    this._updateBuffer(digits);
+    const formattedValue = this._applyFormat();
+    this._phoneInputElement.value = formattedValue;
+  }
+
+  _updateBuffer(digits) {
+    const maxDigits =
+      this._phoneBuffer.formatInfo.code.length +
+      this._phoneBuffer.formatInfo.totalDigitsAfterCode;
+    const newDigits = digits.slice(0, maxDigits);
+
+    if (newDigits.length > this._phoneBuffer.digits.length) {
+      const additionalDigits = newDigits.slice(this._phoneBuffer.digits.length);
+      this._phoneBuffer.digits.push(...additionalDigits);
+    } else if (newDigits.length < this._phoneBuffer.digits.length) {
+      this._phoneBuffer.digits = newDigits.slice();
     }
+  }
 
-    const { code, totalDigits, formatFn } = matchedFormat;
-    const codeLength = code.length;
-    // Выделяем «локальные» цифры (после кода)
-    const localDigits = digits.slice(codeLength).split("");
-
-    // Обрезаем лишние, если пользователь ввёл больше, чем нужно
-    if (localDigits.length > totalDigits) {
-      localDigits.length = totalDigits;
-    }
-
-    // Формируем готовую маску
+  _applyFormat() {
+    const { code, formatFn } = this._phoneBuffer.formatInfo;
+    const localDigits = this._phoneBuffer.digits.slice(code.length);
     return formatFn(localDigits);
   }
 
-  /**
-   * Функция, которая проверяет, начинается ли "digits" с одного из допустимых кодов
-   * (7, 996, 86) и возвращает объект формата, если подходит.
-   */
-  _matchFormat(digits) {
-    // Перебираем все доступные "коды"
-    for (let code of Object.keys(this._phoneFormats)) {
-      // Проверяем, начинается ли введённая строка с данного кода
-      if (digits.startsWith(code)) {
-        return { code, ...this._phoneFormats[code] };
-      }
-    }
-    return null; // ни один код не подошёл
+  _isFormatChar(char) {
+    return ["(", ")", "-"].includes(char);
   }
 
   /**
-   * Очистка поля телефона и сброс значения в State
+   * Пытаемся найти формат (из _phoneFormats), которому соответствуют введённые цифры.
+   * Проверяем, начинается ли введённая строка (digits) с "7", "996" или "86".
+   */
+  _findFormatByDigits(digits) {
+    for (let key of Object.keys(this._phoneFormats)) {
+      // key — это "7", "996" или "86"
+      if (digits.startsWith(key)) {
+        return this._phoneFormats[key];
+      }
+    }
+    return null; // ничего не подошло
+  }
+
+  /**
+   * Очищаем поле телефона и сбрасываем в State
    */
   _clearPhone() {
     if (this._phoneInputElement) {
       this._phoneInputElement.value = "";
     }
-    State.clientData.number = "";
-    console.log("Поле телефона очищено — введён неполный или неверный номер.");
+    this._phoneBuffer = {
+      digits: [],
+      formatInfo: null,
+    };
+    State.clientData.phone = "";
+    console.log("Телефон очищен (неполный или неверный код)");
   }
 }
