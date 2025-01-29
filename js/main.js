@@ -4,6 +4,7 @@ import { CalculatorApp } from "./calculations/App.js";
 import { PdfPrepared } from "./calculations/PdfPrepare.js";
 import { PdfGenerate } from "./calculations/PdfGenerate.js";
 import { State } from "./data/State.js";
+import UiPrepare from "./ui/UiPrepare.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),
@@ -30,6 +31,8 @@ const fields = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  new UiPrepare();
+
   /* Калькулятор */
   new CalculatorApp(fields);
 

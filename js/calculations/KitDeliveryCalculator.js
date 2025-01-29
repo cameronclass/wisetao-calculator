@@ -17,12 +17,12 @@ class KitDeliveryCalculator {
   }
 
   async calculate() {
-/*     if (!this.shouldCalculate()) {
+    if (!this.shouldCalculate()) {
       this.hideAllElements();
       return;
     }
 
-    if (!this.validateRequiredFields()) {
+/*     if (!this.validateRequiredFields()) {
       this.hideAllElements();
       return;
     } */

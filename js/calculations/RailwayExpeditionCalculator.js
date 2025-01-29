@@ -48,7 +48,7 @@ class RailwayExpeditionCalculator {
 
   validateAddressCoordinates() {
     if (!State.address?.lat || !State.address?.lon) {
-      this.showNotification("Пожалуйста, укажите адрес доставки.");
+      /* this.showNotification("Пожалуйста, укажите адрес доставки."); */
       return false;
     }
     return true;

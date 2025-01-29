@@ -37,7 +37,7 @@ export class CalculatorApp {
     try {
       const currency = new Currency(CONFIG.botToken, CONFIG.chatId, 7.3);
       await currency.loadAndSaveRates();
-      console.log("Курсы успешно сохранены в State:", State.currencyRates);
+      console.log("Курсы успешно сохранены");
     } catch (error) {
       console.error("Ошибка загрузки курсов валют:", error);
     }
@@ -46,7 +46,7 @@ export class CalculatorApp {
     try {
       const dataProvider = new DataProvider();
       await dataProvider.loadAndSave();
-      console.log("Тарифы успешно сохранены в State:", State.directionsData);
+      console.log("Тарифы успешно сохранены");
     } catch (error) {
       console.error("Ошибка загрузки тарифов:", error);
     }
@@ -75,8 +75,7 @@ export class CalculatorApp {
       await this.railwayCalculator.calculate();
       await this.kitCalculator.calculate();
 
-      console.log(State);
-      
+      /* console.log(State); */
     } else {
       console.log("Форма заполнена с ошибками");
       this.scrollToWrapper();
