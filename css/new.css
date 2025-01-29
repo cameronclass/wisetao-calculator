@@ -529,20 +529,36 @@ input[type="number"] {
 }
 .main-calc-buy-info__form {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 30px 20px;
 }
 .main-calc-buy-info__form .group-input:first-child {
   grid-column-start: 1;
+  grid-column-end: 5;
+}
+.main-calc-buy-info__form .group-input:nth-child(2) {
+  grid-column-start: 5;
+  grid-column-end: 7;
+}
+.main-calc-buy-info__form .group-input:nth-child(3) {
+  grid-column-start: 1;
   grid-column-end: 3;
 }
-.main-calc-buy-info__form .group-input:nth-child(6) {
+.main-calc-buy-info__form .group-input:nth-child(4) {
   grid-column-start: 3;
   grid-column-end: 5;
 }
-.main-calc-buy-info__form .group-input:nth-child(7) {
+.main-calc-buy-info__form .group-input:nth-child(5) {
+  grid-column-start: 5;
+  grid-column-end: 7;
+}
+.main-calc-buy-info__form .group-input:nth-child(6) {
   grid-column-start: 1;
-  grid-column-end: 5;
+  grid-column-end: 4;
+}
+.main-calc-buy-info__form .group-input:nth-child(7) {
+  grid-column-start: 4;
+  grid-column-end: 7;
 }
 
 /* Hidden */
@@ -1038,6 +1054,9 @@ input[type="number"] {
 }
 
 /*Upload*/
+.client-redeem-data {
+  flex-direction: column;
+}
 .data-redeem {
   margin-top: 20px;
 }
@@ -2019,6 +2038,40 @@ input[type="number"] {
 }
 
 /* Mobile */
+@media screen and (max-width: 1200px) {
+  .main-calc-buy-info {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .main-calc-buy-info__form .group-input:first-child {
+    grid-column-start: 1;
+    grid-column-end: 4;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(2) {
+    grid-column-start: 4;
+    grid-column-end: 7;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(3) {
+    grid-column-start: 1;
+    grid-column-end: 4;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(4) {
+    grid-column-start: 4;
+    grid-column-end: 7;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(5) {
+    grid-column-start: 1;
+    grid-column-end: 4;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(6) {
+    grid-column-start: 4;
+    grid-column-end: 7;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(7) {
+    grid-column-start: 1;
+    grid-column-end: 7;
+  }
+}
 @media screen and (max-width: 768px) {
   body {
     padding: 10px;
@@ -2116,20 +2169,39 @@ input[type="number"] {
   }
 
   .main-calc-buy-info__form {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .main-calc-buy-info__form .group-input:first-child {
     grid-column-start: 1;
-    grid-column-end: 3;
+    grid-column-end: 7;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(2) {
+    grid-column-start: 1;
+    grid-column-end: 7;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(3) {
+    grid-column-start: 1;
+    grid-column-end: 7;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(4) {
+    grid-column-start: 1;
+    grid-column-end: 7;
+  }
+  .main-calc-buy-info__form .group-input:nth-child(5) {
+    grid-column-start: 1;
+    grid-column-end: 7;
   }
   .main-calc-buy-info__form .group-input:nth-child(6) {
     grid-column-start: 1;
-    grid-column-end: 3;
+    grid-column-end: 7;
   }
   .main-calc-buy-info__form .group-input:nth-child(7) {
     grid-column-start: 1;
-    grid-column-end: 3;
+    grid-column-end: 7;
+  }
+  .main-calc-upload {
+    width: 100%;
   }
 
   /* .main-calc-result */

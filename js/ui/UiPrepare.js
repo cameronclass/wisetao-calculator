@@ -14,6 +14,40 @@ export default class UiPrepare {
     this._initAllPriceRadios();
     this._initCalcTypeRadios();
     this._initAddressCheckbox();
+    this._initDeliveryOptionRadios();
+  }
+
+  _initDeliveryOptionRadios() {
+    const radioButtons = document.querySelectorAll(
+      'input[name="delivery-option"]'
+    );
+
+    const deliveryOptionHandler = () => {
+      const targetElements = document.querySelectorAll(
+        ".сlient-data, .client-redeem-data"
+      );
+
+      // Проверяем, какая радиокнопка активна
+      const isDeliveryAndPickup = Array.from(radioButtons).some(
+        (radio) => radio.value === "delivery-and-pickup" && radio.checked
+      );
+
+      targetElements.forEach((element) => {
+        if (isDeliveryAndPickup) {
+          element.classList.add("active");
+        } else {
+          element.classList.remove("active");
+        }
+      });
+    };
+
+    // Добавляем обработчик события для всех радиокнопок
+    radioButtons.forEach((radio) => {
+      radio.addEventListener("change", deliveryOptionHandler);
+    });
+
+    // Вызываем обработчик один раз при инициализации
+    deliveryOptionHandler();
   }
 
   _initAddClassButtons() {

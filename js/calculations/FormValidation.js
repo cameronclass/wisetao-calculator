@@ -2,12 +2,25 @@
 import Address from "../api/Address.js";
 import { State } from "../data/State.js";
 
+/**
+ * Класс FormValidation отвечает за:
+ * 1) Ограничения ввода (числовые поля, количество знаков и т.д.).
+ * 2) Реалтайм-валидацию (убирает/добавляет ошибки при изменении полей).
+ * 3) Логику сброса формы при переключении calc-type.
+ * 4) Логику вычисления объёма (либо напрямую, либо из габаритов).
+ * 5) Проверку обязательных полей (вес, объём, стоимость, категория, ТНВЭД и т.д.).
+ * 6) Управление адресом доставки (включая интеграцию с Address.js).
+ * 7) Отображение/скрытие ошибок и результатов.
+ */
 export class FormValidation {
   /**
    * Создает экземпляр FormValidation.
    * @param {Object} fields - Объект, содержащий ссылки на элементы полей формы.
    */
   constructor(fields) {
+    // -------------------------------
+    // A) Базовые настройки
+    // -------------------------------
     this.fields = fields;
     this.errors = {};
 
@@ -22,34 +35,47 @@ export class FormValidation {
       this.fields.volumeHeight,
       this.fields.tnvedInput,
       this.fields.brand,
-      this.fields.address, // Добавляем поле адреса для сброса
+      this.fields.address,
     ];
 
+    // Сброс возможной ошибки адреса
     this.updateState("addressError", null);
 
     // Инициализация Address.js
+    // (использует инпут с селектором input[name="address"])
     this.addressHandler = new Address('input[name="address"]');
 
-    // -- Базовая валидация --
-    this.setupInputRestrictions(); // (1) Ограничение ввода для totalVolume, totalWeight, ...
-    this.setupRealtimeValidation(); // (2) Реалтайм-валидация и т.п.
-    this.setupCalcTypeReset(); // (3) Сброс при переключении calc-type
+    // -------------------------------
+    // B) Инициализация слушателей и логики
+    // -------------------------------
+    // (1) Ограничения ввода
+    this.setupInputRestrictions();
 
-    // -- Логика объёма (volumeLength/Width/Height vs. totalVolume) --
-    this.setupNumericVolumeRestrictions(); // Ограничения для объёмных полей
-    this.setupVolumeModeListeners(); // Слушатели для объёмных полей
+    // (2) Реалтайм-валидация, убирание результатов при вводе
+    this.setupRealtimeValidation();
 
-    // -- Слушатели пользовательских событий для State --
-    this.setupStateEventListener(); // Устанавливаем слушатель stateChange раньше
+    // (3) Сброс формы при переключении calc-type
+    this.setupCalcTypeReset();
 
-    // -- Управление видимостью элементов `.to-address` --
-    this.setupAddressCheckboxListener(); // Затем устанавливаем слушатель чекбокса
+    // (4) Габариты/объёмная логика
+    this.setupNumericVolumeRestrictions();
+    this.setupVolumeModeListeners();
+
+    // (5) Слушатель для глобальных изменений в State
+    this.setupStateEventListener();
+
+    // (6) Управление чекбоксом адреса (.to-address)
+    this.setupAddressCheckboxListener();
   }
 
+  // =====================================================
+  // SECTION 1: STATE И СЛУШАТЕЛИ ИЗМЕНЕНИЙ
+  // =====================================================
+
   /**
-   * Helper method to update state and dispatch event
-   * @param {string} prop - Property name in State
-   * @param {*} value - New value for the property
+   * Обновляет State и диспатчит кастомное событие "stateChange".
+   * @param {string} prop - Имя свойства в State.
+   * @param {*} value - Новое значение этого свойства.
    */
   updateState(prop, value) {
     State[prop] = value;
@@ -59,23 +85,82 @@ export class FormValidation {
     document.dispatchEvent(event);
   }
 
-  // --------------------------------------------------
-  // ============= 1) Ограничение ввода ===============
-  // --------------------------------------------------
+  /**
+   * Добавляет слушатель пользовательских событий 'stateChange'.
+   * Вызов handleStateChange() при каждом изменении State.
+   */
+  setupStateEventListener() {
+    document.addEventListener("stateChange", this.handleStateChange.bind(this));
+  }
+
+  /**
+   * Обработчик события 'stateChange'.
+   * @param {CustomEvent} event - Событие 'stateChange'.
+   */
+  handleStateChange(event) {
+    const { prop, value } = event.detail;
+    this.handleAddressStateChange(prop, value);
+  }
+
+  /**
+   * Обрабатывает изменения в State, связанные с адресом.
+   * @param {string} prop - Изменённое свойство в State.
+   * @param {*} value - Новое значение этого свойства.
+   */
+  handleAddressStateChange(prop, value) {
+    if (prop === "address") {
+      if (value) {
+        // Адрес выбран => убираем ошибку
+        this.removeError(this.fields.address);
+      } else if (State.addressError) {
+        // Адрес не выбран / ошибка => показываем ошибку
+        this.addError(this.fields.address, State.addressError);
+      }
+      // Скрываем результат расчёта при изменении адреса
+      this.hideCalculationResult();
+    }
+
+    if (prop === "addressError") {
+      if (value) {
+        this.addError(this.fields.address, value);
+      } else {
+        this.removeError(this.fields.address);
+      }
+      // Скрываем результат расчёта при изменении ошибки адреса
+      this.hideCalculationResult();
+    }
+  }
+
+  // =====================================================
+  // SECTION 2: ОГРАНИЧЕНИЯ ВВОДА
+  // =====================================================
+
+  /**
+   * setupInputRestrictions():
+   * Ограничивает ввод в поля totalVolume, totalWeight, totalCost, quantity.
+   */
   setupInputRestrictions() {
+    /**
+     * Ограничивает ввод на уровне события input,
+     * убирая любые нежелательные символы.
+     *
+     * @param {HTMLInputElement} field - поле ввода
+     * @param {RegExp} regex - регулярка, соответствующая символам, которые нужно удалить
+     * @param {number|null} maxDecimals - ограничение знаков после точки (null если не нужно)
+     */
     const setupFieldRestriction = (field, regex, maxDecimals = null) => {
       if (!field) return;
       field.addEventListener("input", () => {
-        // 1) Убираем все лишние символы, кроме цифр, точки, запятой
+        // (1) Убираем все лишние символы, кроме цифр, точки, запятой
         field.value = field.value.replace(regex, "");
-        // 2) Заменяем запятые на точки
+        // (2) Заменяем запятые на точки
         field.value = field.value.replace(/,/g, ".");
-        // 3) Ограничиваем количество точек до 1
+        // (3) Ограничиваем количество точек до 1
         const partsDot = field.value.split(".");
         if (partsDot.length > 2) {
           field.value = partsDot[0] + "." + partsDot.slice(1).join("");
         }
-        // 4) Ограничиваем знаки после точки
+        // (4) Ограничиваем знаки после точки
         if (maxDecimals !== null && partsDot[1]?.length > maxDecimals) {
           field.value = `${partsDot[0]}.${partsDot[1].substring(
             0,
@@ -92,132 +177,10 @@ export class FormValidation {
     setupFieldRestriction(this.fields.quantity, /[^0-9]/g);
   }
 
-  // --------------------------------------------------
-  // =========== 2) Реалтайм-валидация ================
-  // --------------------------------------------------
-  setupRealtimeValidation() {
-    const fieldNamesToWatch = [
-      "totalVolume",
-      "totalWeight",
-      "totalCost",
-      "quantity",
-      "tnvedInput",
-    ];
-    fieldNamesToWatch.forEach((fieldName) => {
-      const fieldEl = this.fields[fieldName];
-      if (fieldEl) {
-        fieldEl.addEventListener("input", () => {
-          this.removeError(fieldEl);
-          this.validateSingleField(fieldName);
-          this.hideCalculationResult(); // Вызов hideCalculationResult при изменении любого поля
-        });
-      }
-    });
-
-    // Радиокнопки category
-    const categoryRadios = document.querySelectorAll('input[name="category"]');
-    categoryRadios.forEach((radio) => {
-      radio.addEventListener("change", () => {
-        this.clearCategoryError();
-        this.validateCategory();
-        this.hideCalculationResult(); // Вызов hideCalculationResult при изменении категории
-      });
-    });
-
-    const allFields = [
-      this.fields.totalCost,
-      this.fields.totalWeight,
-      this.fields.totalVolume,
-      this.fields.totalVolumeCalculated,
-      this.fields.volumeLength,
-      this.fields.volumeWidth,
-      this.fields.volumeHeight,
-      this.fields.quantity,
-      this.fields.tnvedInput,
-      this.fields.brand,
-      this.fields.insurance,
-      ...Array.from(this.fields.category),
-      ...Array.from(this.fields.packingType),
-    ];
-    allFields.forEach((field) => {
-      if (field) {
-        field.addEventListener("input", () => {
-          this.hideCalculationResult();
-        });
-      }
-    });
-  }
-
-  // --------------------------------------------------
-  // =========== 3) Сброс формы при переключении calc-type ====
-  // --------------------------------------------------
-  setupCalcTypeReset() {
-    const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
-    calcTypeRadios.forEach((radio) => {
-      radio.addEventListener("change", () => {
-        this.resetAll();
-        this.hideCalculationResult(); // Вызов hideCalculationResult при сбросе формы
-      });
-    });
-  }
-
-  /**
-   * resetAll(): вызывается только при переключении “calc-type”
-   */
-  resetAll() {
-    // 1) Скрыть результат
-    this.hideCalculationResult();
-    // 2) Очистить ошибки
-    this.clearErrors();
-    // 3) Очистить нужные поля
-    this.clearFields(this.fieldsToReset);
-    // 4) Сбросить (опционально) State.clientData
-    if (State.clientData) {
-      State.clientData = {
-        calcType: "",
-        totalCost: "",
-        currency: "",
-        totalWeight: "",
-        totalVolume: "",
-        volumeLength: "",
-        volumeWidth: "",
-        volumeHeight: "",
-        quantity: "",
-        categoryKey: "",
-        packingType: "",
-        insurance: "",
-        brand: "",
-        tnvedInput: "",
-        tnvedSelectedName: null,
-        tnvedSelectedCode: null,
-        tnvedSelectedImp: null,
-        address: null, // Сброс адреса
-      };
-    }
-
-    // Сброс состояния адреса
-    this.updateState("address", null);
-    this.updateState("addressError", null);
-
-    // Очистка поля адреса в форме
-    if (this.fields.address) {
-      this.fields.address.value = "";
-    }
-
-    const tnvedBlock = document.querySelector(".white-cargo__justinfo");
-    if (tnvedBlock) {
-      tnvedBlock.classList.remove("active");
-    }
-
-    console.log("Форма и State.clientData сброшены при переключении calc-type");
-  }
-
-  // --------------------------------------------------
-  // =========== 4) Логика объёма / переключения ======
-  // --------------------------------------------------
   /**
    * setupNumericVolumeRestrictions():
-   *  - ограничиваем input для volumeLength / volumeWidth / volumeHeight
+   * Ограничиваем ввод в поля volumeLength / volumeWidth / volumeHeight
+   * (убираем все, кроме цифр и точки, одна точка, максимум 2 знака).
    */
   setupNumericVolumeRestrictions() {
     const numericFields = [
@@ -240,44 +203,190 @@ export class FormValidation {
     });
   }
 
+  // =====================================================
+  // SECTION 3: РЕАЛТАЙМ-ВАЛИДАЦИЯ
+  // =====================================================
+
+  /**
+   * setupRealtimeValidation():
+   * Включаем отслеживание ввода полей, чтобы удалять/добавлять ошибки
+   * и скрывать результат расчёта при любом изменении.
+   */
+  setupRealtimeValidation() {
+    const fieldNamesToWatch = [
+      "totalVolume",
+      "totalWeight",
+      "totalCost",
+      "quantity",
+      "tnvedInput",
+    ];
+
+    // 1) Подписка на input для удаления ошибок и повторной валидации
+    fieldNamesToWatch.forEach((fieldName) => {
+      const fieldEl = this.fields[fieldName];
+      if (fieldEl) {
+        fieldEl.addEventListener("input", () => {
+          this.removeError(fieldEl);
+          this.validateSingleField(fieldName);
+          this.hideCalculationResult();
+        });
+      }
+    });
+
+    // 2) Подписка на изменение radiobutton "category"
+    const categoryRadios = document.querySelectorAll('input[name="category"]');
+    categoryRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        this.clearCategoryError();
+        this.validateCategory();
+        this.hideCalculationResult();
+      });
+    });
+
+    // 3) Дополнительно, любое изменение поля скрывает результат расчёта
+    const allFields = [
+      this.fields.totalCost,
+      this.fields.totalWeight,
+      this.fields.totalVolume,
+      this.fields.totalVolumeCalculated,
+      this.fields.volumeLength,
+      this.fields.volumeWidth,
+      this.fields.volumeHeight,
+      this.fields.quantity,
+      this.fields.tnvedInput,
+      this.fields.brand,
+      this.fields.insurance,
+      ...Array.from(this.fields.category),
+      ...Array.from(this.fields.packingType),
+    ];
+
+    allFields.forEach((field) => {
+      if (field) {
+        field.addEventListener("input", () => {
+          this.hideCalculationResult();
+        });
+      }
+    });
+  }
+
+  // =====================================================
+  // SECTION 4: СБРОС ФОРМЫ ПРИ ПЕРЕКЛЮЧЕНИИ CALC-TYPE
+  // =====================================================
+
+  /**
+   * setupCalcTypeReset():
+   * При смене calc-type (таможня / карго) сбрасываем форму.
+   */
+  setupCalcTypeReset() {
+    const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
+    calcTypeRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
+        this.resetAll();
+        this.hideCalculationResult();
+      });
+    });
+  }
+
+  /**
+   * resetAll():
+   * Сбрасывает поля и ошибки формы, а также State.clientData,
+   * вызывается при переключении “calc-type”.
+   */
+  resetAll() {
+    // (1) Скрыть результат
+    this.hideCalculationResult();
+
+    // (2) Очистить ошибки
+    this.clearErrors();
+
+    // (3) Очистить нужные поля
+    this.clearFields(this.fieldsToReset);
+
+    // (4) Сбросить (опционально) State.clientData
+    if (State.clientData) {
+      State.clientData = {
+        calcType: "",
+        totalCost: "",
+        currency: "",
+        totalWeight: "",
+        totalVolume: "",
+        volumeLength: "",
+        volumeWidth: "",
+        volumeHeight: "",
+        quantity: "",
+        categoryKey: "",
+        packingType: "",
+        insurance: "",
+        brand: "",
+        tnvedInput: "",
+        tnvedSelectedName: null,
+        tnvedSelectedCode: null,
+        tnvedSelectedImp: null,
+        address: null,
+        deliveryOption: null,
+      };
+    }
+
+    // Сброс состояния адреса
+    this.updateState("address", null);
+    this.updateState("addressError", null);
+
+    // Очистка поля адреса в форме
+    if (this.fields.address) {
+      this.fields.address.value = "";
+    }
+
+    // Сбрасываем блок ТНВЭД (белый прямоугольник) если он был активен
+    const tnvedBlock = document.querySelector(".white-cargo__justinfo");
+    if (tnvedBlock) {
+      tnvedBlock.classList.remove("active");
+    }
+
+    console.log("Форма и State.clientData сброшены при переключении calc-type");
+  }
+
+  // =====================================================
+  // SECTION 5: ГАБАРИТЫ / ОБЪЁМ
+  // =====================================================
+
   /**
    * setupVolumeModeListeners():
-   *  - когда weightVolumeChange переключается
-   *  - при вводе в volumeLength/Width/Height пересчитываем totalVolumeCalculated
+   *  1) Слушатель для чекбокса weightVolumeChange (ввод объёма вручную или из габаритов)
+   *  2) Слушатели для volumeLength/Width/Height => пересчитать totalVolumeCalculated
    */
   setupVolumeModeListeners() {
     const { weightVolumeChange, volumeLength, volumeWidth, volumeHeight } =
       this.fields;
 
-    // Слушатель для переключателя “Ввести объём напрямую”
+    // (1) При переключении “Ввести объём напрямую”
     if (weightVolumeChange) {
       weightVolumeChange.addEventListener("change", () => {
-        this.toggleVolumeMode(); // включает/выключает поля
-        // Дополнительная логика очистки:
+        this.toggleVolumeMode();
+        // Доп. логика очистки
         if (weightVolumeChange.checked) {
-          // Если включён режим “ввести объём напрямую”:
           this.clearErrors();
           this.clearFields([volumeLength, volumeWidth, volumeHeight]);
         } else {
           this.clearErrors();
           this.clearFields([this.fields.totalVolume]);
         }
-        this.hideCalculationResult(); // Вызов hideCalculationResult при переключении режима объёма
+        this.hideCalculationResult();
       });
     }
 
-    // Слушатели для volumeLength/Width/Height: по input => пересчитывать объём
+    // (2) При изменении длины/ширины/высоты пересчитывать объём
     [volumeLength, volumeWidth, volumeHeight].forEach((field) => {
       if (!field) return;
       field.addEventListener("input", () => {
-        this.calculateVolume(); // пересчитываем totalVolumeCalculated
-        this.hideCalculationResult(); // Вызов hideCalculationResult при изменении объёма
+        this.calculateVolume();
+        this.hideCalculationResult();
       });
     });
   }
 
   /**
-   * toggleVolumeMode(): активирует/деактивирует поля.
+   * toggleVolumeMode():
+   * Включает/выключает нужные поля при вводе объёма напрямую или через габариты.
    */
   toggleVolumeMode() {
     const {
@@ -292,7 +401,7 @@ export class FormValidation {
     if (!weightVolumeChange) return;
 
     if (weightVolumeChange.checked) {
-      // Включили «Ввести объём напрямую»
+      // Режим "Ввести объём напрямую"
       if (totalVolume) totalVolume.disabled = false;
       if (volumeLength) volumeLength.disabled = true;
       if (volumeWidth) volumeWidth.disabled = true;
@@ -302,17 +411,20 @@ export class FormValidation {
         totalVolumeCalculated.disabled = true;
       }
     } else {
-      // Включили «Вычислить из габаритов»
+      // Режим "Вычислить из габаритов"
       if (totalVolume) totalVolume.disabled = true;
       if (volumeLength) volumeLength.disabled = false;
       if (volumeWidth) volumeWidth.disabled = false;
       if (volumeHeight) volumeHeight.disabled = false;
-      if (totalVolumeCalculated) totalVolumeCalculated.disabled = false;
+      if (totalVolumeCalculated) {
+        totalVolumeCalculated.disabled = false;
+      }
     }
   }
 
   /**
-   * calculateVolume(): пересчитывает totalVolumeCalculated = (L*W*H)/1,000,000
+   * calculateVolume():
+   * Пересчитывает totalVolumeCalculated = (L * W * H) / 1,000,000
    */
   calculateVolume() {
     const { volumeLength, volumeWidth, volumeHeight, totalVolumeCalculated } =
@@ -334,9 +446,67 @@ export class FormValidation {
     totalVolumeCalculated.value = calcVol > 0 ? calcVol.toFixed(4) : "";
   }
 
-  // --------------------------------------------------
-  // =========== 5) Валидация одиночных полей =========
-  // --------------------------------------------------
+  // =====================================================
+  // SECTION 6: ВАЛИДАЦИЯ ПОЛЕЙ
+  // =====================================================
+
+  /**
+   * validateAll():
+   * Главный метод валидации всей формы. Возвращает true/false
+   * в зависимости от результата.
+   */
+  validateAll() {
+    this.clearErrors();
+
+    const calcTypeRadio = document.querySelector(
+      'input[name="calc-type"]:checked'
+    );
+    const calcType = calcTypeRadio ? calcTypeRadio.value : "calc-cargo";
+    const { weightVolumeChange } = this.fields;
+
+    // Составляем массив проверок
+    const isValid = [
+      // Если включён ввод объёма вручную:
+      weightVolumeChange?.checked
+        ? this.validateNumber("totalVolume", { required: true, maxDecimals: 4 })
+        : this.validateDimensions(), // иначе проверяем габариты
+
+      this.validateNumber("totalWeight", {
+        required: true,
+        min: 5,
+        maxDecimals: 2,
+      }),
+      this.validateNumber("quantity", { required: true }),
+      this.validateNumber("totalCost", { required: true, maxDecimals: 2 }),
+      this.validateRadio("total_currency"),
+
+      // Для calc-cargo требуется категория
+      calcType === "calc-cargo" ? this.validateCategory() : true,
+
+      // Упаковка (радел "packing-type")
+      this.validateRadio("packing-type"),
+
+      // Для calc-customs требуется TНВЭД
+      calcType === "calc-customs" ? this.validateTnvedInput() : true,
+
+      // Проверяем адрес (если чекбокс включён)
+      this.validateAddress(),
+      this.validateDeliveryOption(),
+    ].every(Boolean);
+
+    // Если всё ок, сохраняем в State
+    if (isValid) {
+      this.saveToState();
+    }
+
+    return isValid;
+  }
+
+  /**
+   * validateSingleField():
+   * Вызывается на каждом input для отдельных полей.
+   * @param {string} fieldName - имя поля для проверки.
+   */
   validateSingleField(fieldName) {
     switch (fieldName) {
       case "totalVolume":
@@ -377,51 +547,90 @@ export class FormValidation {
     }
   }
 
-  // --------------------------------------------------
-  // =========== 6) Проверка TnvedInput ===============
-  // --------------------------------------------------
-  validateTnvedInput() {
-    const field = this.fields.tnvedInput;
-    const selectedItem = State.tnvedSelection?.selectedItem;
-
-    // 1) Проверка: выбрал ли пользователь ТНВЭД из списка?
-    if (!selectedItem) {
-      this.addError(field, "Нужно выбрать ТНВЭД из списка");
-      return false;
-    }
-
-    // 2) Проверка: успели ли подгрузиться данные в State.clientData?
-    //    То есть tnvedSelectedImp (пошлина), tnvedSelectedName, tnvedSelectedCode и т.д.
-    const cd = State.clientData || {};
-    if (
-      cd.tnvedSelectedName == null ||
-      cd.tnvedSelectedCode == null ||
-      cd.tnvedSelectedImp == null
-    ) {
-      // Если одно из этих полей всё ещё null => пошлина/данные не подгрузились
-      this.addError(
-        field,
-        "Подождите, пока загрузится % пошлин и данные по ТНВЭД"
+  // -----------------------------------------------------
+  // NEW: Валидация радио delivery-option + товаров
+  // -----------------------------------------------------
+  /**
+   * Проверка, выбран ли способ доставки (delivery-option)
+   * и, если это "delivery-and-pickup", проверяем заполнение redeem-товаров.
+   */
+  validateDeliveryOption() {
+    const radio = document.querySelector(
+      'input[name="delivery-option"]:checked'
+    );
+    if (!radio) {
+      const firstRadio = document.querySelector(
+        'input[name="delivery-option"]'
       );
-      console.log(State.clientData);
+      if (firstRadio) {
+        this.addError(firstRadio, "Пожалуйста, выберите способ доставки");
+      }
       return false;
     }
-
-    return true;
+    if (radio.value === "delivery-and-pickup") {
+      return this.validateRedeemItems(); // Если выбрано, проверяем товары
+    }
+    return true; // Если "delivery-only", ничего не требуем
   }
 
-  // --------------------------------------------------
-  // =========== 7) Очистка ряда полей ================
-  // --------------------------------------------------
-  clearFields(fields) {
-    fields.forEach((field) => {
-      if (field) field.value = "";
+  /**
+   * Если выбран режим "delivery-and-pickup",
+   * проверяем State.redeemData по обязательным полям:
+   *  - name  -> data-name
+   *  - cost  -> data_cost
+   *  - quantity -> data-quantity
+   *  - color -> data-color
+   *  - url   -> data-url
+   */
+  validateRedeemItems() {
+    let isValid = true;
+
+    // Сопоставляем ключ в state => имя инпута
+    const requiredFieldsMap = {
+      name: "data-name",
+      cost: "data_cost",
+      quantity: "data-quantity",
+      color: "data-color",
+      url: "data-url",
+      size: "data-size",
+    };
+
+    const keys = Object.keys(State.redeemData || {});
+    keys.forEach((index) => {
+      const item = State.redeemData[index];
+      if (!item) return;
+
+      // Ищем контейнер с data-redeem="N"
+      const container = document.querySelector(`[data-redeem="${index}"]`);
+      if (!container) return;
+
+      // Для каждого обязательного поля проверяем заполнение
+      for (const [propName, inputName] of Object.entries(requiredFieldsMap)) {
+        const value = item[propName]?.toString().trim() || "";
+        const inputEl = container.querySelector(`[name="${inputName}"]`);
+
+        if (!inputEl) continue; // на всякий случай если разметка другая
+
+        if (!value) {
+          this.addError(inputEl, "Заполните поле");
+          isValid = false;
+        } else {
+          // Если заполнено — убираем ошибку, если вдруг была
+          this.removeError(inputEl);
+        }
+      }
     });
+
+    return isValid;
   }
 
-  // --------------------------------------------------
-  // =========== 8) Утилиты: validateNumber/radio/...
-  // --------------------------------------------------
+  /**
+   * validateNumber():
+   * Универсальная проверка числовых полей.
+   * @param {string} fieldName - поле ввода.
+   * @param {Object} options - настройки валидации.
+   * @returns {boolean} - прошло ли поле проверку.
+   */
   validateNumber(fieldName, options = {}) {
     const field = this.fields[fieldName];
     if (!field) return true;
@@ -429,11 +638,13 @@ export class FormValidation {
     const value = field.value.trim();
     const { required = false, min = null, maxDecimals = 2 } = options;
 
+    // 1) required
     if (required && value === "") {
       this.addError(field, "Поле обязательно для заполнения");
       return false;
     }
 
+    // 2) Проверка формата (число с ограничением знаков после точки)
     const regex = new RegExp(`^\\d+(\\.\\d{0,${maxDecimals}})?$`);
     if (value && !regex.test(value)) {
       this.addError(
@@ -443,6 +654,7 @@ export class FormValidation {
       return false;
     }
 
+    // 3) min-ограничение
     const numericValue = parseFloat(value);
     if (!isNaN(numericValue) && min !== null && numericValue < min) {
       this.addError(field, `Значение должно быть не менее ${min}`);
@@ -452,16 +664,11 @@ export class FormValidation {
     return true;
   }
 
-  validateRadio(fieldName) {
-    const radios = document.querySelectorAll(`input[name="${fieldName}"]`);
-    const isChecked = Array.from(radios).some((r) => r.checked);
-    if (!isChecked && radios[0]) {
-      this.addError(radios[0], "Необходимо выбрать один из вариантов");
-      return false;
-    }
-    return true;
-  }
-
+  /**
+   * validateDimensions():
+   * Проверка полей volumeLength/Width/Height
+   * (только если не выбран режим ручного ввода объёма).
+   */
   validateDimensions() {
     const { volumeLength, volumeWidth, volumeHeight } = this.fields;
     let isValid = true;
@@ -476,6 +683,10 @@ export class FormValidation {
     return isValid;
   }
 
+  /**
+   * validateCategory():
+   * Проверка radiobutton "category".
+   */
   validateCategory() {
     const radios = document.querySelectorAll('input[name="category"]');
     const isChecked = Array.from(radios).some((r) => r.checked);
@@ -491,42 +702,7 @@ export class FormValidation {
       if (errorBlock) errorBlock.classList.add("active");
       return false;
     }
-    if (errorSpan) {
-      errorSpan.textContent = "";
-      errorSpan.style.display = "none";
-    }
-    if (errorBlock) errorBlock.classList.remove("active");
-    return true;
-  }
 
-  // --------------------------------------------------
-  // =========== 9) Методы для ошибок/очисток =========
-  // --------------------------------------------------
-  addError(field, message) {
-    if (!field) return;
-    const parent = field.closest(".form-group") || field.parentElement;
-    const errorSpan = parent?.querySelector(".error-message");
-    if (errorSpan) {
-      errorSpan.textContent = message;
-      errorSpan.style.display = "block";
-    }
-    field.classList.add("error-input");
-  }
-
-  removeError(fieldEl) {
-    if (!fieldEl) return;
-    fieldEl.classList.remove("error-input");
-    const parent = fieldEl.closest(".form-group") || fieldEl.parentElement;
-    const errorSpan = parent?.querySelector(".error-message");
-    if (errorSpan) {
-      errorSpan.textContent = "";
-      errorSpan.style.display = "none";
-    }
-  }
-
-  clearCategoryError() {
-    const errorSpan = document.querySelector(".error-message-category");
-    const errorBlock = document.querySelector(".js-error-category");
     if (errorSpan) {
       errorSpan.textContent = "";
       errorSpan.style.display = "none";
@@ -534,74 +710,67 @@ export class FormValidation {
     if (errorBlock) {
       errorBlock.classList.remove("active");
     }
-  }
-
-  clearErrors() {
-    this.errors = {};
-    document
-      .querySelectorAll(".error-input")
-      .forEach((el) => el.classList.remove("error-input"));
-    document.querySelectorAll(".error-message").forEach((el) => {
-      el.textContent = "";
-      el.style.display = "none";
-    });
-    this.clearCategoryError();
-  }
-
-  hideCalculationResult() {
-    const resultBlock = document.querySelector(".main-calc-result");
-    if (resultBlock) {
-      resultBlock.classList.remove("active");
-    }
-    // При желании сбрасывайте что-то в State, напр.:
-    // State.directionsData = {};
-  }
-
-  // --------------------------------------------------
-  // =========== 10) Основной метод validateAll =======
-  // --------------------------------------------------
-  validateAll() {
-    this.clearErrors();
-
-    const calcTypeRadio = document.querySelector(
-      'input[name="calc-type"]:checked'
-    );
-    const calcType = calcTypeRadio ? calcTypeRadio.value : "calc-cargo";
-    const { weightVolumeChange } = this.fields;
-
-    const isValid = [
-      weightVolumeChange?.checked
-        ? this.validateNumber("totalVolume", { required: true, maxDecimals: 4 })
-        : this.validateDimensions(),
-      this.validateNumber("totalWeight", {
-        required: true,
-        min: 5,
-        maxDecimals: 2,
-      }),
-      this.validateNumber("quantity", { required: true }),
-      this.validateNumber("totalCost", { required: true, maxDecimals: 2 }),
-      this.validateRadio("total_currency"),
-      calcType === "calc-cargo" ? this.validateCategory() : true,
-      this.validateRadio("packing-type"),
-      calcType === "calc-customs" ? this.validateTnvedInput() : true,
-      this.validateAddress(), // Добавляем валидацию адреса
-    ].every(Boolean);
-
-    if (isValid) {
-      this.saveToState();
-    }
-    return isValid;
+    return true;
   }
 
   /**
-   * validateAddress(): Проверяет, выбран ли адрес и нет ли ошибок.
+   * validateRadio():
+   * Универсальная проверка групп radiobutton.
+   * @param {string} fieldName - имя группы (например, "packing-type")
+   */
+  validateRadio(fieldName) {
+    const radios = document.querySelectorAll(`input[name="${fieldName}"]`);
+    const isChecked = Array.from(radios).some((r) => r.checked);
+    if (!isChecked && radios[0]) {
+      this.addError(radios[0], "Необходимо выбрать один из вариантов");
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * validateTnvedInput():
+   * Проверка TНВЭД (применяется только для calc-customs).
+   */
+  validateTnvedInput() {
+    const field = this.fields.tnvedInput;
+    const selectedItem = State.tnvedSelection?.selectedItem;
+
+    // (1) Проверка: выбрал ли пользователь ТНВЭД из списка?
+    if (!selectedItem) {
+      this.addError(field, "Нужно выбрать ТНВЭД из списка");
+      return false;
+    }
+
+    // (2) Проверка загрузки пошлины/данных по ТНВЭД
+    const cd = State.clientData || {};
+    if (
+      cd.tnvedSelectedName == null ||
+      cd.tnvedSelectedCode == null ||
+      cd.tnvedSelectedImp == null
+    ) {
+      this.addError(
+        field,
+        "Подождите, пока загрузится % пошлин и данные по ТНВЭД"
+      );
+      console.log(State.clientData);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * validateAddress():
+   * Проверяет, выбран ли адрес, и нет ли связанных ошибок,
+   * если чекбокс адреса активен.
    */
   validateAddress() {
     const addressField = this.fields.address;
     const addressError = State.addressError;
 
+    // Если чекбокс включён, а адрес не выбран
     if (this.fields.addressCheck?.checked && !State.address) {
-      // Если чекбокс активен, но адрес не выбран
       this.addError(
         addressField,
         addressError || "Пожалуйста, выберите адрес."
@@ -609,7 +778,7 @@ export class FormValidation {
       return false;
     }
 
-    // Если есть ошибка, отображаем её
+    // Если есть ошибка в State.addressError
     if (addressError) {
       this.addError(addressField, addressError);
       return false;
@@ -620,25 +789,26 @@ export class FormValidation {
     return true;
   }
 
-  // --------------------------------------------------
-  // =========== 11) Сохранение в State.clientData =====
-  // --------------------------------------------------
+  // =====================================================
+  // SECTION 7: СОХРАНЕНИЕ ДАННЫХ В STATE
+  // =====================================================
+
+  /**
+   * saveToState():
+   * Сохранение введённых полей в State.clientData.
+   */
   saveToState() {
-    // Определяем calcType
     const calcType =
       document.querySelector('input[name="calc-type"]:checked')?.value ||
       "calc-cargo";
 
-    // Находим выбранную категорию
     const categoryEl = Array.from(this.fields.category).find((r) => r.checked);
-
-    // Находим выбранную упаковку
     const packingTypeEl = Array.from(this.fields.packingType).find(
       (r) => r.checked
     );
 
-    // Если weightVolumeChange.checked => totalVolume берём из this.fields.totalVolume
-    // Иначе => из this.fields.totalVolumeCalculated
+    // Если режим "ввести объём напрямую" => totalVolume берём из поля totalVolume
+    // Иначе => из totalVolumeCalculated
     let finalVolume = 0;
     if (this.fields.weightVolumeChange?.checked) {
       finalVolume = parseFloat(this.fields.totalVolume.value) || 0;
@@ -646,7 +816,7 @@ export class FormValidation {
       finalVolume = parseFloat(this.fields.totalVolumeCalculated.value) || 0;
     }
 
-    // Обновляем State.clientData
+    // Заполняем State.clientData
     State.clientData.calcType = calcType;
 
     State.clientData.totalCost = parseFloat(this.fields.totalCost.value) || 0;
@@ -656,7 +826,7 @@ export class FormValidation {
 
     State.clientData.totalWeight =
       parseFloat(this.fields.totalWeight.value) || 0;
-    State.clientData.totalVolume = finalVolume; // Обновляем объём
+    State.clientData.totalVolume = finalVolume;
 
     State.clientData.volumeLength =
       parseFloat(this.fields.volumeLength.value) || 0;
@@ -667,7 +837,7 @@ export class FormValidation {
 
     State.clientData.quantity = parseInt(this.fields.quantity.value, 10) || 0;
 
-    // Категория (если выбрана)
+    // Категория
     State.clientData.categoryKey = categoryEl ? categoryEl.value : null;
 
     // Упаковка
@@ -677,10 +847,18 @@ export class FormValidation {
     State.clientData.insurance = !!this.fields.insurance?.checked;
     State.clientData.brand = !!this.fields.brand?.checked;
 
-    // ТНВЭД ввод пользователя (или State.tnvedSelection.selectedItem)
+    // ТНВЭД
     State.clientData.tnvedInput = this.fields.tnvedInput.value.trim();
 
-    // Адрес
+    // NEW: считываем radio delivery-option -> в State
+    const deliveryOptionRadio = document.querySelector(
+      'input[name="delivery-option"]:checked'
+    );
+    State.clientData.deliveryOption = deliveryOptionRadio
+      ? deliveryOptionRadio.value
+      : null;
+
+    // Адрес (если пользователь выбрал)
     if (State.address) {
       State.clientData.address = { ...State.address };
     } else {
@@ -690,9 +868,16 @@ export class FormValidation {
     /* console.log("State.clientData обновлён:", State.clientData); */
   }
 
-  // --------------------------------------------------
-  // =========== 12) Управление Видимостью `.to-address` ===
-  // --------------------------------------------------
+  // =====================================================
+  // SECTION 8: УПРАВЛЕНИЕ ЧЕКБОКСОМ АДРЕСА
+  // =====================================================
+
+  /**
+   * setupAddressCheckboxListener():
+   * - Управляет показом/скрытием .to-address
+   * - При отключении чекбокса сбрасываем адрес
+   * - Устанавливаем/убираем ошибки
+   */
   setupAddressCheckboxListener() {
     const addressCheckbox = this.fields.addressCheck;
     if (!addressCheckbox) {
@@ -702,33 +887,32 @@ export class FormValidation {
       return;
     }
 
-    // Если не выбрано при загрузке страницы то не показываем .to-address
+    // Изначальное состояние при загрузке
     this.toggleToAddressElements(State.clientData.addressCheck);
     this.handleAddressCheckboxChange(State.clientData.addressCheck);
 
+    // Слушатель на изменение
     addressCheckbox.addEventListener("change", (event) => {
       const isChecked = event.target.checked;
       this.toggleToAddressElements(isChecked);
-      this.handleAddressCheckboxChange(isChecked); // Обработка изменения чекбокса
-      this.hideCalculationResult(); // Вызов hideCalculationResult при изменении чекбокса адреса
+      this.handleAddressCheckboxChange(isChecked);
+      this.hideCalculationResult();
 
-      // Дополнительная валидация при изменении чекбокса
+      // Дополнительная проверка/установка ошибок
       if (isChecked && !State.address) {
-        // Если чекбокс активен, но адрес не выбран, устанавливаем ошибку
         this.updateState(
           "addressError",
           "Пожалуйста, выберите адрес из списка."
         );
       } else if (!isChecked) {
-        // Если чекбокс деактивирован, убираем ошибку
         this.updateState("addressError", null);
       }
     });
   }
 
   /**
-   * Управляет видимостью элементов с классом `.to-address` в зависимости от состояния чекбокса.
-   * @param {boolean} isVisible - Нужно ли показывать элементы (`true`) или скрывать (`false`).
+   * Управляет видимостью элементов с классом `.to-address`.
+   * @param {boolean} isVisible - Нужно ли показывать элементы.
    */
   toggleToAddressElements(isVisible) {
     const toAddressElements = document.querySelectorAll(".to-address");
@@ -742,13 +926,13 @@ export class FormValidation {
   }
 
   /**
-   * Обрабатывает изменение состояния чекбокса адреса.
-   * Если чекбокс отключен и адрес выбран, очищает поле адреса.
-   * @param {boolean} isChecked - Состояние чекбокса.
+   * handleAddressCheckboxChange():
+   * Сбрасываем адрес, если чекбокс отключается.
+   * @param {boolean} isChecked
    */
   handleAddressCheckboxChange(isChecked) {
     if (!isChecked && State.address) {
-      // Если чекбокс отключен и адрес выбран
+      // Если чекбокс отключен, но адрес уже был выбран, сбрасываем
       this.fields.address.value = "";
       this.updateState("address", null);
       this.updateState("addressError", null);
@@ -756,50 +940,94 @@ export class FormValidation {
     }
   }
 
+  // =====================================================
+  // SECTION 9: УТИЛИТЫ: ОШИБКИ, ОЧИСТКА И Т.Д.
+  // =====================================================
+
   /**
-   * Добавляет слушатель пользовательских событий 'stateChange'.
+   * Очищает значения переданных полей.
+   * @param {HTMLInputElement[]} fields
    */
-  setupStateEventListener() {
-    document.addEventListener("stateChange", this.handleStateChange.bind(this));
+  clearFields(fields) {
+    fields.forEach((field) => {
+      if (field) field.value = "";
+    });
   }
 
   /**
-   * Обрабатывает события изменения State.
-   * @param {CustomEvent} event - Событие 'stateChange'.
+   * Добавляет ошибку полю (подсветка + текст).
+   * @param {HTMLInputElement} field
+   * @param {string} message
    */
-  handleStateChange(event) {
-    const { prop, value } = event.detail;
-    this.handleAddressStateChange(prop, value);
+  addError(field, message) {
+    if (!field) return;
+    const parent = field.closest(".form-group") || field.parentElement;
+    const errorSpan = parent?.querySelector(".error-message");
+    if (errorSpan) {
+      errorSpan.textContent = message;
+      errorSpan.style.display = "block";
+    }
+    field.classList.add("error-input");
   }
 
   /**
-   * Обрабатывает изменения в State.address и State.addressError.
-   * @param {string} prop - Имя изменённого свойства.
-   * @param {*} value - Новое значение свойства.
+   * Убирает ошибку с поля (подсветку + текст).
+   * @param {HTMLInputElement} fieldEl
    */
-  handleAddressStateChange(prop, value) {
-    if (prop === "address") {
-      if (value) {
-        // Адрес выбран и валиден
-        this.removeError(this.fields.address);
-      } else if (State.addressError) {
-        // Адрес не выбран или ошибка
-        this.addError(this.fields.address, State.addressError);
-      }
+  removeError(fieldEl) {
+    if (!fieldEl) return;
+    fieldEl.classList.remove("error-input");
+    const parent = fieldEl.closest(".form-group") || fieldEl.parentElement;
+    const errorSpan = parent?.querySelector(".error-message");
+    if (errorSpan) {
+      errorSpan.textContent = "";
+      errorSpan.style.display = "none";
     }
+  }
 
-    if (prop === "addressError") {
-      if (value) {
-        // Есть ошибка
-        this.addError(this.fields.address, value);
-      } else {
-        // Ошибки нет
-        this.removeError(this.fields.address);
-      }
+  /**
+   * Очищает ошибку категории (error-message-category / js-error-category).
+   */
+  clearCategoryError() {
+    const errorSpan = document.querySelector(".error-message-category");
+    const errorBlock = document.querySelector(".js-error-category");
+    if (errorSpan) {
+      errorSpan.textContent = "";
+      errorSpan.style.display = "none";
     }
+    if (errorBlock) {
+      errorBlock.classList.remove("active");
+    }
+  }
 
-    // При изменении адреса или ошибки скрываем результат расчёта
-    this.hideCalculationResult();
+  /**
+   * clearErrors():
+   * Очищает все возможные ошибки формы.
+   */
+  clearErrors() {
+    this.errors = {};
+    document
+      .querySelectorAll(".error-input")
+      .forEach((el) => el.classList.remove("error-input"));
+
+    document.querySelectorAll(".error-message").forEach((el) => {
+      el.textContent = "";
+      el.style.display = "none";
+    });
+
+    this.clearCategoryError();
+  }
+
+  /**
+   * Скрывает блок с результатом расчёта (.main-calc-result).
+   */
+  hideCalculationResult() {
+    const resultBlock = document.querySelector(".main-calc-result");
+    if (resultBlock) {
+      resultBlock.classList.remove("active");
+    }
+    // При желании можно сбрасывать что-то в State, напр.:
+    // State.directionsData = {};
   }
 }
 

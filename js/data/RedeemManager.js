@@ -5,7 +5,7 @@ import { State } from "./State.js";
 export default class RedeemManager {
   constructor(options = {}) {
     this.rootSelector =
-      options.rootSelector || ".main-calc-container.data-redeem";
+      options.rootSelector || ".data-redeem";
     this.addButtonSelector = options.addButtonSelector || ".add-redeem";
     this.root = document.querySelector(this.rootSelector);
     this.addButton = document.querySelector(this.addButtonSelector);
