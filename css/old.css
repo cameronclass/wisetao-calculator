@@ -1,16 +1,5 @@
 
-/*Circle Info*/
-.circle-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: #f09224;
-  padding: 2px;
-  width: 20px;
-  height: 20px;
-  font-size: 13px;
-}
+
 
 /*Одобрено*/
 .add-container {
@@ -155,13 +144,7 @@
   margin-top: 0;
   position: relative;
 }
-/*.select-by-name-input {*/
-/*    width: 350px;*/
-/*}*/
-/*.select-by-name-input::placeholder {*/
-/*    font-size: 14px;*/
-/*    text-transform: uppercase;*/
-/*}*/
+
 .custom-input-currency {
   width: 100%;
   height: 40px;

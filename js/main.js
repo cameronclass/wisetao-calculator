@@ -5,6 +5,7 @@ import { PdfPrepared } from "./calculations/PdfPrepare.js";
 import { PdfGenerate } from "./calculations/PdfGenerate.js";
 import { State } from "./data/State.js";
 import UiPrepare from "./ui/UiPrepare.js";
+import RedeemManager from "./data/RedeemManager.js";
 
 const fields = {
   totalCost: document.querySelector('input[name="total_cost"]'),
@@ -30,12 +31,21 @@ const fields = {
   addressCheck: document.querySelector('input[name="address_checkbox"]'),
 };
 
+const redeem = {
+  rootSelector: ".main-calc-container.data-redeem",
+  addButtonSelector: ".add-redeem",
+};
+
 document.addEventListener("DOMContentLoaded", () => {
-  new UiPrepare();
+  /* Ui Prepare */
+  new UiPrepare()._init();
 
   /* Калькулятор */
   new CalculatorApp(fields);
 
   /* PDF */
   new PdfGenerate(PdfPrepared, State);
+
+  /* Data Redeem */
+  new RedeemManager(redeem);
 });

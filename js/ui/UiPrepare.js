@@ -1,7 +1,8 @@
-class UiPrepare {
-  constructor(root = document) {
+// UiPrepare.js
+export default class UiPrepare {
+  constructor() {
     this.root = document;
-    this._init();
+    /* this._init(); */
   }
 
   _init() {
@@ -16,19 +17,14 @@ class UiPrepare {
   }
 
   _initAddClassButtons() {
-    this.root.querySelectorAll(".js-add-class-packing").forEach((button) => {
+    document.querySelectorAll(".js-add-class-packing").forEach((button) => {
       button.addEventListener("click", function () {
-        // Определим, какой класс добавлять/удалять
         const className = "active";
-        // Определим, какой элемент нужно toggлить класс
         const targetElement = document.querySelector(
           ".main-calc-packing__content"
         );
-
         if (targetElement) {
-          // Toggle класса у целевого элемента
           targetElement.classList.toggle(className);
-          // Также можно добавить/удалить класс у кнопки
           this.classList.toggle("clicked");
         }
       });
@@ -36,13 +32,13 @@ class UiPrepare {
   }
 
   _initChangeClass() {
-    this.root.querySelectorAll("[data-changeclass-class]").forEach((input) => {
+    document.querySelectorAll("[data-changeclass-class]").forEach((input) => {
       const handleClassChange = () => {
         const className = input.getAttribute("data-changeclass-class");
         const targets = input
           .getAttribute("data-changeclass-targets")
           .split(",")
-          .map((selector) => this.root.querySelector(selector.trim()))
+          .map((selector) => document.querySelector(selector.trim()))
           .filter((el) => el !== null);
 
         if (targets.length === 2) {
@@ -59,28 +55,6 @@ class UiPrepare {
 
       input.addEventListener("change", handleClassChange);
       handleClassChange();
-    });
-  }
-
-  _initIncrement() {
-    this.root.querySelectorAll(".group-input-increment").forEach((element) => {
-      const minusButton = element.querySelector(
-        ".group-input-increment__minus"
-      );
-      const plusButton = element.querySelector(".group-input-increment__plus");
-      const inputField = element.querySelector(".group-input-increment input");
-
-      minusButton.addEventListener("click", () => {
-        let currentValue = parseInt(inputField.value);
-        if (currentValue > 1) {
-          inputField.value = currentValue - 1;
-        }
-      });
-
-      plusButton.addEventListener("click", () => {
-        let currentValue = parseInt(inputField.value);
-        inputField.value = currentValue + 1;
-      });
     });
   }
 
@@ -158,8 +132,98 @@ class UiPrepare {
     });
   }
 
+  _initIncrement() {
+    this.root.querySelectorAll(".group-input-increment").forEach((element) => {
+      const minusButton = element.querySelector(
+        ".group-input-increment__minus"
+      );
+      const plusButton = element.querySelector(".group-input-increment__plus");
+      const inputField = element.querySelector(".group-input-increment input");
+
+      if (minusButton && !minusButton.dataset.incrementBound) {
+        minusButton.addEventListener("click", () => {
+          let currentValue = parseInt(inputField.value) || 1;
+          if (currentValue > 1) {
+            inputField.value = currentValue - 1;
+            inputField.dispatchEvent(new Event("input"));
+          }
+        });
+        minusButton.dataset.incrementBound = "true";
+      }
+
+      if (plusButton && !plusButton.dataset.incrementBound) {
+        plusButton.addEventListener("click", () => {
+          let currentValue = parseInt(inputField.value) || 1;
+          inputField.value = currentValue + 1;
+          inputField.dispatchEvent(new Event("input"));
+        });
+        plusButton.dataset.incrementBound = "true";
+      }
+    });
+  }
+
+  _initIncrementForElement(element) {
+    const minusButton = element.querySelector(".group-input-increment__minus");
+    const plusButton = element.querySelector(".group-input-increment__plus");
+    const inputField = element.querySelector(".group-input-increment input");
+
+    if (minusButton) {
+      minusButton.addEventListener("click", () => {
+        let currentValue = parseInt(inputField.value) || 1;
+        if (currentValue > 1) {
+          inputField.value = currentValue - 1;
+          inputField.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+
+    if (plusButton) {
+      plusButton.addEventListener("click", () => {
+        let currentValue = parseInt(inputField.value) || 1;
+        inputField.value = currentValue + 1;
+        inputField.dispatchEvent(new Event("input"));
+      });
+    }
+  }
+
+  _initCustomSelectForElement(element) {
+    const selectBlock = element.querySelector(".currency-select");
+    if (!selectBlock) return;
+
+    const selectedNameElement = selectBlock.querySelector(
+      ".currency-select__selected_name"
+    );
+    const optionsList = selectBlock.querySelector(".currency-select__list");
+    const radioButtons = selectBlock.querySelectorAll(".custom-select__input");
+
+    const toggleList = () => {
+      optionsList.style.display =
+        optionsList.style.display === "block" ? "none" : "block";
+    };
+
+    if (selectedNameElement) {
+      selectedNameElement.parentElement.addEventListener("click", toggleList);
+    }
+
+    radioButtons.forEach((radio) => {
+      radio.addEventListener("change", (e) => {
+        const label = e.target.closest(".custom-select__label");
+        const optionName = label.querySelector(
+          ".custom-select__name"
+        ).textContent;
+        const selectedName = selectBlock.querySelector(
+          ".currency-select__selected_name"
+        );
+        if (selectedName) {
+          selectedName.textContent = optionName;
+        }
+        optionsList.style.display = "none";
+      });
+    });
+  }
+
   _initCustomSelect() {
-    this.root.querySelectorAll(".currency-select").forEach((selectBlock) => {
+    document.querySelectorAll(".currency-select").forEach((selectBlock) => {
       const selectedNameElement = selectBlock.querySelector(
         ".currency-select__selected_name"
       );
@@ -168,24 +232,32 @@ class UiPrepare {
         ".custom-select__input"
       );
 
-      selectedNameElement.parentElement.addEventListener("click", () => {
+      const toggleList = () => {
         optionsList.style.display =
           optionsList.style.display === "block" ? "none" : "block";
-      });
+      };
+
+      // Проверяем, не повешен ли уже:
+      if (selectedNameElement && !selectedNameElement.dataset.selectBound) {
+        selectedNameElement.parentElement.addEventListener("click", toggleList);
+        selectedNameElement.dataset.selectBound = "true";
+      }
 
       radioButtons.forEach((radio) => {
-        radio.addEventListener("change", (e) => {
-          const label = e.target.closest(".custom-select__label");
-          const optionName = label.querySelector(
-            ".custom-select__name"
-          ).textContent;
-
-          selectedNameElement.textContent = optionName;
-          optionsList.style.display = "none";
-        });
+        if (!radio.dataset.selectBound) {
+          radio.addEventListener("change", (e) => {
+            const label = e.target.closest(".custom-select__label");
+            const optionName = label.querySelector(
+              ".custom-select__name"
+            ).textContent;
+            selectedNameElement.textContent = optionName;
+            optionsList.style.display = "none";
+          });
+          radio.dataset.selectBound = "true";
+        }
       });
 
-      this.root.addEventListener("click", (e) => {
+      document.addEventListener("click", (e) => {
         if (!selectBlock.contains(e.target)) {
           optionsList.style.display = "none";
         }
@@ -194,68 +266,60 @@ class UiPrepare {
   }
 
   _initAllPriceRadios() {
-    const radioButtonsAllPrice = this.root.querySelectorAll(
+    const radioButtonsAllPrice = document.querySelectorAll(
       'input[name="all-price"]'
     );
-    const pdfButtonAllPrice = this.root.querySelector(".js-get-pdf");
+    const pdfButtonAllPrice = document.querySelector(".js-get-pdf");
 
     const updateButtonState = () => {
       const isChecked = Array.from(radioButtonsAllPrice).some(
         (radio) => radio.checked
       );
-      pdfButtonAllPrice.disabled = !isChecked;
+      if (pdfButtonAllPrice) {
+        pdfButtonAllPrice.disabled = !isChecked;
+      }
     };
-
     radioButtonsAllPrice.forEach((radio) => {
       radio.addEventListener("change", updateButtonState);
     });
-
     updateButtonState();
   }
 
   _initCalcTypeRadios() {
-    const calcTypeRadios = this.root.querySelectorAll(
-      'input[name="calc-type"]'
-    );
-    const fromWhereInput = this.root.querySelector('input[name="from_where"]');
-    const fromToInput = this.root.querySelector('input[name="from_to"]');
-    const fromToContainer = this.root.querySelector(".main-calc__from-to_to");
+    const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
+    const fromWhereInput = document.querySelector('input[name="from_where"]');
+    const fromToInput = document.querySelector('input[name="from_to"]');
+    const fromToContainer = document.querySelector(".main-calc__from-to_to");
     const tooltipTitle = fromToContainer.querySelector(".calc-tooltip__title");
     const tooltipText = fromToContainer.querySelector(".calc-tooltip__text");
 
     calcTypeRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
         if (radio.value === "calc-customs" && radio.checked) {
-          this.root.querySelector(".white-cargo").classList.add("active");
-          this.root
+          document.querySelector(".white-cargo").classList.add("active");
+          document
             .querySelectorAll(".js-calc-category, .js-calc-brand")
-            .forEach((elem) => {
-              elem.classList.add("hidden");
-            });
+            .forEach((elem) => elem.classList.add("hidden"));
           fromWhereInput.placeholder = "Китай - Хейхе";
           fromToInput.placeholder = "Россия - Благовещенск";
           tooltipTitle.textContent = "Склад временного хранение";
           tooltipText.textContent =
-            "Доставка осуществляется только до г.Благовещенск СВХ. Доставка до вашего города осуществляется с помощью российских транспортных компаний.";
+            "Доставка осуществляется только до г.Благовещенск СВХ...";
         } else if (radio.value === "calc-cargo" && radio.checked) {
-          this.root.querySelector(".white-cargo").classList.remove("active");
-          this.root
+          document.querySelector(".white-cargo").classList.remove("active");
+          document
             .querySelectorAll(".js-calc-category, .js-calc-brand")
-            .forEach((elem) => {
-              elem.classList.remove("hidden");
-            });
+            .forEach((elem) => elem.classList.remove("hidden"));
           fromWhereInput.placeholder = "Китай - Фошань";
           fromToInput.placeholder = "Россия - Москва";
           tooltipTitle.textContent = "Южные ворота";
           tooltipText.textContent =
-            "Доставка осуществляется только до г.Москва «Южные ворота». Доставка до вашего города осуществляется с помощью российских транспортных компаний.";
+            "Доставка осуществляется только до г.Москва «Южные ворота»...";
         } else {
-          this.root.querySelector(".white-cargo").classList.remove("active");
-          this.root
+          document.querySelector(".white-cargo").classList.remove("active");
+          document
             .querySelectorAll(".js-calc-category, .js-calc-brand")
-            .forEach((elem) => {
-              elem.classList.remove("hidden");
-            });
+            .forEach((elem) => elem.classList.remove("hidden"));
           fromWhereInput.placeholder = "";
           fromToInput.placeholder = "";
           tooltipTitle.textContent = "";
@@ -266,26 +330,24 @@ class UiPrepare {
   }
 
   _initAddressCheckbox() {
-    const addressInput = this.root.querySelector('input[name="address"]');
-    const addressCheckbox = this.root.querySelector(
+    const addressInput = document.querySelector('input[name="address"]');
+    const addressCheckbox = document.querySelector(
       'input[name="address_checkbox"]'
     );
-    const addressIcon = this.root.querySelector(
+    const addressIcon = document.querySelector(
       ".main-calc__from-to_adress .group-input__input_svg"
     );
 
-    const toggleAddressInput = () => {
-      if (addressCheckbox.checked) {
-        addressInput.disabled = false;
-        addressIcon.style.display = "none";
-      } else {
-        addressInput.disabled = true;
-        addressIcon.style.display = "block";
-      }
-    };
-
-    addressCheckbox.addEventListener("change", toggleAddressInput);
+    if (addressCheckbox) {
+      addressCheckbox.addEventListener("change", () => {
+        if (addressCheckbox.checked) {
+          addressInput.disabled = false;
+          if (addressIcon) addressIcon.style.display = "none";
+        } else {
+          addressInput.disabled = true;
+          if (addressIcon) addressIcon.style.display = "block";
+        }
+      });
+    }
   }
 }
-
-export default UiPrepare;
