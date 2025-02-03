@@ -713,7 +713,7 @@ export class FormValidation {
 
     // 1) required
     if (required && value === "") {
-      this.addError(field, "Поле обязательно для заполнения");
+      this.addError(field, "Заполните поле");
       return false;
     }
 

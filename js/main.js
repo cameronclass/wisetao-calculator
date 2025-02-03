@@ -34,8 +34,8 @@ const fields = {
 };
 
 const redeem = {
-  rootSelector: ".main-calc-container.data-redeem",
-  addButtonSelector: ".add-redeem",
+  /* rootSelector: ".client-redeem-data",
+  addButtonSelector: ".add-redeem", */
 };
 
 document.addEventListener("DOMContentLoaded", () => {

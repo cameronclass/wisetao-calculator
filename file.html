@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Скачать файл</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <button id="downloadButton">Скачать файл</button>
+
+    <script>
+        function getFilenameFromContentDisposition(contentDisposition) {
+            if (!contentDisposition) return null;
+            const matches = /filename[^;=\n]*=((['"]).*?\2|([^;\n]*))/i.exec(contentDisposition);
+            return matches && matches[3] ? matches[3] : null;
+        }
+
+        function downloadRedeemBlank() {
+            let query = {
+                action: "telegram:document.api.RedeemDataController.download_redeem_blank",
+            };
+
+            let options = {
+                type: "POST", // Используем POST-запрос
+                url: "https://wisetao.com/bitrix/services/main/ajax.php?" + $.param(query),
+                data: {
+                    sessid: BX.message("bitrix_sessid"),
+                },
+                xhrFields: {
+                    responseType: "blob",
+                },
+            };
+
+            $.ajax(options)
+                .then(function (response, status, xhr) {
+                    let filename = getFilenameFromContentDisposition(
+                        xhr.getResponseHeader("Content-Disposition")
+                    );
+                    let blob = new Blob([response], {
+                        type: xhr.getResponseHeader("Content-Type"),
+                    });
+                    let link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = filename || "downloaded_file.xlsx"; // Имя файла или дефолтное имя
+                    link.click();
+                })
+                .catch(function (error) {
+                    console.error("Ошибка при скачивании файла:", error);
+                })
+                .always(function () { });
+        }
+
+        $(document).ready(function () {
+            $('#downloadButton').on('click', function () {
+                downloadRedeemBlank();
+            });
+        });
+    </script>
+
+</body>
+</html>
