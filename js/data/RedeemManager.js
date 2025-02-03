@@ -32,13 +32,17 @@ export default class RedeemManager {
     this.rootSelector = options.rootSelector || ".data-redeem";
     this.addButtonSelector = options.addButtonSelector || ".add-redeem";
     this.excelButtonSelector = options.excelButtonSelector || ".upload-excel";
+    this.invoiceButtonSelector =
+      options.invoiceButtonSelector || ".upload-invoice";
     this.root = document.querySelector(this.rootSelector);
     this.addButton = document.querySelector(this.addButtonSelector);
     this.excelButton = document.querySelector(this.excelButtonSelector);
+    this.invoiceButton = document.querySelector(this.invoiceButtonSelector);
     this.counter = 2;
 
     if (!State.redeemData) State.redeemData = {};
     if (!State.excelData) State.excelData = {};
+    if (!State.invoiceData) State.invoiceData = {};
 
     this.uiPrepare = new UiPrepare(this.root);
 
@@ -54,19 +58,28 @@ export default class RedeemManager {
         this.handleExcelUpload()
       );
     }
+    if (this.invoiceButton) {
+      this.invoiceButton.addEventListener("click", () =>
+        this.handleInvoiceUpload()
+      );
+    }
     const firstContainer = this.root.querySelector('[data-redeem="1"]');
     if (firstContainer) {
       this.setupContainerLogic(firstContainer, 1);
       State.redeemData[1] = this.getEmptyItem();
     }
-
-    // Не привязываем событие отправки данных здесь –
-    // вызов sendDataToTelegram() должен происходить только после успешной валидации формы (например, из CalculatorApp).
   }
 
   addRedeemContainer() {
     const firstContainer = this.root.querySelector('[data-redeem="1"]');
     if (!firstContainer) return;
+
+    // Проверяем, есть ли уже контейнер с текущим counter
+    const existingContainer = this.root.querySelector(
+      `[data-redeem="${this.counter}"]`
+    );
+    if (existingContainer) return;
+
     const newContainer = firstContainer.cloneNode(true);
     newContainer.setAttribute("data-redeem", this.counter);
     this.clearContainerFields(newContainer);
@@ -100,17 +113,15 @@ export default class RedeemManager {
     if (closeBtn) closeBtn.style.display = "block";
   }
 
-  // Метод для очистки всех вручную введённых полей (input и изображений) во всех контейнерах
   clearAllManualFields() {
     const containers = this.root.querySelectorAll("[data-redeem]");
     containers.forEach((container) => {
       const inputs = container.querySelectorAll("input");
       inputs.forEach((inp) => {
         if (inp.name === "data-quantity") {
-          inp.value = "1";
-        } else {
-          inp.value = "";
+          return;
         }
+        inp.value = "";
       });
       const imgItem = container.querySelector(".main-calc-upload__item");
       if (imgItem) {
@@ -124,12 +135,23 @@ export default class RedeemManager {
     });
   }
 
-  // Метод для очистки данных в State.redeemData (все поля устанавливаются в "Нет данных")
   clearRedeemData() {
     Object.keys(State.redeemData).forEach((key) => {
       const item = State.redeemData[key];
       for (let field in item) {
         item[field] = "Нет данных";
+      }
+    });
+  }
+
+  clearRedeemDataToString() {
+    Object.keys(State.redeemData).forEach((key) => {
+      const item = State.redeemData[key];
+      for (let field in item) {
+        if (field === "quantity") {
+          continue;
+        }
+        item[field] = "";
       }
     });
   }
@@ -172,44 +194,60 @@ export default class RedeemManager {
 
     const uploadWrapper = container.querySelector(".main-calc-upload");
     if (uploadWrapper) {
-      const fileInput = uploadWrapper.querySelector(".main-calc-upload__input");
-      const plus = uploadWrapper.querySelector(".main-calc-upload__plus");
-      const minus = uploadWrapper.querySelector(".main-calc-upload__minus");
+      const plusButton = uploadWrapper.querySelector(".add-redeem-photo");
+      const minusButton = uploadWrapper.querySelector(
+        ".main-calc-upload__minus"
+      );
       const imgItem = uploadWrapper.querySelector(".main-calc-upload__item");
 
-      if (plus && fileInput && imgItem) {
-        plus.addEventListener("click", () => {
-          fileInput.accept = "image/*";
+      // Обработчик для кнопки "+"
+      if (plusButton && imgItem) {
+        plusButton.addEventListener("click", () => {
+          // Создаем скрытый input[type="file"]
+          const fileInput = document.createElement("input");
+          fileInput.type = "file";
+          fileInput.accept = "image/*"; // Разрешаем только изображения
+
+          // Обработчик выбора файла
+          fileInput.addEventListener("change", () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Проверяем тип файла
+            if (!file.type.startsWith("image/")) {
+              alert("Пожалуйста, выберите файл изображения.");
+              return;
+            }
+
+            // Читаем файл с помощью FileReader
+            const reader = new FileReader();
+            reader.onload = () => {
+              imgItem.src = reader.result; // Устанавливаем изображение
+              imgItem.classList.add("active"); // Делаем изображение видимым
+              plusButton.classList.remove("active"); // Скрываем кнопку "+"
+              minusButton.classList.add("active"); // Показываем кнопку "-"
+              this.updateState(index, "image", reader.result); // Обновляем состояние
+            };
+            reader.onerror = () => {
+              console.error("Ошибка чтения файла.");
+              alert("Не удалось загрузить изображение.");
+            };
+            reader.readAsDataURL(file);
+          });
+
+          // Активируем выбор файла
           fileInput.click();
         });
       }
-      if (fileInput && plus && minus && imgItem) {
-        fileInput.addEventListener("change", () => {
-          const file = fileInput.files[0];
-          if (file && file.type.startsWith("image/")) {
-            const reader = new FileReader();
-            reader.onload = () => {
-              imgItem.src = reader.result;
-              imgItem.classList.add("active");
-              plus.classList.remove("active");
-              minus.classList.add("active");
-              this.updateState(index, "image", reader.result);
-            };
-            reader.readAsDataURL(file);
-          } else if (file) {
-            console.log("Пожалуйста, выберите файл изображения!");
-            fileInput.value = "";
-          }
-        });
-      }
-      if (minus && plus && imgItem) {
-        minus.addEventListener("click", () => {
-          imgItem.src = "";
-          imgItem.classList.remove("active");
-          plus.classList.add("active");
-          minus.classList.remove("active");
-          fileInput.value = "";
-          this.updateState(index, "image", "");
+
+      // Обработчик для кнопки "-"
+      if (minusButton && imgItem) {
+        minusButton.addEventListener("click", () => {
+          imgItem.src = ""; // Очищаем изображение
+          imgItem.classList.remove("active"); // Скрываем изображение
+          plusButton.classList.add("active"); // Показываем кнопку "+"
+          minusButton.classList.remove("active"); // Скрываем кнопку "-"
+          this.updateState(index, "image", ""); // Очищаем состояние
         });
       }
     }
@@ -298,6 +336,12 @@ export default class RedeemManager {
 
     // Прикрепленный Excel файл означает, что ручной ввод не используется, поэтому деактивируем поля
     this.disableFormFields();
+
+    // Добавляем класс hidden к кнопке add-redeem
+    if (this.addButton) {
+      this.addButton.classList.add("hidden");
+    }
+
     this.toggleUploadInputs(true);
     this.toggleExcelButton(true);
     this.toggleRootContainerClass(true);
@@ -334,11 +378,18 @@ export default class RedeemManager {
   removeExcelFile(previewContainer) {
     if (previewContainer) {
       previewContainer.remove();
+      this.updateStateExcel(null);
+      this.clearRedeemDataToString();
       this.enableFormFields();
+
+      // Убираем класс hidden с кнопки add-redeem
+      if (this.addButton) {
+        this.addButton.classList.remove("hidden");
+      }
+
       this.toggleUploadInputs(false);
       this.toggleExcelButton(false);
       this.toggleRootContainerClass(false);
-      this.updateStateExcel(null);
     }
   }
 
@@ -401,6 +452,77 @@ export default class RedeemManager {
       extra: "",
       image: "",
     };
+  }
+
+  handleInvoiceUpload() {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".txt,.doc,.docx,.pdf";
+    fileInput.addEventListener("change", (e) =>
+      this.processInvoiceFile(e.target.files[0])
+    );
+    fileInput.click();
+  }
+
+  processInvoiceFile(file) {
+    if (!file) return;
+
+    if (
+      !file.type.startsWith("text/") &&
+      file.type !== "application/pdf" &&
+      file.type !== "application/msword" &&
+      file.type !==
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      alert("Разрешены только текстовые файлы и PDF!");
+      return;
+    }
+
+    this.updateStateInvoice(file);
+    this.displayInvoicePreview();
+
+    if (this.addButton) this.addButton.disabled = true;
+  }
+
+  displayInvoicePreview() {
+    let previewContainer = this.root.querySelector(".invoice-preview");
+    if (!previewContainer) {
+      previewContainer = document.createElement("div");
+      previewContainer.className = "invoice-preview";
+      const html = `
+        <span class="file-name"></span>
+        <button class="remove-invoice">×</button>
+      `;
+      previewContainer.innerHTML = html;
+      this.root.appendChild(previewContainer);
+    }
+
+    const fileName = State.invoiceData?.fileName || "";
+    previewContainer.querySelector(".file-name").textContent = fileName;
+    previewContainer.classList.add("active");
+
+    const closeBtn = previewContainer.querySelector(".remove-invoice");
+    closeBtn.addEventListener("click", () =>
+      this.removeInvoiceFile(previewContainer)
+    );
+  }
+
+  removeInvoiceFile(previewContainer) {
+    if (previewContainer) {
+      previewContainer.remove();
+      this.updateStateInvoice(null);
+      if (this.addButton) this.addButton.disabled = false;
+    }
+  }
+
+  updateStateInvoice(file) {
+    State.invoiceData = file
+      ? {
+          file: file,
+          fileName: file.name,
+          fileType: file.type,
+        }
+      : {};
   }
 
   // Метод для отправки данных в Telegram
@@ -501,6 +623,18 @@ export default class RedeemManager {
         })
         .catch((err) => {
           console.error("Ошибка при отправке текстового сообщения:", err);
+        });
+    }
+
+    if (State.invoiceData && State.invoiceData.file) {
+      const caption = "Прикреплённый инвойс";
+      telegramSender
+        .sendDocument(State.invoiceData.file, caption)
+        .then((docRes) => {
+          console.log("Инвойс-файл отправлен!", docRes);
+        })
+        .catch((docErr) => {
+          console.error("Ошибка отправки инвойс-файла:", docErr);
         });
     }
   }

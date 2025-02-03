@@ -198,18 +198,21 @@
                             </div>
 
                             <div class="main-calc-buy-info">
-
-                                <div class="main-calc-upload">
-                                    <input type="file" class="main-calc-upload__input photo-input" style="display: none;">
-                                    <div class="main-calc-upload__icon"></div>
-                                    <div class="main-calc-upload__plus active">
-                                        <div class="active">+</div>
+                                <div class="main-calc-upload__block">
+                                    <div class="group-input__title">Изображение товара</div>
+                                    <div class="main-calc-upload">
+                                        <!-- <input type="file" accept="image/*" class="main-calc-upload__input photo-input" style="display: none;"> -->
+                                        <div class="main-calc-upload__icon"></div>
+                                        <div class="main-calc-upload__plus active">
+                                            <button class="active add-redeem-photo" type="button">+</button>
+                                        </div>
+                                        <div class="main-calc-upload__minus">
+                                            <div class="active">-</div>
+                                        </div>
+                                        <img class="main-calc-upload__item" src="" alt="Выбранное фото">
                                     </div>
-                                    <div class="main-calc-upload__minus">
-                                        <div class="active">-</div>
-                                    </div>
-                                    <img class="main-calc-upload__item" src="" alt="Выбранное фото">
                                 </div>
+
 
                                 <div class="main-calc-buy-info__form">
 
@@ -345,6 +348,15 @@
                                 <span>Образец бланка Excel</span>
                             </button>
                         </a>
+                        <button class="main-calc-button upload-invoice" type="button">
+                            <span class="main-calc-button__upload_icon">
+                                <svg width="51" height="51" viewBox="0 0 51 51" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M46.9103 28.2876C44.6517 28.2876 42.8207 30.1187 42.8207 32.3773V42.8207H8.19493V32.3773C8.19493 30.1187 6.36386 28.2876 4.10528 28.2876C1.8467 28.2876 0.015625 30.1187 0.015625 32.3773V46.9104C0.015625 49.169 1.8467 51 4.10528 51H46.9103C49.1689 51 51 49.169 51 46.9104V32.3773C51 30.1187 49.1689 28.2876 46.9103 28.2876Z" fill="white"></path>
+                                    <path d="M16.853 18.5281L21.4182 13.963V29.2004C21.4182 31.459 23.2493 33.29 25.5078 33.29C27.7664 33.29 29.5975 31.459 29.5975 29.2004V13.9629L34.1626 18.528C34.9611 19.3266 36.0077 19.7259 37.0544 19.7259C38.1011 19.7259 39.1476 19.3266 39.9462 18.528C41.5434 16.9309 41.5434 14.3416 39.9462 12.7444L28.3996 1.19796C26.8026 -0.399321 24.213 -0.399321 22.616 1.19796L11.0694 12.7446C9.4723 14.3417 9.4723 16.931 11.0694 18.5281C12.6665 20.1253 15.256 20.1253 16.853 18.5281Z" fill="white"></path>
+                                </svg>
+                            </span>
+                            <span>Прикрепить Инфойс</span>
+                        </button>
                     </div>
                 </div>
 
