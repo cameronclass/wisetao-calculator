@@ -263,6 +263,8 @@ input[type="number"] {
 
 .main-calc-first {
   margin-top: 20px;
+  position: relative;
+  z-index: 10;
 }
 .main-calc-first__block {
   width: 100%;
@@ -985,8 +987,8 @@ input[type="number"] {
   background-color: grey;
 }
 .main-calc-button__upload_icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
 }
@@ -1072,6 +1074,10 @@ input[type="number"] {
   flex-wrap: wrap;
   align-items: center;
   gap: 20px;
+}
+.data-redeem-buttons .main-calc-button {
+  font-size: 14px;
+  padding: 8px 14px;
 }
 
 .add-redeem {
@@ -1773,7 +1779,7 @@ input[type="number"] {
   right: 100%;
   top: -180px;
   z-index: 100;
-  min-width: 300px;
+  min-width: 250px;
   visibility: hidden;
   opacity: 0;
   transition: 200ms;
@@ -2097,6 +2103,7 @@ input[type="number"] {
     width: 100%;
     justify-content: space-evenly;
     gap: 5px;
+    padding: 5px;
   }
 
   .main-calc-select__btn {
@@ -2165,7 +2172,12 @@ input[type="number"] {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 15px;
+    padding: 0px;
+  }
+
+  .main-client-requisites-parametr__main {
+    display: flex;
+    flex-direction: column;
   }
 
   .main-calc-upload {
@@ -2210,9 +2222,8 @@ input[type="number"] {
 
   /* .main-calc-result */
   .main-calc-result__block {
-    /* overflow-x: scroll; */
-    display: flex;
-    flex-direction: column;
+    overflow-x: scroll;
+    grid-template-columns: 170px 220px 220px 220px;
   }
   .main-calc-result__currency {
     flex-direction: column;
@@ -2231,13 +2242,19 @@ input[type="number"] {
   }
 
   .overflow-tooltip {
-    top: 158px;
+    top: inherit;
+    bottom: 30px;
     left: 0;
+  }
+
+  .calc-select__selected {
+    z-index: 3;
   }
 
   .calc-select__selected .calc-tooltip {
     left: 10px;
-    top: 158px;
+    top: inherit;
+    bottom: 30px;
   }
 
   .main-calc-packing__content {
@@ -2251,12 +2268,25 @@ input[type="number"] {
 
   .result_auto .overflow-info,
   .main-calc-result__column .overflow-info {
-    left: 0px;
-    top: 100%;
+    position: fixed;
+    top: 10px;
+    left: 12.5%;
+    width: 75%;
+    z-index: 999;
   }
 
   .cargo-cell .calc-tooltip {
-    left: 5px;
+    top: 10px;
+    position: fixed;
+    z-index: 999;
+    left: 20px;
+    width: 75%;
+  }
+  .cargo-cell__title {
+    font-size: 20px;
+  }
+  .cargo-cell__title_span{
+    font-size: 12px;
   }
   .main-calc-result__currency_tooltip .calc-tooltip {
     left: 10px;
@@ -2264,6 +2294,23 @@ input[type="number"] {
 
   .white-cargo__justinfo .group-input {
     display: flex;
+  }
+  .main-calc__from-to_adress {
+    grid-column-end: initial;
+    grid-column-start: initial;
+  }
+  .main-calc__title._small {
+    font-size: 28px;
+  }
+  .cargo-cell__title_span{
+    font-size: 14px;
+  }
+  .main-calc-result__price_block{
+    padding: 5px;
+    justify-content: space-between;
+  }
+  .main-calc-result__all_cell > div{
+    gap: 5px;
   }
 }
 
