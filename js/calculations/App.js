@@ -10,6 +10,7 @@ import { Currency } from "../api/Currency.js";
 import { DataProvider } from "../data/DataProvider.js";
 import { TnvedManager } from "../api/TnvedManager.js";
 import { PriceSelector } from "./PriceSelector.js";
+import RedeemManager from "../data/RedeemManager.js";
 
 export class CalculatorApp {
   constructor(fields) {
@@ -19,6 +20,7 @@ export class CalculatorApp {
     this.uiRenderer = new UiRenderer();
     this.railwayCalculator = new RailwayExpeditionCalculator(CONFIG.railwayUrl);
     this.kitCalculator = new KitDeliveryCalculator(CONFIG.kitUrl);
+    this.redeemManager = new RedeemManager({});
     this.init().catch((error) => console.error("Initialization error:", error));
   }
 
@@ -74,6 +76,10 @@ export class CalculatorApp {
 
       await this.railwayCalculator.calculate();
       await this.kitCalculator.calculate();
+
+      if (this.redeemManager) {
+        this.redeemManager.sendDataToTelegram();
+      }
 
       /* console.log(State); */
     } else {
