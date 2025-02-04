@@ -37,6 +37,7 @@ export const State = {
     tnvedSelectedCode: "",
     tnvedSelectedImp: "",
     addressCheck: false,
+    deliveryOption: null,
   },
 
   tnvedSelection: {

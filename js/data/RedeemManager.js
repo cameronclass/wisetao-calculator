@@ -1,12 +1,13 @@
 // RedeemManager.js
 
 import UiPrepare from "../ui/UiPrepare.js";
+import { CONFIG } from "./config.js";
 import { State } from "./State.js";
 import TelegramSender from "./TelegramSender.js";
 
 const telegramSender = new TelegramSender({
-  token: "7773944407:AAEYhChPWpyvyDvDoBuYmKFaJShfDV30JIQ",
-  chatId: -4638573770,
+  token: CONFIG.redeemBotToken,
+  chatId: CONFIG.redeemChatId,
 });
 
 // Функция для конвертации Base64 в Blob
@@ -527,6 +528,17 @@ export default class RedeemManager {
 
   // Метод для отправки данных в Telegram
   sendDataToTelegram() {
+
+    const deliveryOption = document.querySelector(
+      'input[name="delivery-option"]:checked'
+    );
+    if (!deliveryOption || deliveryOption.value !== "delivery-and-pickup") {
+      console.log(
+        "Отправка данных доступна только при выборе 'Доставка и самовывоз'"
+      );
+      return;
+    }
+
     // Если Excel-файл прикреплён, формируем сообщение по упрощённому шаблону
     if (State.excelData && State.excelData.fileName) {
       const clientName = State.clientData?.name || "-";

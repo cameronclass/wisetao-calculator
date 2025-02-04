@@ -2,29 +2,11 @@
 import Address from "../api/Address.js";
 import { State } from "../data/State.js";
 
-/**
- * Класс FormValidation отвечает за:
- * 1) Ограничения ввода (числовые поля, количество знаков и т.д.).
- * 2) Реалтайм-валидацию (убирает/добавляет ошибки при изменении полей).
- * 3) Логику сброса формы при переключении calc-type.
- * 4) Логику вычисления объёма (либо напрямую, либо из габаритов).
- * 5) Проверку обязательных полей (вес, объём, стоимость, категория, ТНВЭД и т.д.).
- * 6) Управление адресом доставки (включая интеграцию с Address.js).
- * 7) Отображение/скрытие ошибок и результатов.
- */
 export class FormValidation {
-  /**
-   * Создает экземпляр FormValidation.
-   * @param {Object} fields - Объект, содержащий ссылки на элементы полей формы.
-   */
   constructor(fields) {
-    // -------------------------------
-    // A) Базовые настройки
-    // -------------------------------
     this.fields = fields;
     this.errors = {};
 
-    // Поля, которые нужно очистить при переключении calc-type:
     this.fieldsToReset = [
       this.fields.totalCost,
       this.fields.totalWeight,
@@ -38,23 +20,14 @@ export class FormValidation {
       this.fields.address,
     ];
 
-    // Сброс возможной ошибки адреса
     this.updateState("addressError", null);
 
-    // Инициализация Address.js
-    // (использует инпут с селектором input[name="address"])
     this.addressHandler = new Address('input[name="address"]');
 
-    // -------------------------------
-    // B) Инициализация слушателей и логики
-    // -------------------------------
-    // (1) Ограничения ввода
     this.setupInputRestrictions();
 
-    // (2) Реалтайм-валидация, убирание результатов при вводе
     this.setupRealtimeValidation();
 
-    // (3) Сброс формы при переключении calc-type
     this.setupCalcTypeReset();
 
     // (4) Габариты/объёмная логика
@@ -64,19 +37,9 @@ export class FormValidation {
     // (5) Слушатель для глобальных изменений в State
     this.setupStateEventListener();
 
-    // (6) Управление чекбоксом адреса (.to-address)
     this.setupAddressCheckboxListener();
   }
 
-  // =====================================================
-  // SECTION 1: STATE И СЛУШАТЕЛИ ИЗМЕНЕНИЙ
-  // =====================================================
-
-  /**
-   * Обновляет State и диспатчит кастомное событие "stateChange".
-   * @param {string} prop - Имя свойства в State.
-   * @param {*} value - Новое значение этого свойства.
-   */
   updateState(prop, value) {
     State[prop] = value;
     const event = new CustomEvent("stateChange", {
@@ -85,38 +48,23 @@ export class FormValidation {
     document.dispatchEvent(event);
   }
 
-  /**
-   * Добавляет слушатель пользовательских событий 'stateChange'.
-   * Вызов handleStateChange() при каждом изменении State.
-   */
   setupStateEventListener() {
     document.addEventListener("stateChange", this.handleStateChange.bind(this));
   }
 
-  /**
-   * Обработчик события 'stateChange'.
-   * @param {CustomEvent} event - Событие 'stateChange'.
-   */
   handleStateChange(event) {
     const { prop, value } = event.detail;
     this.handleAddressStateChange(prop, value);
   }
 
-  /**
-   * Обрабатывает изменения в State, связанные с адресом.
-   * @param {string} prop - Изменённое свойство в State.
-   * @param {*} value - Новое значение этого свойства.
-   */
   handleAddressStateChange(prop, value) {
     if (prop === "address") {
       if (value) {
-        // Адрес выбран => убираем ошибку
         this.removeError(this.fields.address);
       } else if (State.addressError) {
-        // Адрес не выбран / ошибка => показываем ошибку
         this.addError(this.fields.address, State.addressError);
       }
-      // Скрываем результат расчёта при изменении адреса
+
       this.hideCalculationResult();
     }
 
@@ -126,19 +74,11 @@ export class FormValidation {
       } else {
         this.removeError(this.fields.address);
       }
-      // Скрываем результат расчёта при изменении ошибки адреса
+
       this.hideCalculationResult();
     }
   }
 
-  // =====================================================
-  // SECTION 2: ОГРАНИЧЕНИЯ ВВОДА
-  // =====================================================
-
-  /**
-   * setupInputRestrictions():
-   * Ограничивает ввод в поля totalVolume, totalWeight, totalCost, quantity.
-   */
   setupInputRestrictions() {
     /**
      * Ограничивает ввод на уровне события input,
@@ -177,11 +117,6 @@ export class FormValidation {
     setupFieldRestriction(this.fields.quantity, /[^0-9]/g);
   }
 
-  /**
-   * setupNumericVolumeRestrictions():
-   * Ограничиваем ввод в поля volumeLength / volumeWidth / volumeHeight
-   * (убираем все, кроме цифр и точки, одна точка, максимум 2 знака).
-   */
   setupNumericVolumeRestrictions() {
     const numericFields = [
       this.fields.volumeLength,
@@ -203,15 +138,6 @@ export class FormValidation {
     });
   }
 
-  // =====================================================
-  // SECTION 3: РЕАЛТАЙМ-ВАЛИДАЦИЯ
-  // =====================================================
-
-  /**
-   * setupRealtimeValidation():
-   * Включаем отслеживание ввода полей, чтобы удалять/добавлять ошибки
-   * и скрывать результат расчёта при любом изменении.
-   */
   setupRealtimeValidation() {
     const fieldNamesToWatch = [
       "totalVolume",
@@ -310,29 +236,24 @@ export class FormValidation {
     });
   }
 
-  // =====================================================
-  // SECTION 4: СБРОС ФОРМЫ ПРИ ПЕРЕКЛЮЧЕНИИ CALC-TYPE
-  // =====================================================
-
-  /**
-   * setupCalcTypeReset():
-   * При смене calc-type (таможня / карго) сбрасываем форму.
-   */
   setupCalcTypeReset() {
     const calcTypeRadios = document.querySelectorAll('input[name="calc-type"]');
+    const deliveryOptionRadios = document.querySelectorAll(
+      'input[name="delivery-option"]'
+    );
     calcTypeRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
-        this.resetAll();
+        /* this.resetAll(); */
+        this.hideCalculationResult();
+      });
+    });
+    deliveryOptionRadios.forEach((radio) => {
+      radio.addEventListener("change", () => {
         this.hideCalculationResult();
       });
     });
   }
 
-  /**
-   * resetAll():
-   * Сбрасывает поля и ошибки формы, а также State.clientData,
-   * вызывается при переключении “calc-type”.
-   */
   resetAll() {
     // (1) Скрыть результат
     this.hideCalculationResult();
@@ -386,15 +307,6 @@ export class FormValidation {
     console.log("Форма и State.clientData сброшены при переключении calc-type");
   }
 
-  // =====================================================
-  // SECTION 5: ГАБАРИТЫ / ОБЪЁМ
-  // =====================================================
-
-  /**
-   * setupVolumeModeListeners():
-   *  1) Слушатель для чекбокса weightVolumeChange (ввод объёма вручную или из габаритов)
-   *  2) Слушатели для volumeLength/Width/Height => пересчитать totalVolumeCalculated
-   */
   setupVolumeModeListeners() {
     const { weightVolumeChange, volumeLength, volumeWidth, volumeHeight } =
       this.fields;
@@ -425,10 +337,6 @@ export class FormValidation {
     });
   }
 
-  /**
-   * toggleVolumeMode():
-   * Включает/выключает нужные поля при вводе объёма напрямую или через габариты.
-   */
   toggleVolumeMode() {
     const {
       weightVolumeChange,
@@ -463,10 +371,6 @@ export class FormValidation {
     }
   }
 
-  /**
-   * calculateVolume():
-   * Пересчитывает totalVolumeCalculated = (L * W * H) / 1,000,000
-   */
   calculateVolume() {
     const { volumeLength, volumeWidth, volumeHeight, totalVolumeCalculated } =
       this.fields;
@@ -487,15 +391,6 @@ export class FormValidation {
     totalVolumeCalculated.value = calcVol > 0 ? calcVol.toFixed(4) : "";
   }
 
-  // =====================================================
-  // SECTION 6: ВАЛИДАЦИЯ ПОЛЕЙ
-  // =====================================================
-
-  /**
-   * validateAll():
-   * Главный метод валидации всей формы. Возвращает true/false
-   * в зависимости от результата.
-   */
   validateAll() {
     this.clearErrors();
 
@@ -543,11 +438,6 @@ export class FormValidation {
     return isValid;
   }
 
-  /**
-   * validateSingleField():
-   * Вызывается на каждом input для отдельных полей.
-   * @param {string} fieldName - имя поля для проверки.
-   */
   validateSingleField(fieldName) {
     switch (fieldName) {
       case "totalVolume":
@@ -588,13 +478,6 @@ export class FormValidation {
     }
   }
 
-  // -----------------------------------------------------
-  // NEW: Валидация радио delivery-option + товаров
-  // -----------------------------------------------------
-  /**
-   * Проверка, выбран ли способ доставки (delivery-option)
-   * и, если это "delivery-and-pickup", проверяем заполнение redeem-товаров.
-   */
   validateDeliveryOption() {
     const radio = document.querySelector(
       'input[name="delivery-option"]:checked'
@@ -617,15 +500,6 @@ export class FormValidation {
     return true; // Если "delivery-only", ничего не требуем
   }
 
-  /**
-   * Если выбран режим "delivery-and-pickup",
-   * проверяем State.redeemData по обязательным полям:
-   *  - name  -> data-name
-   *  - cost  -> data_cost
-   *  - quantity -> data-quantity
-   *  - color -> data-color
-   *  - url   -> data-url
-   */
   validateRedeemItems() {
     let isValid = true;
 
@@ -668,10 +542,6 @@ export class FormValidation {
     return isValid;
   }
 
-  /**
-   * Проверка полей "Ваше имя" и "Контактный телефон"
-   * (только в режиме delivery-and-pickup)
-   */
   validateClientFields() {
     let isValid = true;
 
@@ -697,13 +567,6 @@ export class FormValidation {
     return isValid;
   }
 
-  /**
-   * validateNumber():
-   * Универсальная проверка числовых полей.
-   * @param {string} fieldName - поле ввода.
-   * @param {Object} options - настройки валидации.
-   * @returns {boolean} - прошло ли поле проверку.
-   */
   validateNumber(fieldName, options = {}) {
     const field = this.fields[fieldName];
     if (!field) return true;
@@ -737,11 +600,6 @@ export class FormValidation {
     return true;
   }
 
-  /**
-   * validateDimensions():
-   * Проверка полей volumeLength/Width/Height
-   * (только если не выбран режим ручного ввода объёма).
-   */
   validateDimensions() {
     const { volumeLength, volumeWidth, volumeHeight } = this.fields;
     let isValid = true;
@@ -756,10 +614,6 @@ export class FormValidation {
     return isValid;
   }
 
-  /**
-   * validateCategory():
-   * Проверка radiobutton "category".
-   */
   validateCategory() {
     const radios = document.querySelectorAll('input[name="category"]');
     const isChecked = Array.from(radios).some((r) => r.checked);
@@ -786,11 +640,6 @@ export class FormValidation {
     return true;
   }
 
-  /**
-   * validateRadio():
-   * Универсальная проверка групп radiobutton.
-   * @param {string} fieldName - имя группы (например, "packing-type")
-   */
   validateRadio(fieldName) {
     const radios = document.querySelectorAll(`input[name="${fieldName}"]`);
     const isChecked = Array.from(radios).some((r) => r.checked);
@@ -801,10 +650,6 @@ export class FormValidation {
     return true;
   }
 
-  /**
-   * validateTnvedInput():
-   * Проверка TНВЭД (применяется только для calc-customs).
-   */
   validateTnvedInput() {
     const field = this.fields.tnvedInput;
     const selectedItem = State.tnvedSelection?.selectedItem;
@@ -833,11 +678,6 @@ export class FormValidation {
     return true;
   }
 
-  /**
-   * validateAddress():
-   * Проверяет, выбран ли адрес, и нет ли связанных ошибок,
-   * если чекбокс адреса активен.
-   */
   validateAddress() {
     const addressField = this.fields.address;
     const addressError = State.addressError;
@@ -862,14 +702,6 @@ export class FormValidation {
     return true;
   }
 
-  // =====================================================
-  // SECTION 7: СОХРАНЕНИЕ ДАННЫХ В STATE
-  // =====================================================
-
-  /**
-   * saveToState():
-   * Сохранение введённых полей в State.clientData.
-   */
   saveToState() {
     const calcType =
       document.querySelector('input[name="calc-type"]:checked')?.value ||
@@ -941,16 +773,6 @@ export class FormValidation {
     /* console.log("State.clientData обновлён:", State.clientData); */
   }
 
-  // =====================================================
-  // SECTION 8: УПРАВЛЕНИЕ ЧЕКБОКСОМ АДРЕСА
-  // =====================================================
-
-  /**
-   * setupAddressCheckboxListener():
-   * - Управляет показом/скрытием .to-address
-   * - При отключении чекбокса сбрасываем адрес
-   * - Устанавливаем/убираем ошибки
-   */
   setupAddressCheckboxListener() {
     const addressCheckbox = this.fields.addressCheck;
     if (!addressCheckbox) {
@@ -983,10 +805,6 @@ export class FormValidation {
     });
   }
 
-  /**
-   * Управляет видимостью элементов с классом `.to-address`.
-   * @param {boolean} isVisible - Нужно ли показывать элементы.
-   */
   toggleToAddressElements(isVisible) {
     const toAddressElements = document.querySelectorAll(".to-address");
     toAddressElements.forEach((element) => {
@@ -998,11 +816,6 @@ export class FormValidation {
     });
   }
 
-  /**
-   * handleAddressCheckboxChange():
-   * Сбрасываем адрес, если чекбокс отключается.
-   * @param {boolean} isChecked
-   */
   handleAddressCheckboxChange(isChecked) {
     if (!isChecked && State.address) {
       // Если чекбокс отключен, но адрес уже был выбран, сбрасываем
@@ -1013,25 +826,12 @@ export class FormValidation {
     }
   }
 
-  // =====================================================
-  // SECTION 9: УТИЛИТЫ: ОШИБКИ, ОЧИСТКА И Т.Д.
-  // =====================================================
-
-  /**
-   * Очищает значения переданных полей.
-   * @param {HTMLInputElement[]} fields
-   */
   clearFields(fields) {
     fields.forEach((field) => {
       if (field) field.value = "";
     });
   }
 
-  /**
-   * Добавляет ошибку полю (подсветка + текст).
-   * @param {HTMLInputElement} field
-   * @param {string} message
-   */
   addError(field, message) {
     if (!field) return;
     const parent = field.closest(".form-group") || field.parentElement;
@@ -1043,10 +843,6 @@ export class FormValidation {
     field.classList.add("error-input");
   }
 
-  /**
-   * Убирает ошибку с поля (подсветку + текст).
-   * @param {HTMLInputElement} fieldEl
-   */
   removeError(fieldEl) {
     if (!fieldEl) return;
     fieldEl.classList.remove("error-input");
@@ -1058,9 +854,6 @@ export class FormValidation {
     }
   }
 
-  /**
-   * Очищает ошибку категории (error-message-category / js-error-category).
-   */
   clearCategoryError() {
     const errorSpan = document.querySelector(".error-message-category");
     const errorBlock = document.querySelector(".js-error-category");
@@ -1073,10 +866,6 @@ export class FormValidation {
     }
   }
 
-  /**
-   * clearErrors():
-   * Очищает все возможные ошибки формы.
-   */
   clearErrors() {
     this.errors = {};
     document
@@ -1091,9 +880,6 @@ export class FormValidation {
     this.clearCategoryError();
   }
 
-  /**
-   * Скрывает блок с результатом расчёта (.main-calc-result).
-   */
   hideCalculationResult() {
     const resultBlock = document.querySelector(".main-calc-result");
     if (resultBlock) {

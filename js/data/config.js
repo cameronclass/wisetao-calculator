@@ -2,6 +2,8 @@
 export const CONFIG = {
   botToken: "7077778313:AAGQu7UV0XiNs0z8aGDyQiCwaqzOEgZLnbQ",
   chatId: "-413166690",
+  redeemBotToken: "7773944407:AAEYhChPWpyvyDvDoBuYmKFaJShfDV30JIQ",
+  redeemChatId: -4638573770,
   jsonPath: "./js/rates.json",
   insuranceRate: 0.02, // Процент страховки
   localStorageKey: "ratesData", // ключ для кэширования данных о тарифах

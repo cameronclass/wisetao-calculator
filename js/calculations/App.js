@@ -2,15 +2,15 @@
 import { Calculator } from "./Calculator.js";
 import { CONFIG } from "../data/config.js";
 import { State } from "../data/State.js";
-import { FormValidation } from "./FormValidation.js";
 import { UiRenderer } from "../ui/UiRenderer.js";
 import RailwayExpeditionCalculator from "./RailwayExpeditionCalculator.js";
 import KitDeliveryCalculator from "./KitDeliveryCalculator.js";
 import { Currency } from "../api/Currency.js";
 import { DataProvider } from "../data/DataProvider.js";
 import { TnvedManager } from "../api/TnvedManager.js";
-import { PriceSelector } from "./PriceSelector.js";
+import PriceSelector from "./PriceSelector.js";
 import RedeemManager from "../data/RedeemManager.js";
+import FormValidation from "../calculations/FormValidation.js";
 
 export class CalculatorApp {
   constructor(fields) {

@@ -92,3 +92,5 @@ export class PriceSelector {
     this.updateButtonState(); // Обновляем состояние кнопки
   }
 }
+
+export default PriceSelector;
