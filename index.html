@@ -153,7 +153,7 @@
                             <span class="calc-tooltip">
                                 <span class="calc-tooltip__title">СТРАХОВКА ГРУЗА</span>
                                 <span class="calc-tooltip__text">
-                                    Если поставить галочку расчет стоимости доставки будет учитывать страховку груза. Стоимость страховки составит 2% от стоимости товара +2% от стоимости доставки.
+                                    Если поставить галочку расчет стоимости доставки будет учитывать страховку груза. Стоимость страховки составит 2% от стоимости товара + стоимости доставки.
                                 </span>
                             </span>
                         </label>
@@ -255,7 +255,7 @@
                                             <span class="error-message"></span>
                                             <div class="currency-select">
                                                 <div class="currency-select__selected">
-                                                    <span class="currency-select__selected_name">$</span>
+                                                    <span class="currency-select__selected_name">¥</span>
                                                     <span class="currency-select__selected_icon">
                                                         <svg class="dropdown-list-currency-arrow" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="32.38141722065728" height="22.59489123485507" viewBox="110.22394056737565 250.64901537709036 32.38141722065728 22.59489123485507" xml:space="preserve">
                                                             <desc>Created with Fabric.js 5.3.0</desc>
@@ -267,7 +267,7 @@
                                                 </div>
                                                 <div class="currency-select__list">
                                                     <label class="custom-select__label">
-                                                        <input class="custom-select__input" type="radio" required="" name="data_currency" checked="" value="dollar">
+                                                        <input class="custom-select__input" type="radio" required="" name="data_currency" value="dollar">
                                                         <span class="custom-select__name">$</span>
                                                     </label>
                                                     <label class="custom-select__label">
@@ -275,7 +275,7 @@
                                                         <span class="custom-select__name">₽</span>
                                                     </label>
                                                     <label class="custom-select__label">
-                                                        <input class="custom-select__input" type="radio" required="" name="data_currency" value="yuan">
+                                                        <input class="custom-select__input" type="radio" required="" name="data_currency" checked="" value="yuan">
                                                         <span class="custom-select__name">¥</span>
                                                     </label>
                                                 </div>
@@ -599,7 +599,7 @@
                                     <span class="error-message"></span>
                                     <div class="currency-select">
                                         <div class="currency-select__selected">
-                                            <span class="currency-select__selected_name">$</span>
+                                            <span class="currency-select__selected_name">¥</span>
                                             <span class="currency-select__selected_icon">
                                                 <svg class="dropdown-list-currency-arrow" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="32.38141722065728" height="22.59489123485507" viewBox="110.22394056737565 250.64901537709036 32.38141722065728 22.59489123485507" xml:space="preserve">
                                                     <desc>Created with Fabric.js 5.3.0</desc>
@@ -611,7 +611,7 @@
                                         </div>
                                         <div class="currency-select__list">
                                             <label class="custom-select__label">
-                                                <input class="custom-select__input" type="radio" required name="total_currency" checked value="dollar">
+                                                <input class="custom-select__input" type="radio" required name="total_currency" value="dollar">
                                                 <span class="custom-select__name">$</span>
                                             </label>
                                             <label class="custom-select__label">
@@ -619,7 +619,7 @@
                                                 <span class="custom-select__name">₽</span>
                                             </label>
                                             <label class="custom-select__label">
-                                                <input class="custom-select__input" type="radio" required name="total_currency" value="yuan">
+                                                <input class="custom-select__input" type="radio" required name="total_currency" checked value="yuan">
                                                 <span class="custom-select__name">¥</span>
                                             </label>
                                         </div>
@@ -855,11 +855,9 @@
                             <img class="main-calc-packing__item_img" src="img/fumi.png" alt="">
                             <span class="main-calc-packing__item_title">Фумигация груза <br> (уточнять индивидуально)</span>
                         </div>
-                        <div class="main-calc-packing__info">* Упаковка увеличит вес вашего груза</div>
+                        <div class="main-calc-packing__info">* Доп. упаковка увеличит вес вашего груза</div>
                     </div>
                 </div>
-
-
 
                 <!-- Кнопка РАСЧИТАТЬ -->
                 <div class="main-calc-parametr__main_btn">
@@ -1021,7 +1019,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -1047,6 +1045,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1064,7 +1063,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1081,13 +1080,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1104,7 +1103,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -1148,7 +1147,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -1174,6 +1173,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1191,7 +1191,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1208,13 +1208,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1232,7 +1232,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__country">
-                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России <br> до указанного адреса</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">За кг:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1257,7 +1257,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -1301,7 +1301,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -1327,6 +1327,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1344,7 +1345,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1361,13 +1362,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1385,7 +1386,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__country">
-                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России <br> до указанного адреса</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">За кг:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1410,7 +1411,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -1484,7 +1485,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -1510,6 +1511,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1527,7 +1529,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1544,13 +1546,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1567,7 +1569,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -1611,7 +1613,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -1637,6 +1639,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1654,7 +1657,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1671,13 +1674,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1695,7 +1698,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__country">
-                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России <br> до указанного адреса</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">За кг:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1720,7 +1723,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -1764,7 +1767,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -1790,6 +1793,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1807,7 +1811,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1824,13 +1828,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1848,7 +1852,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__country">
-                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России <br> до указанного адреса</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">За кг:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -1873,7 +1877,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -1951,7 +1955,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -1977,6 +1981,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1994,7 +1999,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2011,13 +2016,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2034,7 +2039,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -2078,7 +2083,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -2104,6 +2109,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -2121,7 +2127,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2138,13 +2144,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2162,7 +2168,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__country">
-                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России <br> до указанного адреса</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">За кг:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2187,7 +2193,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>
@@ -2231,7 +2237,7 @@
                                     <div class="main-calc-result-tooltip">
                                         <div class="main-calc-result-tooltip__title"></div>
                                         <div class="main-calc-result-tooltip__subtitle">(примерная стоимость)</div>
-                                        <div class="main-calc-result-tooltip__subtitle">Перевозка по Китаю</div>
+                                        <!-- <div class="main-calc-result-tooltip__subtitle">Перевозка из Китая</div> -->
                                         <div class="main-calc-result-tooltip__row">
                                             <div class="main-calc-result-tooltip__cell">Курс:</div>
                                             <div class="main-calc-result-tooltip__cell">
@@ -2257,6 +2263,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
+                                                <span class="_insurance-from">(от  $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -2274,7 +2281,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__white">
-                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Таможенные расходы в РФ <br> под ваш контракт</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Пошлина:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2291,13 +2298,13 @@
                                                     <span class="_nds-ruble"></span>
                                                 </div>
                                             </div>
-                                            <div class="main-calc-result-tooltip__row">
+                                            <!-- <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Услуги декларации:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
                                                     <span class="_decloration-dollar"></span>
                                                     <span class="_decloration-ruble"></span>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">Итого:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2315,7 +2322,7 @@
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__country">
-                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России</div>
+                                            <div class="main-calc-result-tooltip__subtitle">Перевозка по России <br> до указанного адреса</div>
                                             <div class="main-calc-result-tooltip__row">
                                                 <div class="main-calc-result-tooltip__cell">За кг:</div>
                                                 <div class="main-calc-result-tooltip__cell _text">
@@ -2340,7 +2347,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="main-calc-result-tooltip__info">* Упаковка увеличит вес вашего груза</div>
+                                        <div class="main-calc-result-tooltip__info">* Доп. упаковка увеличит вес вашего груза</div>
                                     </div>
                                 </div>
                             </div>

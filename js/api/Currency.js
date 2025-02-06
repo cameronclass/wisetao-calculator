@@ -2,7 +2,7 @@
 import { State } from "../data/State.js";
 
 export class Currency {
-  constructor(botToken, chatId, multiplier = 7.3) {
+  constructor(botToken, chatId, multiplier = 7.4) {
     this.botToken = botToken;
     this.chatId = chatId;
     this.multiplier = multiplier;

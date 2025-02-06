@@ -37,7 +37,7 @@ export class CalculatorApp {
 
     // Загрузка курсов валют
     try {
-      const currency = new Currency(CONFIG.botToken, CONFIG.chatId, 7.3);
+      const currency = new Currency(CONFIG.botToken, CONFIG.chatId);
       await currency.loadAndSaveRates();
       console.log("Курсы успешно сохранены");
     } catch (error) {
@@ -81,7 +81,7 @@ export class CalculatorApp {
         this.redeemManager.sendDataToTelegram();
       }
 
-      /* console.log(State); */
+      console.log(State);
     } else {
       console.log("Форма заполнена с ошибками");
       this.scrollToWrapper();

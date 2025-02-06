@@ -95,7 +95,6 @@ export class Calculator {
     }
   }
 
-  // ================== TAMOZHNYA ==================
   runCustomsLogic() {
     const directions = ["auto", "train", "avia"];
     const costInDollar = State.calculatedData.clientCost.dollar;
@@ -128,70 +127,6 @@ export class Calculator {
     });
   }
 
-  calculateCustomsCost(costInDollar, dutyValuePct, cbrRateDollar, cbrRateYuan) {
-    // 1) Пошлина
-    const dutyDollar = (dutyValuePct / 100) * costInDollar;
-
-    // 2) НДС (20%)
-    const sumWithDuty = costInDollar + dutyDollar;
-    const ndsDollar = sumWithDuty * 0.2;
-
-    // 3) Декларация (550 юаней => доллары)
-    // decDollar = (550 * cbrRateYuan) / cbrRateDollar
-    const decDollar = (550 * cbrRateYuan) / cbrRateDollar;
-
-    // 4) Всего таможня ( duty + nds + dec ) минус «исходная сумма»?
-    // Но классически: totalCustomsDollar = (costInDollar + duty + nds + dec) - costInDollar
-    const totalCustomsDollar =
-      costInDollar + dutyDollar + ndsDollar + decDollar - costInDollar;
-
-    return {
-      dutyDollar,
-      ndsDollar,
-      decDollar,
-      totalCustomsDollar,
-    };
-  }
-
-  updateCustomsInState(
-    dir,
-    { dutyDollar, ndsDollar, decDollar, customsDollar }
-  ) {
-    const dRate = State.calculatedData.dollar;
-    const yRate = State.calculatedData.yuan;
-
-    // Переводим всё в рубли/юани
-    const dutyRub = dutyDollar * dRate;
-    const dutyYuan = dutyDollar * yRate;
-
-    const ndsRub = ndsDollar * dRate;
-    const ndsYuan = ndsDollar * yRate;
-
-    const decRub = decDollar * dRate;
-    const decYuan = decDollar * yRate;
-
-    const customsRub = customsDollar * dRate;
-    const customsYuan = customsDollar * yRate;
-
-    State.calculatedData[dir].duty.dollar = Number(dutyDollar.toFixed(2));
-    State.calculatedData[dir].duty.ruble = Number(dutyRub.toFixed(2));
-    State.calculatedData[dir].duty.yuan = Number(dutyYuan.toFixed(2));
-
-    State.calculatedData[dir].nds.dollar = Number(ndsDollar.toFixed(2));
-    State.calculatedData[dir].nds.ruble = Number(ndsRub.toFixed(2));
-    State.calculatedData[dir].nds.yuan = Number(ndsYuan.toFixed(2));
-
-    State.calculatedData[dir].declaration.dollar = Number(decDollar.toFixed(2));
-    State.calculatedData[dir].declaration.ruble = Number(decRub.toFixed(2));
-    State.calculatedData[dir].declaration.yuan = Number(decYuan.toFixed(2));
-
-    State.calculatedData[dir].customsCost.dollar = Number(
-      customsDollar.toFixed(2)
-    );
-    State.calculatedData[dir].customsCost.ruble = Number(customsRub.toFixed(2));
-    State.calculatedData[dir].customsCost.yuan = Number(customsYuan.toFixed(2));
-  }
-
   updateTotalCostInState(dir, finalDollar) {
     const dRate = State.calculatedData.dollar;
     const yRate = State.calculatedData.yuan;
@@ -200,7 +135,7 @@ export class Calculator {
     const totalYuan = finalDollar * yRate;
 
     State.calculatedData[dir].totalCost.dollar = Number(finalDollar.toFixed(2));
-    State.calculatedData[dir].totalCost.ruble = Number(totalRub.toFixed(2));
+    State.calculatedData[dir].totalCost.ruble = Math.round(totalRub.toFixed(2));
     State.calculatedData[dir].totalCost.yuan = Number(totalYuan.toFixed(2));
   }
 
@@ -351,7 +286,7 @@ export class Calculator {
     State.calculatedData[direction].shippingCost.dollar = Number(
       shippingDollar.toFixed(2)
     );
-    State.calculatedData[direction].shippingCost.ruble = Number(
+    State.calculatedData[direction].shippingCost.ruble = Math.round(
       shippingRub.toFixed(2)
     );
     State.calculatedData[direction].shippingCost.yuan = Number(
@@ -361,7 +296,7 @@ export class Calculator {
     State.calculatedData[direction].pricePerKg.dollar = Number(
       pricePerKgDollar.toFixed(2)
     );
-    State.calculatedData[direction].pricePerKg.ruble = Number(
+    State.calculatedData[direction].pricePerKg.ruble = Math.round(
       priceRub.toFixed(2)
     );
     State.calculatedData[direction].pricePerKg.yuan = Number(
@@ -436,7 +371,7 @@ export class Calculator {
     State.calculatedData[direction].packagingCost.dollar = Number(
       packagingDollar.toFixed(2)
     );
-    State.calculatedData[direction].packagingCost.ruble = Number(
+    State.calculatedData[direction].packagingCost.ruble = Math.round(
       packagingRub.toFixed(2)
     );
     State.calculatedData[direction].packagingCost.yuan = Number(
@@ -461,7 +396,7 @@ export class Calculator {
     State.calculatedData[direction].insuranceCost.dollar = Number(
       insuranceDollar.toFixed(2)
     );
-    State.calculatedData[direction].insuranceCost.ruble = Number(
+    State.calculatedData[direction].insuranceCost.ruble = Math.round(
       insRub.toFixed(2)
     );
     State.calculatedData[direction].insuranceCost.yuan = Number(
@@ -480,7 +415,7 @@ export class Calculator {
     State.calculatedData[direction].cargoCost.dollar = Number(
       cargoDollar.toFixed(2)
     );
-    State.calculatedData[direction].cargoCost.ruble = Number(
+    State.calculatedData[direction].cargoCost.ruble = Math.round(
       cargoRub.toFixed(2)
     );
     State.calculatedData[direction].cargoCost.yuan = Number(
@@ -490,12 +425,21 @@ export class Calculator {
 
   // ================== CUSTOMS COST ==================
   calculateCustomsCost(costInDollar, dutyValuePct, cbrRateDollar, cbrRateYuan) {
+    // 1) Пошлина
     const dutyDollar = (dutyValuePct / 100) * costInDollar;
-    const sumWithDutyDollar = costInDollar + dutyDollar;
-    const ndsDollar = sumWithDutyDollar * 0.2;
+
+    // 2) НДС (20%)
+    const sumWithDuty = costInDollar + dutyDollar;
+    const ndsDollar = sumWithDuty * 0.2;
+
+    // 3) Декларация (550 юаней => доллары)
+    // decDollar = (550 * cbrRateYuan) / cbrRateDollar
     const decDollar = (550 * cbrRateYuan) / cbrRateDollar;
+
+    // 4) Всего таможня ( duty + nds + dec ) минус «исходная сумма»?
+    // Но классически: totalCustomsDollar = (costInDollar + duty + nds + dec) - costInDollar
     const totalCustomsDollar =
-      costInDollar + dutyDollar + ndsDollar + decDollar - costInDollar;
+      costInDollar + dutyDollar + ndsDollar /* + decDollar */ - costInDollar;
 
     return {
       dutyDollar,
@@ -525,34 +469,24 @@ export class Calculator {
     const customsYuan = customsDollar * yRate;
 
     State.calculatedData[dir].duty.dollar = Number(dutyDollar.toFixed(2));
-    State.calculatedData[dir].duty.ruble = Number(dutyRub.toFixed(2));
+    State.calculatedData[dir].duty.ruble = Math.round(dutyRub.toFixed(2));
     State.calculatedData[dir].duty.yuan = Number(dutyYuan.toFixed(2));
 
     State.calculatedData[dir].nds.dollar = Number(ndsDollar.toFixed(2));
-    State.calculatedData[dir].nds.ruble = Number(ndsRub.toFixed(2));
+    State.calculatedData[dir].nds.ruble = Math.round(ndsRub.toFixed(2));
     State.calculatedData[dir].nds.yuan = Number(ndsYuan.toFixed(2));
 
     State.calculatedData[dir].declaration.dollar = Number(decDollar.toFixed(2));
-    State.calculatedData[dir].declaration.ruble = Number(decRub.toFixed(2));
+    State.calculatedData[dir].declaration.ruble = Math.round(decRub.toFixed(2));
     State.calculatedData[dir].declaration.yuan = Number(decYuan.toFixed(2));
 
     State.calculatedData[dir].customsCost.dollar = Number(
       customsDollar.toFixed(2)
     );
-    State.calculatedData[dir].customsCost.ruble = Number(customsRub.toFixed(2));
+    State.calculatedData[dir].customsCost.ruble = Math.round(
+      customsRub.toFixed(2)
+    );
     State.calculatedData[dir].customsCost.yuan = Number(customsYuan.toFixed(2));
-  }
-
-  updateTotalCostInState(dir, finalDollar) {
-    const dRate = State.calculatedData.dollar;
-    const yRate = State.calculatedData.yuan;
-
-    const totalRub = finalDollar * dRate;
-    const totalYuan = finalDollar * yRate;
-
-    State.calculatedData[dir].totalCost.dollar = Number(finalDollar.toFixed(2));
-    State.calculatedData[dir].totalCost.ruble = Number(totalRub.toFixed(2));
-    State.calculatedData[dir].totalCost.yuan = Number(totalYuan.toFixed(2));
   }
 
   // ================== UTILS ==================

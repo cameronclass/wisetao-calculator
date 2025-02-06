@@ -1182,7 +1182,7 @@ input[type="number"] {
   display: flex;
 }
 
-.add-redeem-photo{
+.add-redeem-photo {
   border: none;
   background-color: transparent;
   color: white;
@@ -1865,13 +1865,16 @@ input[type="number"] {
   color: black;
 }
 
+.main-calc-result-tooltip__country {
+}
+
 .main-calc-result-tooltip__title {
   font-size: 16px;
   text-align: center;
 }
 .main-calc-result-tooltip__subtitle {
   text-align: center;
-  font-size: 15px;
+  font-size: 13px;
 }
 .main-calc-result-tooltip__cell {
   font-size: 14px;
@@ -1917,9 +1920,13 @@ input[type="number"] {
   align-items: center;
   gap: 8px;
 }
+._insurance-from{
+  color: #000;
+  font-size: 12px;
+}
 .main-calc-result-tooltip__info {
   text-align: center;
-  font-size: 13px;
+  font-size: 11px;
   color: #de4646;
   margin-top: 5px;
 }

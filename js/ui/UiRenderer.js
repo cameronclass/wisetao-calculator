@@ -80,8 +80,8 @@ export class UiRenderer {
       if (tooltipTitleEl) {
         tooltipTitleEl.textContent =
           calcType === "calc-cargo"
-            ? "Только до терминала ТК “Южные ворота” Москва"
-            : "Доставка только до г.Благовещенск СВХ";
+            ? "Перевозка из Китая в г. Москва “Южные ворота”"
+            : "Перевозка из Китая в г.Благовещенск СВХ";
       }
 
       // ._number._ruble -> State.calculatedData.dollar, ._number._yuan -> State.calculatedData.yuan
@@ -108,10 +108,15 @@ export class UiRenderer {
       // ._insurance-dollar, ._insurance-ruble => dirData.insuranceCost
       const insDollarEl = tooltipEl.querySelector("._insurance-dollar");
       const insRubleEl = tooltipEl.querySelector("._insurance-ruble");
+      const insFromEl = tooltipEl.querySelector("._insurance-from");
       if (insDollarEl)
         insDollarEl.textContent = dirData.insuranceCost.dollar + "$";
       if (insRubleEl)
         insRubleEl.textContent = dirData.insuranceCost.ruble + "₽";
+      if (insFromEl)
+        insFromEl.textContent = `(от ${Math.round(
+          State.calculatedData.clientCost.dollar + dirData.shippingCost.dollar
+        )}$)`;
 
       // ._kg-dollar, ._kg-ruble => dirData.pricePerKg
       const kgDollarTipEl = tooltipEl.querySelector("._kg-dollar");
@@ -162,12 +167,12 @@ export class UiRenderer {
         if (ndsDollarEl) ndsDollarEl.textContent = dirData.nds.dollar + "$";
         if (ndsRubleEl) ndsRubleEl.textContent = dirData.nds.ruble + "₽";
 
-        const declDollarEl = tooltipEl.querySelector("._decloration-dollar");
+        /* const declDollarEl = tooltipEl.querySelector("._decloration-dollar");
         const declRubleEl = tooltipEl.querySelector("._decloration-ruble");
         if (declDollarEl)
           declDollarEl.textContent = dirData.declaration.dollar + "$";
         if (declRubleEl)
-          declRubleEl.textContent = dirData.declaration.ruble + "₽";
+          declRubleEl.textContent = dirData.declaration.ruble + "₽"; */
 
         const allWhiteDollarEl = tooltipEl.querySelector("._all-white-dollar");
         const allWhiteRubleEl = tooltipEl.querySelector("._all-white-ruble");
