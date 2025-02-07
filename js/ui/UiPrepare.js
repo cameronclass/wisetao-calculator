@@ -2,6 +2,24 @@
 export default class UiPrepare {
   constructor() {
     this.root = document;
+    this.texts = {
+      deliveryPlaceholder: {
+        calcCustoms: {
+          fromWhere: "Китай - Хейхе",
+          fromTo: "Россия - Благовещенск",
+          tooltipTitle: "Склад временного хранение",
+          tooltipText:
+            "Доставка осуществляется только до г.Благовещенск СВХ...",
+        },
+        calcCargo: {
+          fromWhere: "Китай - Фошань",
+          fromTo: "Россия - Москва",
+          tooltipTitle: "Южные ворота",
+          tooltipText:
+            "Доставка осуществляется только до г.Москва «Южные ворота»...",
+        },
+      },
+    };
     /* this._init(); */
   }
 
@@ -326,6 +344,11 @@ export default class UiPrepare {
     const fromToContainer = document.querySelector(".main-calc__from-to_to");
     const tooltipTitle = fromToContainer.querySelector(".calc-tooltip__title");
     const tooltipText = fromToContainer.querySelector(".calc-tooltip__text");
+    const insuranceCheckbox = document.querySelector('input[name="insurance"]');
+    const insuranceCheckboxBlock = document.querySelector(
+      ".main-calc__from-to_check"
+    );
+    const insuranceTooltip = document.querySelectorAll("._insurance-tooltip");
 
     calcTypeRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
@@ -334,30 +357,59 @@ export default class UiPrepare {
           document
             .querySelectorAll(".js-calc-category, .js-calc-brand")
             .forEach((elem) => elem.classList.add("hidden"));
-          fromWhereInput.placeholder = "Китай - Хейхе";
-          fromToInput.placeholder = "Россия - Благовещенск";
-          tooltipTitle.textContent = "Склад временного хранение";
+
+          fromWhereInput.placeholder =
+            this.texts.deliveryPlaceholder.calcCustoms.fromWhere;
+          fromToInput.placeholder =
+            this.texts.deliveryPlaceholder.calcCustoms.fromTo;
+          tooltipTitle.textContent =
+            this.texts.deliveryPlaceholder.calcCustoms.tooltipTitle;
           tooltipText.textContent =
-            "Доставка осуществляется только до г.Благовещенск СВХ...";
+            this.texts.deliveryPlaceholder.calcCustoms.tooltipText;
+
+          if (insuranceCheckbox) {
+            insuranceCheckboxBlock.classList.add("hidden");
+            insuranceTooltip.forEach((elem) => elem.classList.add("hidden"));
+            insuranceCheckbox.checked = false;
+            insuranceCheckbox.disabled = true;
+          }
         } else if (radio.value === "calc-cargo" && radio.checked) {
           document.querySelector(".white-cargo").classList.remove("active");
           document
             .querySelectorAll(".js-calc-category, .js-calc-brand")
             .forEach((elem) => elem.classList.remove("hidden"));
-          fromWhereInput.placeholder = "Китай - Фошань";
-          fromToInput.placeholder = "Россия - Москва";
-          tooltipTitle.textContent = "Южные ворота";
+
+          fromWhereInput.placeholder =
+            this.texts.deliveryPlaceholder.calcCargo.fromWhere;
+          fromToInput.placeholder =
+            this.texts.deliveryPlaceholder.calcCargo.fromTo;
+          tooltipTitle.textContent =
+            this.texts.deliveryPlaceholder.calcCargo.tooltipTitle;
           tooltipText.textContent =
-            "Доставка осуществляется только до г.Москва «Южные ворота»...";
+            this.texts.deliveryPlaceholder.calcCargo.tooltipText;
+
+          if (insuranceCheckbox) {
+            insuranceCheckboxBlock.classList.remove("hidden");
+            insuranceTooltip.forEach((elem) => elem.classList.remove("hidden"));
+            insuranceCheckbox.checked = true;
+            insuranceCheckbox.disabled = false;
+          }
         } else {
           document.querySelector(".white-cargo").classList.remove("active");
           document
             .querySelectorAll(".js-calc-category, .js-calc-brand")
             .forEach((elem) => elem.classList.remove("hidden"));
+
           fromWhereInput.placeholder = "";
           fromToInput.placeholder = "";
           tooltipTitle.textContent = "";
           tooltipText.textContent = "";
+
+          if (insuranceCheckbox) {
+            insuranceCheckboxBlock.classList.remove("hidden", "active");
+            insuranceCheckbox.checked = false;
+            insuranceCheckbox.disabled = false;
+          }
         }
       });
     });

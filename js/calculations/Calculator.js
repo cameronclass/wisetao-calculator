@@ -66,7 +66,7 @@ export class Calculator {
       }
 
       // 2) PackagingCost
-      const packingType = cd.packingType || "std_pack";
+      const packingType = cd.packingType;
       const packagingDollar = this.calculatePackagingDollar(
         packingType,
         volume,

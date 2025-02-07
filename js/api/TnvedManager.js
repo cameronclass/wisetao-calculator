@@ -17,7 +17,8 @@ export class TnvedManager {
     this.overlay = config.overlay;
     this.closeButton = config.closeButton;
     this.treeList = config.treeList;
-
+    // --- Добавляем ссылку на кнопку ---
+    this.calculateButton = document.querySelector(".js-calculate-result");
     // --- Внутренние настройки ---
     this.debounceTimer = null;
     this.DEBOUNCE_DELAY = 500;
@@ -200,6 +201,7 @@ export class TnvedManager {
   startLoadingAnimation() {
     this.tnvedInput.classList.add(this.loadingClass);
   }
+
   stopLoadingAnimation() {
     this.tnvedInput.classList.remove(this.loadingClass);
   }
@@ -218,6 +220,12 @@ export class TnvedManager {
     tnvedPercentEl.textContent = "Ищем процент, подождите...";
 
     try {
+      // Отключаем кнопку и меняем её текст
+      if (this.calculateButton) {
+        this.calculateButton.disabled = true;
+        this.calculateButton.textContent = "Идет поиск пошлины...";
+      }
+
       const response = await fetch(`${this.apiBase}/parse-alta-duty`, {
         method: "POST",
         headers: {
@@ -231,6 +239,11 @@ export class TnvedManager {
       }
       const data = await response.json();
       /* console.log("Доп. данные по коду:", data); */
+
+      if (this.calculateButton) {
+        this.calculateButton.disabled = false;
+        this.calculateButton.textContent = "РАСЧИТАТЬ ОНЛАЙН";
+      }
 
       let percentValue = 10; // По умолчанию
       let infoText = "";
@@ -280,6 +293,12 @@ export class TnvedManager {
       tnvedPercentEl.textContent =
         "Нет информации по % пошлине (ошибка запроса), используется 10%";
       State.tnvedSelection.chosenCodeImp = 10;
+
+      // Включаем кнопку и возвращаем исходный текст
+      if (this.calculateButton) {
+        this.calculateButton.disabled = false;
+        this.calculateButton.textContent = "РАСЧИТАТЬ ОНЛАЙН";
+      }
 
       // При ошибке всё равно запишем в State.clientData?
       if (!State.clientData) {

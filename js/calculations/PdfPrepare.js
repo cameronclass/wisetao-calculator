@@ -439,11 +439,21 @@ class PdfPrepare {
     this.getOfferDataComponents.Kg.value2 =
       state.calculatedData[direction].pricePerKg.dollar;
 
-    this.getOfferDataComponents.Insurance.value = Math.round(
-      state.calculatedData[direction].insuranceCost.ruble
-    );
-    this.getOfferDataComponents.Insurance.value2 =
-      state.calculatedData[direction].insuranceCost.dollar;
+    if (state.calculatedData[direction].insuranceCost.ruble === 0) {
+      /* this.getOfferDataComponents.Insurance.text = "";
+      this.getOfferDataComponents.Insurance.value = "";
+      this.getOfferDataComponents.Insurance.unit = "";
+      this.getOfferDataComponents.Insurance.value2 = "";
+      this.getOfferDataComponents.Insurance.unit2 = ""; */
+      this.getOfferDataComponents.Insurance.value = "0";
+      this.getOfferDataComponents.Insurance.value2 = "0";
+    } else {
+      this.getOfferDataComponents.Insurance.value = Math.round(
+        state.calculatedData[direction].insuranceCost.ruble
+      );
+      this.getOfferDataComponents.Insurance.value2 =
+        state.calculatedData[direction].insuranceCost.dollar;
+    }
 
     this.getOfferDataComponents.PackageCost.value = Math.round(
       state.calculatedData[direction].packagingCost.ruble
@@ -639,11 +649,21 @@ class PdfPrepare {
     this.getOfferWhiteDataComponents.PackageType.value =
       state.calculatedData.packingType;
 
-    this.getOfferWhiteDataComponents.Kg.value = Math.round(
-      state.calculatedData.auto.insuranceCost.ruble
-    );
-    this.getOfferWhiteDataComponents.Kg.value2 =
-      state.calculatedData.auto.insuranceCost.dollar;
+    if (state.calculatedData.auto.insuranceCost.ruble === 0) {
+      /* this.getOfferWhiteDataComponents.Kg.text = "";
+      this.getOfferWhiteDataComponents.Kg.value = "";
+      this.getOfferWhiteDataComponents.Kg.unit = "";
+      this.getOfferWhiteDataComponents.Kg.value2 = "";
+      this.getOfferWhiteDataComponents.Kg.unit2 = ""; */
+      this.getOfferWhiteDataComponents.Kg.value = "0";
+      this.getOfferWhiteDataComponents.Kg.value2 = "0";
+    } else {
+      this.getOfferWhiteDataComponents.Kg.value = Math.round(
+        state.calculatedData.auto.insuranceCost.ruble
+      );
+      this.getOfferWhiteDataComponents.Kg.value2 =
+        state.calculatedData.auto.insuranceCost.dollar;
+    }
 
     this.getOfferWhiteDataComponents.Sum.value = Math.round(
       state.calculatedData.auto.totalCost.ruble

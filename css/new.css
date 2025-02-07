@@ -1920,7 +1920,7 @@ input[type="number"] {
   align-items: center;
   gap: 8px;
 }
-._insurance-from{
+._insurance-from {
   color: #000;
   font-size: 12px;
 }
@@ -2317,9 +2317,12 @@ input[type="number"] {
   }
 
   .overflow-tooltip {
-    top: inherit;
-    bottom: 30px;
-    left: 0;
+    position: fixed;
+    z-index: 100;
+    top: 0px;
+
+    left: 40px;
+    width: calc(100% - 80px);
   }
 
   .calc-select__selected {
