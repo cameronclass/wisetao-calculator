@@ -287,7 +287,7 @@ export class TnvedManager {
       State.clientData.tnvedSelectedCode = tnvedCode;
       State.clientData.tnvedSelectedImp = percentValue;
 
-      console.log("ТНВЭД Сохранено в State.clientData:", State.clientData);
+      /* console.log("ТНВЭД Сохранено в State.clientData:", State.clientData); */
     } catch (error) {
       console.error("Произошла ошибка:", error);
       tnvedPercentEl.textContent =

@@ -66,7 +66,7 @@ class PdfPrepare {
         unit2: "",
       },
       Count: {
-        text: "Количество: ",
+        text: "Количество мест: ",
         value: "",
         unit: "",
         value2: "",
@@ -98,7 +98,7 @@ class PdfPrepare {
         value: "",
         unit: "₽ ",
         value2: "",
-        unit2: "$",
+        unit2: "",
       },
       Insurance: {
         text: "Страховка: ",
@@ -213,35 +213,40 @@ class PdfPrepare {
         unit2: "",
       },
       totalDuty: {
-        text: "СУММ. ПОШЛИНА: ",
+        text: "Пошлина: ",
         value: "", // State.calculatedData.auto.duty.ruble
         unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       totalNds: {
-        text: "CУММ. НДС: ",
+        text: "НДС: ",
         value: "", // State.calculatedData.auto.nds.ruble
         unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       fees: {
-        text: "Сборы: ",
+        text: "",
+        value: "", // State.calculatedData.auto.declaration.ruble
+        unit: "",
+        value2: "",
+        unit2: "",
+        /* text: "Сборы: ",
         value: "", // State.calculatedData.auto.declaration.ruble
         unit: "₽ ",
         value2: "",
-        unit2: "$",
+        unit2: "$", */
       },
       SumSaide: {
-        text: "СУММ. ПЕРЕВОЗКА (до г. Благовещенск): ",
+        text: "Перевозка (до г. Благовещенск): ",
         value: "", // State.calculatedData.auto.cargoCost.ruble
         unit: "₽ ",
         value2: "",
         unit2: "$",
       },
       totalCustoms: {
-        text: "СУММ. ТАМОЖНЯ: ",
+        text: "Растаможивание: ",
         value: "", // State.calculatedData.auto.customsCost.ruble
         unit: "₽ ",
         value2: "",
@@ -269,11 +274,16 @@ class PdfPrepare {
         unit2: "$",
       },
       Kg: {
-        text: "Страховка: ",
+        text: "За кг: ",
         value: "", // State.calculatedData.auto.insuranceCost.ruble
         unit: "₽ ",
         value2: "",
         unit2: "$",
+        /* text: "Страховка: ",
+        value: "", // State.calculatedData.auto.insuranceCost.ruble
+        unit: "₽ ",
+        value2: "",
+        unit2: "$", */
       },
       Sum: {
         text: "Стоимость (Перевозка + Таможня): ",
@@ -438,6 +448,7 @@ class PdfPrepare {
     );
     this.getOfferDataComponents.Kg.value2 =
       state.calculatedData[direction].pricePerKg.dollar;
+    this.getOfferDataComponents.Kg.unit2 = "$ (из Китая в МСК)";
 
     if (state.calculatedData[direction].insuranceCost.ruble === 0) {
       /* this.getOfferDataComponents.Insurance.text = "";
@@ -453,13 +464,22 @@ class PdfPrepare {
       );
       this.getOfferDataComponents.Insurance.value2 =
         state.calculatedData[direction].insuranceCost.dollar;
+      this.getOfferDataComponents.Insurance.unit2 = `$ (от ${
+        state.calculatedData.clientCost.dollar +
+        state.calculatedData[direction].shippingCost.dollar
+      }$)`;
     }
-
-    this.getOfferDataComponents.PackageCost.value = Math.round(
-      state.calculatedData[direction].packagingCost.ruble
-    );
-    this.getOfferDataComponents.PackageCost.value2 =
-      state.calculatedData[direction].packagingCost.dollar;
+    if (state.calculatedData[direction].packagingCost.ruble === 0) {
+      this.getOfferDataComponents.PackageCost.value = "0";
+      this.getOfferDataComponents.PackageCost.value2 = "0";
+    } else {
+      this.getOfferDataComponents.PackageCost.value = Math.round(
+        state.calculatedData[direction].packagingCost.ruble
+      );
+      this.getOfferDataComponents.PackageCost.value2 =
+        state.calculatedData[direction].packagingCost.dollar;
+      this.getOfferDataComponents.PackageCost.unit2 = `$ (${state.clientData.quantity} место)`;
+    }
 
     // Обработка По России
     if (directionRussia !== null) {
@@ -469,7 +489,7 @@ class PdfPrepare {
       if (city) {
         this.getOfferDataComponents.TOTALTK.text = `Стоимость до: ${city}: `;
         this.getOfferDataComponents.tkData.sumTk.text = `Стоимость до: ${city}: `;
-        this.getOfferDataComponents.tkData.sumTotal.text = `Общая стоимость до ${city}: `;
+        this.getOfferDataComponents.tkData.sumTotal.text = `Итого: `;
         this.getOfferDataComponents.tkData.kgTk.unit2 = `$ (до ${city})`;
       } else if (region) {
         this.getOfferDataComponents.TOTALTK.text = `Стоимость до: ${region}: `;
@@ -616,11 +636,11 @@ class PdfPrepare {
     this.getOfferWhiteDataComponents.totalNds.value2 =
       state.calculatedData.auto.nds.dollar;
 
-    this.getOfferWhiteDataComponents.fees.value = Math.round(
+    /* this.getOfferWhiteDataComponents.fees.value = Math.round(
       state.calculatedData.auto.declaration.ruble
     );
     this.getOfferWhiteDataComponents.fees.value2 =
-      state.calculatedData.auto.declaration.dollar;
+      state.calculatedData.auto.declaration.dollar; */
 
     this.getOfferWhiteDataComponents.SumSaide.value = Math.round(
       state.calculatedData.auto.cargoCost.ruble
@@ -640,30 +660,27 @@ class PdfPrepare {
     this.getOfferWhiteDataComponents.TOTAL.value2 =
       state.calculatedData.auto.totalCost.dollar;
 
-    this.getOfferWhiteDataComponents.PackageCost.value = Math.round(
-      state.calculatedData.auto.packagingCost.ruble
-    );
-    this.getOfferWhiteDataComponents.PackageCost.value2 =
-      state.calculatedData.auto.packagingCost.dollar;
+    if (state.calculatedData.auto.packagingCost.ruble === 0) {
+      this.getOfferWhiteDataComponents.PackageCost.value = "0";
+      this.getOfferWhiteDataComponents.PackageCost.value2 = "0";
+    } else {
+      this.getOfferWhiteDataComponents.PackageCost.value = Math.round(
+        state.calculatedData.auto.packagingCost.ruble
+      );
+      this.getOfferWhiteDataComponents.PackageCost.value2 =
+        state.calculatedData.auto.packagingCost.dollar;
+    }
 
     this.getOfferWhiteDataComponents.PackageType.value =
       state.calculatedData.packingType;
 
-    if (state.calculatedData.auto.insuranceCost.ruble === 0) {
-      /* this.getOfferWhiteDataComponents.Kg.text = "";
-      this.getOfferWhiteDataComponents.Kg.value = "";
-      this.getOfferWhiteDataComponents.Kg.unit = "";
-      this.getOfferWhiteDataComponents.Kg.value2 = "";
-      this.getOfferWhiteDataComponents.Kg.unit2 = ""; */
-      this.getOfferWhiteDataComponents.Kg.value = "0";
-      this.getOfferWhiteDataComponents.Kg.value2 = "0";
-    } else {
-      this.getOfferWhiteDataComponents.Kg.value = Math.round(
-        state.calculatedData.auto.insuranceCost.ruble
-      );
-      this.getOfferWhiteDataComponents.Kg.value2 =
-        state.calculatedData.auto.insuranceCost.dollar;
-    }
+    this.getOfferWhiteDataComponents.Kg.value = Math.round(
+      state.calculatedData.auto.pricePerKg.ruble
+    );
+    this.getOfferWhiteDataComponents.Kg.value2 =
+      state.calculatedData.auto.pricePerKg.dollar;
+
+    this.getOfferWhiteDataComponents.Kg.unit2 = "$ (до г. Благовещенск)";
 
     this.getOfferWhiteDataComponents.Sum.value = Math.round(
       state.calculatedData.auto.totalCost.ruble
@@ -706,7 +723,7 @@ class PdfPrepare {
       if (city) {
         this.getOfferWhiteDataComponents.TOTALTK.text = `Стоимость до: ${city} | ${State.calculatedData.selectedDirectionRus} | ${State.calculatedData.russiaSelectedCargoRus}: `;
         this.getOfferWhiteDataComponents.tkData.sumTk.text = `Стоимость до: ${city}: `;
-        this.getOfferWhiteDataComponents.tkData.sumTotal.text = `Общая стоимость до ${city}: `;
+        this.getOfferWhiteDataComponents.tkData.sumTotal.text = `Итого: `;
         this.getOfferWhiteDataComponents.tkData.kgTk.unit2 = `$ (до ${city})`;
       } else if (region) {
         this.getOfferWhiteDataComponents.TOTALTK.text = `Стоимость до: ${region} | ${State.calculatedData.selectedDirectionRus} | ${State.calculatedData.russiaSelectedCargoRus}: `;

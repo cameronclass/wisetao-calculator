@@ -2168,6 +2168,7 @@ input[type="number"] {
 
   .main-calc {
     padding: 10px;
+    margin: 0 -10px;
   }
 
   .main-calc__wrapper {
@@ -2396,6 +2397,14 @@ input[type="number"] {
   }
   .main-calc-select__btn_subtitle {
     font-size: 12px;
+  }
+  .calc-tooltip{
+    top: inherit;
+    bottom: calc(100% + 10px)
+  }
+  .main-calc__from-to_to .tooltip{
+    top: inherit;
+    transform: translateY(11px);
   }
 }
 

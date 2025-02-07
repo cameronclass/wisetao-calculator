@@ -81,7 +81,7 @@ export class CalculatorApp {
         this.redeemManager.sendDataToTelegram();
       }
 
-      console.log(State);
+      /* console.log(State); */
     } else {
       console.log("Форма заполнена с ошибками");
       this.scrollToWrapper();

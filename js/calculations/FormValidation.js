@@ -420,7 +420,7 @@ export class FormValidation {
       calcType === "calc-cargo" ? this.validateCategory() : true,
 
       // Упаковка (радел "packing-type")
-      this.validateRadio("packing-type"),
+      /* this.validateRadio("packing-type"), */
 
       // Для calc-customs требуется TНВЭД
       calcType === "calc-customs" ? this.validateTnvedInput() : true,

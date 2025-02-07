@@ -93,8 +93,8 @@ export class UiRenderer {
       // ._packing -> State.clientData.packingType => this.packingMap
       const packingEl = tooltipEl.querySelector("._packing");
       if (packingEl) {
-        const pt = State.clientData.packingType || "std_pack";
-        packingEl.textContent = this.packingMap[pt] || "Неизвестная упаковка";
+        const pt = State.clientData.packingType;
+        packingEl.textContent = this.packingMap[pt] || "Без упаковки";
       }
 
       // ._pack-dollar, ._pack-ruble => dirData.packagingCost

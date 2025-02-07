@@ -312,6 +312,12 @@ export class Calculator {
       return 0;
     }
 
+    // Проверка на null или undefined для packingType
+    if (packingType === null || packingType === undefined) {
+      State.calculatedData.packingType = "Без упаковки";
+      return 0;
+    }
+
     const packaging = packArr.find((p) => p.type === packingType);
     if (!packaging) {
       console.error("Не найдена упаковка:", packingType);
@@ -343,7 +349,7 @@ export class Calculator {
 
     // Присваиваем значение в State.calculatedData.packingType
     const packingTypeMap = {
-      std_pack: "Стандартная упаковка",
+      std_pack: "Стандартная упаковка (скотч и мешок)",
       pack_corner: "Упаковка с углами",
       wood_crate: "Деревянная обрешетка",
       tri_frame: "Треугольная деревянная рама",

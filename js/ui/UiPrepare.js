@@ -349,6 +349,9 @@ export default class UiPrepare {
       ".main-calc__from-to_check"
     );
     const insuranceTooltip = document.querySelectorAll("._insurance-tooltip");
+    const packingTypeRadios = document.querySelectorAll(
+      'input[name="packing-type"]'
+    );
 
     calcTypeRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
@@ -373,6 +376,10 @@ export default class UiPrepare {
             insuranceCheckbox.checked = false;
             insuranceCheckbox.disabled = true;
           }
+          // Убираем checked у всех packing-type
+          packingTypeRadios.forEach((packingRadio) => {
+            packingRadio.checked = false;
+          });
         } else if (radio.value === "calc-cargo" && radio.checked) {
           document.querySelector(".white-cargo").classList.remove("active");
           document
@@ -394,6 +401,10 @@ export default class UiPrepare {
             insuranceCheckbox.checked = true;
             insuranceCheckbox.disabled = false;
           }
+          // Устанавливаем checked у первой packing-type (или можно выбрать по другому критерию)
+          packingTypeRadios.forEach((packingRadio) => {
+            packingRadio.checked = packingRadio.value === "std_pack"; // Замените "std_pack" на нужное значение
+          });
         } else {
           document.querySelector(".white-cargo").classList.remove("active");
           document

@@ -308,8 +308,8 @@ export default class RedeemManager {
       State.redeemData[index] = this.getEmptyItem();
     }
     State.redeemData[index][field] = value;
-    console.log(`Обновление товара #${index}: поле ${field} ->`, value);
-    console.log("Текущее State.redeemData:", State.redeemData);
+    /* console.log(`Обновление товара #${index}: поле ${field} ->`, value);
+    console.log("Текущее State.redeemData:", State.redeemData); */
   }
 
   handleExcelUpload() {
@@ -533,9 +533,9 @@ export default class RedeemManager {
       'input[name="delivery-option"]:checked'
     );
     if (!deliveryOption || deliveryOption.value !== "delivery-and-pickup") {
-      console.log(
+      /* console.log(
         "Отправка данных доступна только при выборе 'Доставка и самовывоз'"
-      );
+      ); */
       return;
     }
 

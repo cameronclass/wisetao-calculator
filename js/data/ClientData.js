@@ -318,6 +318,6 @@ export class ClientData {
       formatInfo: null,
     };
     State.clientData.phone = "";
-    console.log("Телефон очищен (неполный или неверный код)");
+    /* console.log("Телефон очищен (неполный или неверный код)"); */
   }
 }
