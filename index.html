@@ -15,7 +15,7 @@
 
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=daa45afb-a989-4163-8df6-1b1edba1137d&suggest_apikey=5e11305c-8d8a-4669-9069-5c56422200c1"></script>
 
-    <link rel="stylesheet" href="css/new.css?v=1.1.2">
+
 
     <!-- <script type="module" src="/calc-new/js/api/Address.js"></script>
     <script type="module" src="/calc-new/js/api/Currency.js"></script>
@@ -39,6 +39,7 @@
     <script type="module" src="/calc-new/js/ui/UiPrepare.js"></script>
     <script type="module" src="/calc-new/js/ui/UiRenderer.js"></script> -->
 
+    <link rel="stylesheet" href="css/new.css?v=1.1.2">
     <script type="module" src="./js/main.js?v=1.1.2"></script>
 </head>
 <body>
@@ -433,7 +434,7 @@
                             <ul class="tnved-tree-list"></ul>
                         </div>
 
-                        <div class="white-cargo__justinfo name-code-container hidden">
+                        <div class="white-cargo__justinfo name-code-container">
                             <!-- Поля для ввода имени и кода -->
                             <div class="group-input">
                                 <div class="group-input__title">Имя товара:</div>
@@ -452,6 +453,18 @@
                                 <div class="group-input__title">Ставка Полшина:</div>
                                 <div class="group-input__input">
                                     <span class="tnved-code-percent"></span>
+                                </div>
+                            </div>
+
+                            <div class="group-input">
+                                <div class="group-input__title">НДС (по умолчанию):</div>
+                                <div class="group-input__input nds-block">
+                                    <input type="text" name="nds" value="20" class="nds-input" disabled>
+                                    <label class="main-calc-checkbox">
+                                        <input type="checkbox" name="custom_nds" class="main-calc-checkbox__input">
+                                        <span class="main-calc-checkbox__mark"></span>
+                                        <span class="main-calc-checkbox__title">Указать свой НДС</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -984,7 +997,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1112,7 +1125,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1266,7 +1279,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1450,7 +1463,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1578,7 +1591,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1732,7 +1745,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -1920,7 +1933,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -2048,7 +2061,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">
@@ -2202,7 +2215,7 @@
                                             <div class="main-calc-result-tooltip__cell _text">
                                                 <span class="_insurance-dollar"></span>
                                                 <span class="_insurance-ruble"></span>
-                                                <span class="_insurance-from">(от  $)</span>
+                                                <span class="_insurance-from">(от $)</span>
                                             </div>
                                         </div>
                                         <div class="main-calc-result-tooltip__row">

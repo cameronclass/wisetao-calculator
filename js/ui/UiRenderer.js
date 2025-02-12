@@ -113,10 +113,29 @@ export class UiRenderer {
         insDollarEl.textContent = dirData.insuranceCost.dollar + "$";
       if (insRubleEl)
         insRubleEl.textContent = dirData.insuranceCost.ruble + "₽";
-      if (insFromEl)
-        insFromEl.textContent = `(от ${Math.round(
-          State.calculatedData.clientCost.dollar + dirData.shippingCost.dollar
-        )}$)`;
+      if (insFromEl) {
+        const totalCost = Math.round(State.clientData.totalCost);
+        const currency = State.clientData.currency;
+        let currencySymbol;
+
+        // Определяем символ валюты
+        switch (currency) {
+          case "dollar":
+            currencySymbol = "$";
+            break;
+          case "yuan":
+            currencySymbol = "¥";
+            break;
+          case "ruble":
+            currencySymbol = "₽";
+            break;
+          default:
+            currencySymbol = ""; // Если валюта не распознана, оставляем пустым
+        }
+
+        insFromEl.textContent = `(от ${totalCost}${currencySymbol})`;
+      }
+
 
       // ._kg-dollar, ._kg-ruble => dirData.pricePerKg
       const kgDollarTipEl = tooltipEl.querySelector("._kg-dollar");

@@ -767,6 +767,17 @@ input[type="number"] {
   text-transform: capitalize;
 }
 
+.nds-block{
+  gap: 20px;
+}
+
+.group-input__input .nds-input {
+  width: 80px;
+  height: auto;
+  text-align: center;
+  padding: 8px;
+}
+
 .group-input__inputs {
   display: flex;
   align-items: center;
@@ -1948,19 +1959,16 @@ input[type="number"] {
   gap: 20px;
 }
 
-.white-cargo__justinfo.active {
+.white-cargo__justinfo {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-.white-cargo__justinfo input {
-  background-color: transparent;
-  padding: 0;
 }
 .white-cargo__justinfo .group-input {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: flex-start;
+  align-items: center;
 }
 
 .white-cargo__justinfo .group-input__title {
@@ -2361,6 +2369,7 @@ input[type="number"] {
     z-index: 999;
     left: 20px;
     width: 75%;
+    bottom: inherit;
   }
   .cargo-cell__title {
     font-size: 20px;
@@ -2398,11 +2407,11 @@ input[type="number"] {
   .main-calc-select__btn_subtitle {
     font-size: 12px;
   }
-  .calc-tooltip{
+  .calc-tooltip {
     top: inherit;
-    bottom: calc(100% + 10px)
+    bottom: calc(100% + 10px);
   }
-  .main-calc__from-to_to .tooltip{
+  .main-calc__from-to_to .tooltip {
     top: inherit;
     transform: translateY(11px);
   }

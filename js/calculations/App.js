@@ -10,7 +10,7 @@ import { DataProvider } from "../data/DataProvider.js";
 import { TnvedManager } from "../api/TnvedManager.js";
 import PriceSelector from "./PriceSelector.js";
 import RedeemManager from "../data/RedeemManager.js";
-import FormValidation from "../calculations/FormValidation.js";
+import FormValidation from "../validation/FormValidation.js";
 
 export class CalculatorApp {
   constructor(fields) {
