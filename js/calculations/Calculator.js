@@ -434,9 +434,9 @@ export class Calculator {
     // 1) Пошлина
     const dutyDollar = (dutyValuePct / 100) * costInDollar;
 
-    // 2) НДС (20%)
+    // 2) НДС 
     const sumWithDuty = costInDollar + dutyDollar;
-    const ndsDollar = sumWithDuty * 0.2;
+    const ndsDollar = sumWithDuty * State.nds;
 
     // 3) Декларация (550 юаней => доллары)
     // decDollar = (550 * cbrRateYuan) / cbrRateDollar

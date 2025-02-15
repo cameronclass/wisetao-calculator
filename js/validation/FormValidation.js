@@ -6,6 +6,7 @@ import RealtimeValidation from "./realtimeValidation.js";
 import VolumeManager from "./volumeManager.js";
 import StateManager from "./stateManager.js";
 import AddressManager from "./addressManager.js";
+import NdsManager from "./ndsManager.js";
 import ValidationMethods from "./validationMethods.js";
 import ErrorManager from "./errorManager.js";
 
@@ -14,6 +15,7 @@ export class FormValidation {
     this.fields = fields;
     this.errors = {};
 
+    // Добавляем новые поля в список для сброса (nds добавлено)
     this.fieldsToReset = [
       this.fields.totalCost,
       this.fields.totalWeight,
@@ -25,31 +27,38 @@ export class FormValidation {
       this.fields.tnvedInput,
       this.fields.brand,
       this.fields.address,
+      this.fields.nds, // новое поле
+      this.fields.custom_nds, // новое поле
     ];
 
-    // Инициализируем состояние адреса
+    // Инициализируем состояние адреса и NDS
     StateManager.updateState("addressError", null);
+    // По умолчанию NDS = 20% (0.2)
+    StateManager.updateState("nds", 0.2);
 
     this.addressHandler = new Address('input[name="address"]');
 
-    // Настраиваем ограничение ввода
+    // Настройка ограничений ввода
     InputRestrictions.setupInputRestrictions(this.fields);
     InputRestrictions.setupNumericVolumeRestrictions(this.fields);
 
-    // Настраиваем валидацию в реальном времени
+    // Реалтайм-валидация остальных полей
     RealtimeValidation.setupRealtimeValidation(this.fields, this);
 
     // Слушатели переключения calc-type и delivery-option
     this.setupCalcTypeReset();
 
-    // Габариты/объём: ограничения, пересчёт и переключение режима
+    // Габарит/объём
     VolumeManager.setupVolumeModeListeners(this.fields, this);
 
     // Слушатель глобальных изменений в State
     StateManager.setupStateEventListener(this);
 
-    // Слушатель чекбокса адреса
+    // Слушатель для адреса
     AddressManager.setupAddressCheckboxListener(this.fields, this);
+
+    // === NEW: Слушатели для полей NDS и чекбокса custom_nds ===
+    NdsManager.setupNdsListeners(this.fields, this);
   }
 
   updateState(prop, value) {
@@ -63,7 +72,6 @@ export class FormValidation {
     );
     calcTypeRadios.forEach((radio) => {
       radio.addEventListener("change", () => {
-        // Если необходимо, можно сбрасывать всю форму: this.resetAll();
         this.hideCalculationResult();
       });
     });
@@ -84,7 +92,7 @@ export class FormValidation {
     // (3) Очищаем нужные поля
     this.clearFields(this.fieldsToReset);
 
-    // (4) Сбрасываем State.clientData
+    // (4) Сбрасываем данные в State.clientData
     if (State.clientData) {
       State.clientData = {
         calcType: "",
@@ -109,12 +117,22 @@ export class FormValidation {
       };
     }
 
-    // Сброс состояния адреса
+    // Сброс адреса
     this.updateState("address", null);
     this.updateState("addressError", null);
 
     if (this.fields.address) {
       this.fields.address.value = "";
+    }
+
+    // === NEW: Сброс полей NDS ===
+    if (this.fields.custom_nds) {
+      this.fields.custom_nds.checked = false;
+    }
+    if (this.fields.nds) {
+      this.fields.nds.disabled = true;
+      this.fields.nds.value = "20";
+      this.updateState("nds", 0.2);
     }
 
     const tnvedBlock = document.querySelector(".white-cargo__justinfo");
@@ -136,7 +154,6 @@ export class FormValidation {
 
     const validations = [];
 
-    // Проверка объёма или габаритов в зависимости от режима
     if (weightVolumeChange?.checked) {
       validations.push(
         ValidationMethods.validateNumber(
@@ -193,6 +210,7 @@ export class FormValidation {
       ValidationMethods.validateDeliveryOption(this.fields, this)
     );
 
+    // Если всё прошло успешно – сохраняем данные в State
     const isValid = validations.every(Boolean);
     if (isValid) {
       this.saveToState();
@@ -302,6 +320,15 @@ export class FormValidation {
       State.clientData.address = { ...State.address };
     } else {
       State.clientData.address = null;
+    }
+
+    // === NEW: Сохраняем данные NDS в State.
+    // Если чекбокс custom_nds выбран – берём значение из поля, иначе по умолчанию 20%
+    if (this.fields.custom_nds && this.fields.custom_nds.checked) {
+      const ndsValue = parseFloat(this.fields.nds.value) || 0;
+      State.nds = ndsValue / 100;
+    } else {
+      State.nds = 0.2;
     }
   }
 

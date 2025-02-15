@@ -2,21 +2,14 @@
 import { State } from "../data/State.js";
 
 export class Currency {
-  constructor(botToken, chatId, multiplier = 7.4) {
+  constructor(botToken, chatId, multiplier = 7.3) {
     this.botToken = botToken;
     this.chatId = chatId;
     this.multiplier = multiplier;
 
-    // Формируем URL для Telegram API
     this.apiUrl = `https://api.telegram.org/bot${this.botToken}`;
   }
 
-  /**
-   * Главный метод:
-   *  1) Вызывает loadWisetaoRates(), чтобы распарсить курс Wisetao из Telegram
-   *  2) Вызывает loadCbrRates(), чтобы получить курс ЦБ
-   *  3) Сохраняет всё в State
-   */
   async loadAndSaveRates() {
     try {
       // 1) Парсим Wisetao (доллар, юань) из Telegram
@@ -41,11 +34,6 @@ export class Currency {
     }
   }
 
-  /**
-   * Шаг 1: Получаем название группы из Telegram, парсим строку
-   *        по формату "курс X / Y / Z ю", чтобы вытащить Y (средний юань).
-   *        Далее умножаем на multiplier, получаем доллар в рублях.
-   */
   async loadWisetaoRates() {
     const groupName = await this.fetchTelegramGroupName();
     if (!groupName) {
@@ -67,6 +55,18 @@ export class Currency {
       throw new Error("Некорректное числовое значение юаня при парсинге");
     }
 
+    // Ищем множитель в формате "×X.XXю"
+    const multiplierMatch = groupName.match(/×([\d.,]+)ю/i);
+    if (!multiplierMatch) {
+      throw new Error("Не найден множитель в названии группы");
+    }
+
+    const multiplierStr = multiplierMatch[1].replace(",", ".");
+    this.multiplier = parseFloat(multiplierStr);
+    if (isNaN(this.multiplier)) {
+      throw new Error("Некорректное числовое значение множителя при парсинге");
+    }
+
     // Рассчитываем доллар = yuanValue * multiplier
     const dollarValue = parseFloat((yuanValue * this.multiplier).toFixed(2));
 
@@ -76,9 +76,6 @@ export class Currency {
     };
   }
 
-  /**
-   * Шаг 2: Запрашиваем курсы ЦБ РФ с https://www.cbr-xml-daily.ru/daily_json.js
-   */
   async loadCbrRates() {
     try {
       const response = await fetch(
@@ -101,9 +98,6 @@ export class Currency {
     }
   }
 
-  /**
-   * Вспомогательный метод: берем имя группы (title) из Telegram
-   */
   async fetchTelegramGroupName() {
     try {
       const url = `${this.apiUrl}/getChat?chat_id=${this.chatId}`;

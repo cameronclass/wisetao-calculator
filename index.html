@@ -39,8 +39,8 @@
     <script type="module" src="/calc-new/js/ui/UiPrepare.js"></script>
     <script type="module" src="/calc-new/js/ui/UiRenderer.js"></script> -->
 
-    <link rel="stylesheet" href="css/new.css?v=1.1.2">
-    <script type="module" src="./js/main.js?v=1.1.2"></script>
+    <link rel="stylesheet" href="css/new.css">
+    <script type="module" src="./js/main.js"></script>
 </head>
 <body>
     <div class="main-calc">
@@ -434,7 +434,7 @@
                             <ul class="tnved-tree-list"></ul>
                         </div>
 
-                        <div class="white-cargo__justinfo name-code-container">
+                        <div class="white-cargo__justinfo name-code-container hidden">
                             <!-- Поля для ввода имени и кода -->
                             <div class="group-input">
                                 <div class="group-input__title">Имя товара:</div>
@@ -460,6 +460,10 @@
                                 <div class="group-input__title">НДС (по умолчанию):</div>
                                 <div class="group-input__input nds-block">
                                     <input type="text" name="nds" value="20" class="nds-input" disabled>
+                                    <svg class="group-input__input_svg" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="6" y="10" width="12" height="8" rx="2" fill="#91969b"></rect>
+                                        <path d="M9 10V9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9V10" stroke="#91969b" stroke-width="2"></path>
+                                    </svg>
                                     <label class="main-calc-checkbox">
                                         <input type="checkbox" name="custom_nds" class="main-calc-checkbox__input">
                                         <span class="main-calc-checkbox__mark"></span>

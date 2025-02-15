@@ -767,15 +767,19 @@ input[type="number"] {
   text-transform: capitalize;
 }
 
-.nds-block{
+.nds-block {
   gap: 20px;
+}
+.nds-block .group-input__input_svg {
+  right: inherit;
+  left: 10px;
 }
 
 .group-input__input .nds-input {
   width: 80px;
   height: auto;
-  text-align: center;
-  padding: 8px;
+  text-align: right;
+  padding: 8px 15px;
 }
 
 .group-input__inputs {
@@ -2166,10 +2170,6 @@ input[type="number"] {
   }
 }
 @media screen and (max-width: 768px) {
-  body {
-    padding: 10px;
-    overflow-x: hidden;
-  }
   html {
     overflow-x: hidden;
   }

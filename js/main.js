@@ -31,6 +31,8 @@ const fields = {
   address: document.querySelector('input[name="address"]'),
   addressCheck: document.querySelector('input[name="address_checkbox"]'),
   deliveryOption: document.querySelector('input[name="delivery-option"]'),
+  nds: document.querySelector('input[name="nds"]'),
+  custom_nds: document.querySelector('input[name="custom_nds"]'),
 };
 
 const redeem = {

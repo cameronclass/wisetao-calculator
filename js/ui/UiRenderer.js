@@ -136,7 +136,6 @@ export class UiRenderer {
         insFromEl.textContent = `(от ${totalCost}${currencySymbol})`;
       }
 
-
       // ._kg-dollar, ._kg-ruble => dirData.pricePerKg
       const kgDollarTipEl = tooltipEl.querySelector("._kg-dollar");
       const kgRubleTipEl = tooltipEl.querySelector("._kg-ruble");
@@ -182,7 +181,11 @@ export class UiRenderer {
         const ndsEl = tooltipEl.querySelector("._nds");
         const ndsDollarEl = tooltipEl.querySelector("._nds-dollar");
         const ndsRubleEl = tooltipEl.querySelector("._nds-ruble");
-        if (ndsEl) ndsEl.textContent = State.nds + "%";
+        if (ndsEl) {
+          if (State.nds >= 0 && State.nds <= 1) {
+            ndsEl.textContent = (State.nds * 100).toFixed(0) + "%"; // Умножаем на 100 и округляем до
+          }
+        }
         if (ndsDollarEl) ndsDollarEl.textContent = dirData.nds.dollar + "$";
         if (ndsRubleEl) ndsRubleEl.textContent = dirData.nds.ruble + "₽";
 
