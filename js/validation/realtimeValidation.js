@@ -1,4 +1,5 @@
 // realtimeValidation.js
+import { State } from "../data/State.js";
 import ValidationMethods from "./validationMethods.js";
 
 export default class RealtimeValidation {
@@ -9,6 +10,7 @@ export default class RealtimeValidation {
       "totalCost",
       "quantity",
       "tnvedInput",
+      "quantity_checkbox",
     ];
 
     // 1) Валидация при вводе для отдельных полей
@@ -89,6 +91,45 @@ export default class RealtimeValidation {
             formInstance.hideCalculationResult();
           });
         });
+    });
+
+    // Добавляем обработчик для quantity totalVolume totalWeight
+    if (fields.quantity) {
+      fields.quantity.addEventListener("input", function () {
+        const quantityValue = parseInt(this.value) || 1;
+        const checkboxElement = document.querySelector(".js-quantity-checkbox");
+        const quantityCheck = fields.quantity_checkbox?.checked;
+
+        if (checkboxElement) {
+          checkboxElement.classList.toggle("active", quantityValue > 1);
+        }
+
+        // Если quantityValue равно 1 и чекбокс установлен
+        if (quantityValue === 1 && quantityCheck) {
+          // Убираем галочку и устанавливаем quantity_check в false
+          fields.quantity_checkbox.checked = false;
+          formInstance.updateState("clientData", {
+            ...State.clientData,
+            quantityCheck: false,
+          });
+        }
+
+        formInstance.updateCalculatedData();
+      });
+    }
+    if (formInstance.fields.quantity_checkbox) {
+      formInstance.fields.quantity_checkbox.addEventListener(
+        "change",
+        function () {
+          formInstance.updateCalculatedData();
+        }
+      );
+    }
+    [fields.totalVolume, fields.totalWeight].forEach((field) => {
+      if (!field) return;
+      field.addEventListener("input", () => {
+        formInstance.updateCalculatedData();
+      });
     });
   }
 }

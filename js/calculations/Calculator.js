@@ -31,16 +31,22 @@ export class Calculator {
       (costInDollar.toFixed(2) * usedDollarRate.toFixed(2)).toFixed(2)
     );
     State.calculatedData.clientCost.yuan = Number(
-      (costInDollar.toFixed(2) * usedYuanRate.toFixed(2)).toFixed(2)
+      (
+        State.calculatedData.clientCost.ruble.toFixed(2) /
+        usedYuanRate.toFixed(2)
+      ).toFixed(2)
     );
 
     const quantity = parseFloat(cd.quantity) || 1;
-    const volume = parseFloat(cd.totalVolume) || 0;
-    State.calculatedData.totalVolume = Number((volume * quantity).toFixed(4));
-    const calculatedVolume = State.calculatedData.totalVolume;
+    let volume = parseFloat(cd.totalVolume) || 0;
+    let weight = parseFloat(cd.totalWeight) || 0;
 
-    const weight = parseFloat(cd.totalWeight) || 0;
-    const dens = this.calculateDensity(weight, calculatedVolume);
+    if (cd.quantity_check) {
+      volume *= quantity;
+      weight *= quantity;
+    }
+
+    const dens = this.calculateDensity(weight, volume);
     State.calculatedData.density = dens !== null ? Number(dens.toFixed(2)) : 0;
   }
 
@@ -48,7 +54,7 @@ export class Calculator {
     const cd = State.clientData;
     const calcType = cd.calcType || "calc-cargo";
     const weight = parseFloat(cd.totalWeight) || 0;
-    const volume = parseFloat(State.calculatedData.totalVolume) || 0;
+    const volume = parseFloat(cd.totalVolume) || 0;
     const density = State.calculatedData.density || 0;
     const categoryKey = cd.categoryKey || "";
     const isBrand = !!cd.brand;
@@ -145,7 +151,15 @@ export class Calculator {
 
   // ------------------ SHIPPING ------------------
   calculateShippingCustoms(direction, weight) {
-    const pricePerKgDollar = 0.6;
+    let pricePerKgDollar;
+
+    // Проверяем вес и устанавливаем цену за кг
+    if (weight >= 2500) {
+      pricePerKgDollar = 0.25;
+    } else {
+      pricePerKgDollar = 0.6;
+    }
+
     const costDollar = weight * pricePerKgDollar;
     const calcMode = "weight";
 

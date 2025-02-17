@@ -502,6 +502,7 @@
                                     <input type="text" name="total_volume" class="" value="" required="">
                                     <span class="group-input__param">м³</span>
                                     <span class="error-message"></span>
+                                    <span class="calculated-data hidden"></span>
                                 </div>
                             </div>
                             <!--  По габаритам  -->
@@ -522,6 +523,7 @@
                                         <input type="text" name="total_volume_calculated" class="volume-total__result" readonly>
                                         <span class="volume-total__m3">м³</span>
                                     </div>
+                                    <span class="calculated-data hidden"></span>
 
                                 </div>
                             </div>
@@ -533,6 +535,7 @@
                                     <input type="text" name="total_weight" class="" value="" required>
                                     <span class="group-input__param">кг</span>
                                     <span class="error-message"></span>
+                                    <span class="calculated-data hidden"></span>
                                 </div>
                             </div>
 
@@ -548,7 +551,7 @@
                             </div>
 
                             <!-- Все места одинаковы по размерам и весу -->
-                            <label class="main-calc-checkbox _sameValue">
+                            <label class="main-calc-checkbox _sameValue hidden js-quantity-checkbox">
                                 <input type="checkbox" name="quantity_checkbox" class="main-calc-checkbox__input">
                                 <span class="main-calc-checkbox__mark"></span>
                                 <span class="main-calc-checkbox__title">Все места одинаковы по размерам и весу</span>

@@ -23,6 +23,23 @@ export default class InputRestrictions {
     this.setupFieldRestriction(fields.totalWeight, /[^0-9.,]/g, 2);
     this.setupFieldRestriction(fields.totalCost, /[^0-9.,]/g, 2);
     this.setupFieldRestriction(fields.quantity, /[^0-9]/g);
+
+    if (fields.quantity) {
+      fields.quantity.addEventListener("input", function (e) {
+        let value = parseInt(e.target.value) || 1;
+        if (value < 1) {
+          e.target.value = 1;
+          return;
+        }
+        e.target.value = value;
+      });
+
+      fields.quantity.addEventListener("blur", function (e) {
+        if (!e.target.value || parseInt(e.target.value) < 1) {
+          e.target.value = 1;
+        }
+      });
+    }
   }
 
   static setupNumericVolumeRestrictions(fields) {

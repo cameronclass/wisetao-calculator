@@ -23,6 +23,7 @@ const fields = {
     'input[name="weight_volume_change"]'
   ),
   quantity: document.querySelector('input[name="quantity"]'),
+  quantity_checkbox: document.querySelector('input[name="quantity_checkbox"]'),
   category: document.querySelectorAll('input[name="category"]'),
   packingType: document.querySelectorAll('input[name="packing-type"]'),
   insurance: document.querySelector('input[name="insurance"]'),

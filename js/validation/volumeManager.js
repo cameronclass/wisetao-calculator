@@ -11,11 +11,14 @@ export default class VolumeManager {
         if (weightVolumeChange.checked) {
           formInstance.clearErrors();
           formInstance.clearFields([volumeLength, volumeWidth, volumeHeight]);
+          formInstance.updateCalculatedData();
         } else {
           formInstance.clearErrors();
           formInstance.clearFields([fields.totalVolume]);
+          formInstance.updateCalculatedData();
         }
         formInstance.hideCalculationResult();
+        formInstance.updateCalculatedData();
       });
     }
 
@@ -25,6 +28,7 @@ export default class VolumeManager {
       field.addEventListener("input", () => {
         VolumeManager.calculateVolume(fields);
         formInstance.hideCalculationResult();
+        formInstance.updateCalculatedData();
       });
     });
   }

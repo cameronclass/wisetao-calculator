@@ -792,6 +792,9 @@ input[type="number"] {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
+}
+.volume > .calculated-data {
 }
 
 .group-input__inputs input::placeholder {
@@ -1793,6 +1796,17 @@ input[type="number"] {
   font-size: 13px;
   font-weight: 400;
   color: #de4646;
+  font-family: "Roboto Condensed", sans-serif;
+  left: 0;
+}
+
+.calculated-data {
+  position: absolute;
+  bottom: -19px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #f7941d;
+  font-weight: bold;
   font-family: "Roboto Condensed", sans-serif;
   left: 0;
 }

@@ -57,8 +57,118 @@ export class FormValidation {
     // Слушатель для адреса
     AddressManager.setupAddressCheckboxListener(this.fields, this);
 
-    // === NEW: Слушатели для полей NDS и чекбокса custom_nds ===
+    // Слушатели для полей NDS и чекбокса custom_nds
     NdsManager.setupNdsListeners(this.fields, this);
+
+    this.setupQuantityCheckboxListener();
+    this.updateCalculatedData();
+  }
+
+  setupQuantityCheckboxListener() {
+    if (this.fields.quantity_checkbox) {
+      this.fields.quantity_checkbox.addEventListener("change", (e) => {
+        this.updateCalculatedData();
+        this.updateState("clientData", {
+          ...State.clientData,
+          quantityCheck: e.target.checked,
+        });
+      });
+    }
+  }
+
+  updateCalculatedData() {
+    // Проверяем, установлен ли чекбокс quantity_checkbox
+    const isChecked = this.fields.quantity_checkbox?.checked;
+
+    // Если чекбокс не установлен, убираем класс active и выходим
+    if (!isChecked) {
+      const calculatedDataElements =
+        document.querySelectorAll(".calculated-data");
+      calculatedDataElements.forEach((element) => {
+        element.classList.remove("active");
+      });
+      return;
+    }
+
+    // Определяем, использовать ли поле totalVolume или totalVolumeCalculated
+    const weightVolumeChecked = this.fields.weightVolumeChange?.checked;
+    const volumeField = weightVolumeChecked
+      ? this.fields.totalVolume
+      : this.fields.totalVolumeCalculated;
+    const weightField = this.fields.totalWeight;
+
+    // Получаем значения полей
+    const volumeValue = volumeField?.value || "";
+    const weightValue = weightField?.value || "";
+
+    // Проверяем, не пустые ли значения
+    if (volumeValue.trim() === "" || weightValue.trim() === "") {
+      const calculatedDataElements =
+        document.querySelectorAll(".calculated-data");
+      calculatedDataElements.forEach((element) => {
+        element.classList.remove("active");
+      });
+      return;
+    }
+
+    // Проверяем валидность полей
+    const volumeValidation = ValidationMethods.validateNumber(
+      this.fields,
+      weightVolumeChecked ? "totalVolume" : "totalVolumeCalculated",
+      { required: true, maxDecimals: 4 },
+      this
+    );
+
+    const weightValidation = ValidationMethods.validateNumber(
+      this.fields,
+      "totalWeight",
+      { required: true, min: 5, maxDecimals: 2 },
+      this
+    );
+
+    // Если любое из полей не прошло валидацию, убираем класс active
+    if (!volumeValidation || !weightValidation) {
+      const calculatedDataElements =
+        document.querySelectorAll(".calculated-data");
+      calculatedDataElements.forEach((element) => {
+        element.classList.remove("active");
+      });
+      return;
+    }
+
+    // Если все условия выполнены, добавляем класс active
+    const calculatedDataElements =
+      document.querySelectorAll(".calculated-data");
+    calculatedDataElements.forEach((element) => {
+      element.classList.add("active");
+    });
+
+    // Выполняем расчёты объёма и веса
+    const quantity = parseInt(this.fields.quantity.value, 10) || 1;
+
+    // Обработка объема
+    const calculatedVolume = parseFloat(volumeField.value) * quantity;
+    const volumeTarget = weightVolumeChecked
+      ? this.fields.totalVolume
+          .closest(".group-input__input")
+          .querySelector(".calculated-data")
+      : document.querySelector(".volume>.calculated-data");
+
+    if (volumeTarget) {
+      volumeTarget.textContent = `Итого: ${calculatedVolume.toFixed(4)} м³`;
+    }
+
+    // Обработка веса
+    if (weightField) {
+      const calculatedWeight = (parseFloat(weightField.value) || 0) * quantity;
+      const weightTarget = weightField
+        .closest(".group-input__input")
+        .querySelector(".calculated-data");
+
+      if (weightTarget) {
+        weightTarget.textContent = `Итого: ${calculatedWeight.toFixed(2)} кг`;
+      }
+    }
   }
 
   updateState(prop, value) {
@@ -275,17 +385,64 @@ export class FormValidation {
     const calcType =
       document.querySelector('input[name="calc-type"]:checked')?.value ||
       "calc-cargo";
-
     const categoryEl = Array.from(this.fields.category).find((r) => r.checked);
     const packingTypeEl = Array.from(this.fields.packingType).find(
       (r) => r.checked
     );
 
-    let finalVolume = 0;
-    if (this.fields.weightVolumeChange?.checked) {
-      finalVolume = parseFloat(this.fields.totalVolume.value) || 0;
+    // Определяем, использовать ли поле totalVolume или totalVolumeCalculated
+    const weightVolumeChecked = this.fields.weightVolumeChange?.checked;
+    const volumeField = weightVolumeChecked
+      ? this.fields.totalVolume
+      : this.fields.totalVolumeCalculated;
+    const weightField = this.fields.totalWeight;
+
+    // Получаем значения полей
+    const volumeValue = volumeField?.value || "";
+    const weightValue = weightField?.value || "";
+
+    // Проверяем, не пустые ли значения
+    if (volumeValue.trim() === "" || weightValue.trim() === "") {
+      return;
+    }
+
+    // Проверяем валидность полей
+    const volumeValidation = ValidationMethods.validateNumber(
+      this.fields,
+      weightVolumeChecked ? "totalVolume" : "totalVolumeCalculated",
+      { required: true, maxDecimals: 4 },
+      this
+    );
+
+    const weightValidation = ValidationMethods.validateNumber(
+      this.fields,
+      "totalWeight",
+      { required: true, min: 5, maxDecimals: 2 },
+      this
+    );
+
+    // Если любое из полей не прошло валидацию, выходим
+    if (!volumeValidation || !weightValidation) {
+      return;
+    }
+
+    // Проверяем, установлен ли чекбокс quantity_checkbox
+    const useQuantity = this.fields.quantity_checkbox?.checked;
+
+    // Выполняем расчёты объёма и веса, если чекбокс активен
+    let calculatedVolume, calculatedWeight;
+    if (useQuantity) {
+      const quantity = parseInt(this.fields.quantity.value, 10) || 1;
+
+      // Обработка объема
+      calculatedVolume = parseFloat(volumeField.value) * quantity;
+
+      // Обработка веса
+      calculatedWeight = (parseFloat(weightField.value) || 0) * quantity;
     } else {
-      finalVolume = parseFloat(this.fields.totalVolumeCalculated.value) || 0;
+      // Сохраняем原始ные значения
+      calculatedVolume = parseFloat(volumeField.value) || 0;
+      calculatedWeight = parseFloat(weightField.value) || 0;
     }
 
     State.clientData.calcType = calcType;
@@ -293,9 +450,8 @@ export class FormValidation {
     State.clientData.currency =
       document.querySelector('input[name="total_currency"]:checked')?.value ||
       "dollar";
-    State.clientData.totalWeight =
-      parseFloat(this.fields.totalWeight.value) || 0;
-    State.clientData.totalVolume = finalVolume;
+    State.clientData.totalWeight = calculatedWeight;
+    State.clientData.totalVolume = calculatedVolume;
     State.clientData.volumeLength =
       parseFloat(this.fields.volumeLength.value) || 0;
     State.clientData.volumeWidth =
@@ -303,6 +459,7 @@ export class FormValidation {
     State.clientData.volumeHeight =
       parseFloat(this.fields.volumeHeight.value) || 0;
     State.clientData.quantity = parseInt(this.fields.quantity.value, 10) || 0;
+    State.clientData.quantityCheck = !!this.fields.quantity_checkbox?.checked;
     State.clientData.categoryKey = categoryEl ? categoryEl.value : null;
     State.clientData.packingType = packingTypeEl ? packingTypeEl.value : null;
     State.clientData.insurance = !!this.fields.insurance?.checked;
@@ -322,7 +479,6 @@ export class FormValidation {
       State.clientData.address = null;
     }
 
-    // === NEW: Сохраняем данные NDS в State.
     // Если чекбокс custom_nds выбран – берём значение из поля, иначе по умолчанию 20%
     if (this.fields.custom_nds && this.fields.custom_nds.checked) {
       const ndsValue = parseFloat(this.fields.nds.value) || 0;
@@ -363,3 +519,4 @@ export class FormValidation {
 }
 
 export default FormValidation;
+
