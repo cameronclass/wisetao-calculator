@@ -1,16 +1,16 @@
 // CalculatorApp.js
-import { Calculator } from "./Calculator.js";
-import { CONFIG } from "../data/config.js";
-import { State } from "../data/State.js";
-import { UiRenderer } from "../ui/UiRenderer.js";
-import RailwayExpeditionCalculator from "./RailwayExpeditionCalculator.js";
-import KitDeliveryCalculator from "./KitDeliveryCalculator.js";
-import { Currency } from "../api/Currency.js";
-import { DataProvider } from "../data/DataProvider.js";
-import { TnvedManager } from "../api/TnvedManager.js";
-import PriceSelector from "./PriceSelector.js";
-import RedeemManager from "../data/RedeemManager.js";
-import FormValidation from "../validation/FormValidation.js";
+import { Calculator } from "./calculations/Calculator.js";
+import { CONFIG } from "./data/config.js";
+import { State } from "./data/State.js";
+import { UiRenderer } from "./ui/UiRenderer.js";
+import RailwayExpeditionCalculator from "./calculations/RailwayExpeditionCalculator.js";
+import KitDeliveryCalculator from "./calculations/KitDeliveryCalculator.js";
+import { Currency } from "./api/Currency.js";
+import { DataProvider } from "./data/DataProvider.js";
+import { TnvedManager } from "./api/TnvedManager.js";
+import PriceSelector from "./calculations/PriceSelector.js";
+import RedeemManager from "./data/RedeemManager.js";
+import FormValidation from "./validation/FormValidation.js";
 
 export class CalculatorApp {
   constructor(fields) {
@@ -39,7 +39,7 @@ export class CalculatorApp {
     try {
       const currency = new Currency(CONFIG.botToken, CONFIG.chatId);
       await currency.loadAndSaveRates();
-      console.log("Курсы успешно сохранены");
+      console.log("Курсы успешно сохранены", State.currencyRates);
     } catch (error) {
       console.error("Ошибка загрузки курсов валют:", error);
     }
@@ -81,7 +81,7 @@ export class CalculatorApp {
         this.redeemManager.sendDataToTelegram();
       }
 
-      /* console.log(State); */
+      console.log(State);
     } else {
       console.log("Форма заполнена с ошибками");
       this.scrollToWrapper();

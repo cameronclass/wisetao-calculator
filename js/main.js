@@ -1,8 +1,8 @@
 // main.js
 
-import { CalculatorApp } from "./calculations/App.js";
-import { PdfPrepared } from "./calculations/PdfPrepare.js";
-import { PdfGenerate } from "./calculations/PdfGenerate.js";
+import { CalculatorApp } from "./App.js";
+import { PdfPrepared } from "./pdf/PdfPrepare.js";
+import { PdfGenerate } from "./pdf/PdfGenerate.js";
 import { State } from "./data/State.js";
 import UiPrepare from "./ui/UiPrepare.js";
 import RedeemManager from "./data/RedeemManager.js";

@@ -18,8 +18,8 @@ export class Calculator {
     State.calculatedData.dollar = usedDollarRate;
     State.calculatedData.yuan = usedYuanRate;
 
-    const costUser = parseFloat(cd.totalCost) || 0;
-    const userCur = cd.currency || "dollar";
+    const costUser = parseFloat(cd.totalCost);
+    const userCur = cd.currency;
     const costInDollar = this.convertToDollar(
       costUser,
       userCur,
@@ -34,9 +34,13 @@ export class Calculator {
       (costInDollar.toFixed(2) * usedYuanRate.toFixed(2)).toFixed(2)
     );
 
-    const weight = parseFloat(cd.totalWeight) || 0;
+    const quantity = parseFloat(cd.quantity) || 1;
     const volume = parseFloat(cd.totalVolume) || 0;
-    const dens = this.calculateDensity(weight, volume);
+    State.calculatedData.totalVolume = Number((volume * quantity).toFixed(4));
+    const calculatedVolume = State.calculatedData.totalVolume;
+
+    const weight = parseFloat(cd.totalWeight) || 0;
+    const dens = this.calculateDensity(weight, calculatedVolume);
     State.calculatedData.density = dens !== null ? Number(dens.toFixed(2)) : 0;
   }
 
@@ -44,7 +48,7 @@ export class Calculator {
     const cd = State.clientData;
     const calcType = cd.calcType || "calc-cargo";
     const weight = parseFloat(cd.totalWeight) || 0;
-    const volume = parseFloat(cd.totalVolume) || 0;
+    const volume = parseFloat(State.calculatedData.totalVolume) || 0;
     const density = State.calculatedData.density || 0;
     const categoryKey = cd.categoryKey || "";
     const isBrand = !!cd.brand;
@@ -434,7 +438,7 @@ export class Calculator {
     // 1) Пошлина
     const dutyDollar = (dutyValuePct / 100) * costInDollar;
 
-    // 2) НДС 
+    // 2) НДС
     const sumWithDuty = costInDollar + dutyDollar;
     const ndsDollar = sumWithDuty * State.nds;
 
@@ -500,7 +504,7 @@ export class Calculator {
     if (!dollarRate || dollarRate <= 0) dollarRate = 100;
     if (!yuanRate || yuanRate <= 0) yuanRate = 15;
     if (cur === "ruble") return amount / dollarRate;
-    if (cur === "yuan") return amount / yuanRate;
+    if (cur === "yuan") return (amount * yuanRate) / dollarRate;
     return amount;
   }
 

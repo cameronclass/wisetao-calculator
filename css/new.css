@@ -643,6 +643,10 @@ input[type="number"] {
   -ms-user-select: none;
   user-select: none;
 }
+.main-calc-checkbox._sameValue {
+  height: fit-content;
+  margin-top: auto;
+}
 .main-calc-checkbox__title {
   font-size: 16px;
   color: white;
@@ -656,6 +660,8 @@ input[type="number"] {
   position: relative;
   height: 21px;
   width: 21px;
+  min-width: 21px;
+  min-height: 21px;
   background-color: white;
   border-radius: 5px;
 }
@@ -1520,7 +1526,7 @@ input[type="number"] {
   background-color: #2f3743;
   border-radius: 10px;
   color: white;
-  padding: 10px 30px 10px 15px;
+  padding: 10px 15px;
   font-family: "Inter", sans-serif;
   font-weight: 600;
   font-size: 15px;
@@ -1536,11 +1542,13 @@ input[type="number"] {
   width: 100%;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 .calc-select__selected .calc-tooltip {
   min-width: 300px;
-  top: -50px;
-  left: calc(100% + 5px);
+  top: -70px;
+  left: calc(100% + 10px);
 }
 
 .calc-select__selected.active {
@@ -1555,12 +1563,13 @@ input[type="number"] {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding-right: 26px;
 }
 .calc-select__selected_icon {
-  position: absolute;
+  /*   position: absolute;
   right: 15px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%); */
 }
 .calc-select__options {
   display: none; /* Скрываем опции по умолчанию */
@@ -1635,7 +1644,7 @@ input[type="number"] {
 .overflow-tooltip {
   position: absolute;
   right: 0;
-  top: -50px;
+  top: -70px;
 }
 
 /* Currency Select */

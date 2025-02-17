@@ -146,6 +146,14 @@ export default class UiPrepare {
             <span>${optionName}</span>
             <span class="tooltip selected-tooltip">
               <span class="tooltip-icon">?</span>
+              <span class="calc-select__selected_icon">
+                  <svg class="dropdown-list-currency-arrow" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="32.38141722065728" height="22.59489123485507" viewBox="110.22394056737565 250.64901537709036 32.38141722065728 22.59489123485507" xml:space="preserve">
+                      <desc>Created with Fabric.js 5.3.0</desc>
+                      <g transform="matrix(0 0.979842546 0.979842546 0 126.4146491777 261.9464609945)" id="DLgAgrXuFMXOEYFpJSRZM">
+                          <path class="svg-arrow active" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill-rule: nonzero; opacity: 1;" transform=" translate(0, 0)" d="M 8.536 -3.5215 L -3.183 -14.8535 C -3.9269999999999996 -15.5975 -4.931 -16.0135 -5.999 -16.0135 C -7.068 -16.0135 -8.072 -15.5975 -8.827 -14.8415 C -9.583 -14.0855 -9.999 -13.0815 -9.999 -12.0135 C -9.999 -10.945500000000001 -9.583 -9.9405 -8.827 -9.185500000000001 L -0.29100000000000037 -0.6915000000000013 C -0.10300000000000037 -0.5035000000000014 -3.885780586188048e-16 -0.25350000000000134 -3.885780586188048e-16 0.013499999999998624 C -3.885780586188048e-16 0.28049999999999864 -0.10400000000000038 0.5314999999999986 -0.29300000000000037 0.7204999999999986 L -8.824000000000002 9.1815 C -9.583000000000002 9.9415 -9.999000000000002 10.9465 -9.999000000000002 12.0135 C -9.999000000000002 13.0805 -9.583000000000002 14.0855 -8.827000000000002 14.8415 C -8.072000000000001 15.5975 -7.067000000000002 16.0135 -5.999000000000002 16.0135 C -4.931000000000003 16.0135 -3.9260000000000024 15.5975 -3.170000000000002 14.8415 L -1.564000000000002 13.2355 L 8.519999999999998 3.5645000000000007 C 9.478999999999997 2.6055000000000006 9.998999999999999 1.3495000000000008 9.998999999999999 0.013500000000000512 C 9.998999999999999 -1.3224999999999996 9.479 -2.5774999999999997 8.535999999999998 -3.5214999999999996 z" stroke-linecap="round"></path>
+                      </g>
+                  </svg>
+              </span>
               <span class="calc-tooltip">
                 <span class="calc-tooltip__title">${tooltipTitle}</span>
                 <span class="calc-tooltip__text">${tooltipText}</span>

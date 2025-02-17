@@ -31,11 +31,11 @@ class PdfPrepare {
         unit2: "",
       },
       TOTAL: {
-        text: "Стоимость до: г. Москва (ТК «Южные ворота»): ",
+        text: "Стоимость до: г. Москва «Южные ворота»: ",
         value: "",
-        unit: "₽ ",
+        unit: "$ =",
         value2: "",
-        unit2: "$",
+        unit2: "₽",
       },
       TOTALTK: {
         text: "",
@@ -115,7 +115,7 @@ class PdfPrepare {
         unit2: "$",
       },
       Sum: {
-        text: "Стоимость до: г. Москва (ТК «Южные ворота»): ",
+        text: "Стоимость до: г. Москва «Южные ворота»: ",
         value: "",
         unit: "₽ ",
         value2: "",
@@ -431,11 +431,11 @@ class PdfPrepare {
     this.getOfferDataComponents.DeliveryType.value =
       state.calculatedData.selectedDirectionRus;
 
-    this.getOfferDataComponents.TOTAL.value = Math.round(
+    this.getOfferDataComponents.TOTAL.value =
+      state.calculatedData[direction].cargoCost.dollar;
+    this.getOfferDataComponents.TOTAL.value2 = Math.round(
       state.calculatedData[direction].cargoCost.ruble
     );
-    this.getOfferDataComponents.TOTAL.value2 =
-      state.calculatedData[direction].cargoCost.dollar;
 
     this.getOfferDataComponents.Sum.value = Math.round(
       state.calculatedData[direction].cargoCost.ruble
@@ -448,7 +448,7 @@ class PdfPrepare {
     );
     this.getOfferDataComponents.Kg.value2 =
       state.calculatedData[direction].pricePerKg.dollar;
-    this.getOfferDataComponents.Kg.unit2 = "$ (из Китая в МСК)";
+    this.getOfferDataComponents.Kg.unit2 = "$ (из Китая в Москву)";
 
     if (state.calculatedData[direction].insuranceCost.ruble === 0) {
       /* this.getOfferDataComponents.Insurance.text = "";
@@ -464,10 +464,26 @@ class PdfPrepare {
       );
       this.getOfferDataComponents.Insurance.value2 =
         state.calculatedData[direction].insuranceCost.dollar;
-      this.getOfferDataComponents.Insurance.unit2 = `$ (от ${
-        state.calculatedData.clientCost.dollar +
-        state.calculatedData[direction].shippingCost.dollar
-      }$)`;
+
+      const totalCost = Math.round(State.clientData.totalCost);
+      const currency = State.clientData.currency;
+      let currencySymbol;
+
+      // Определяем символ валюты
+      switch (currency) {
+        case "dollar":
+          currencySymbol = "$";
+          break;
+        case "yuan":
+          currencySymbol = "¥";
+          break;
+        case "ruble":
+          currencySymbol = "₽";
+          break;
+        default:
+          currencySymbol = ""; // Если валюта не распознана, оставляем пустым
+      }
+      this.getOfferDataComponents.Insurance.unit2 = `$ (от ${totalCost}${currencySymbol})`;
     }
     if (state.calculatedData[direction].packagingCost.ruble === 0) {
       this.getOfferDataComponents.PackageCost.value = "0";
@@ -507,8 +523,8 @@ class PdfPrepare {
       this.getOfferDataComponents.tkData.varyKg.text = `  (цена варьир.)`;
       this.getOfferDataComponents.tkData.varySum.text = `  (цена варьир.)`;
 
-      this.getOfferDataComponents.TOTALTK.unit = "₽ ";
-      this.getOfferDataComponents.TOTALTK.unit2 = "$";
+      this.getOfferDataComponents.TOTALTK.unit = "$ =";
+      this.getOfferDataComponents.TOTALTK.unit2 = "₽";
 
       this.getOfferDataComponents.tkData.sumTk.unit = "₽ ";
       this.getOfferDataComponents.tkData.sumTk.unit2 = "$";
@@ -519,10 +535,10 @@ class PdfPrepare {
       this.getOfferDataComponents.tkData.kgTk.unit = "₽ ";
 
       if (directionRussia === "jde") {
-        this.getOfferDataComponents.TOTALTK.value = Math.round(
+        this.getOfferDataComponents.TOTALTK.value = state.jde.all.dollar;
+        this.getOfferDataComponents.TOTALTK.value2 = Math.round(
           state.jde.all.ruble
         );
-        this.getOfferDataComponents.TOTALTK.value2 = state.jde.all.dollar;
 
         this.getOfferDataComponents.tkData.kgTk.value = Math.round(
           state.jde.kg.ruble

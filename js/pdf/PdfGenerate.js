@@ -51,7 +51,7 @@ class PdfGenerate {
       this.showOverlay(
         "Идёт детальный онлайн просчет коммерческого предложения <br> пожалуйста, подождите..."
       );
-      this.startCountdown(20);
+      this.startCountdown(5);
 
       // Вызываем метод подготовки и отправки
       try {
@@ -89,7 +89,7 @@ class PdfGenerate {
     this.overlayMessageCalc.innerHTML = message;
   }
 
-  startCountdown(seconds = 10) {
+  startCountdown(seconds = 5) {
     this.overlayCountdownCalc.textContent = seconds;
     this.countdownTimer = setInterval(() => {
       seconds--;
