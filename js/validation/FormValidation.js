@@ -269,7 +269,7 @@ export class FormValidation {
         ValidationMethods.validateNumber(
           this.fields,
           "totalVolume",
-          { required: true, maxDecimals: 4 },
+          { required: true, maxDecimals: 4, maxValue: 10000 },
           this
         )
       );
@@ -281,10 +281,14 @@ export class FormValidation {
       ValidationMethods.validateNumber(
         this.fields,
         "totalWeight",
-        { required: true, min: 5, maxDecimals: 2 },
+        { required: true, min: 5, maxDecimals: 2, maxValue: 10000 },
         this
       )
     );
+
+    // Добавляем новую проверку
+    validations.push(this.validateWeightToVolumeRatio());
+
     validations.push(
       ValidationMethods.validateNumber(
         this.fields,
@@ -328,6 +332,45 @@ export class FormValidation {
     return isValid;
   }
 
+  validateWeightToVolumeRatio() {
+    // Определяем, использовать ли поле totalVolume или totalVolumeCalculated
+    const weightVolumeChecked = this.fields.weightVolumeChange?.checked;
+    const volumeField = weightVolumeChecked
+      ? this.fields.totalVolume
+      : this.fields.totalVolumeCalculated;
+    const weightField = this.fields.totalWeight;
+
+    if (!volumeField || !weightField) return true;
+
+    const volumeValue = volumeField.value.trim();
+    const weightValue = weightField.value.trim();
+
+    if (volumeValue === "" || weightValue === "") return true;
+
+    const weight = parseFloat(weightValue);
+    const volume = parseFloat(volumeValue);
+
+    if (isNaN(weight) || isNaN(volume)) return true;
+
+    if (volume === 0) {
+      this.addError(weightField, "Нет данных по этим параметрам");
+      this.addError(volumeField, "Нет данных по этим параметрам");
+      return false;
+    }
+
+    const ratio = weight / volume;
+
+    if (ratio > 10000) {
+      this.addError(weightField, "Нет данных по этим параметрам");
+      this.addError(volumeField, "Нет данных по этим параметрам");
+      return false;
+    }
+
+    this.removeError(weightField);
+    this.removeError(volumeField);
+    return true;
+  }
+
   validateSingleField(fieldName) {
     switch (fieldName) {
       case "totalVolume":
@@ -335,7 +378,7 @@ export class FormValidation {
           ValidationMethods.validateNumber(
             this.fields,
             "totalVolume",
-            { required: true, maxDecimals: 4 },
+            { required: true, maxDecimals: 4, maxValue: 10000 },
             this
           );
         } else {
@@ -346,7 +389,7 @@ export class FormValidation {
         ValidationMethods.validateNumber(
           this.fields,
           "totalWeight",
-          { required: true, min: 5, maxDecimals: 2 },
+          { required: true, min: 5, maxDecimals: 2, maxValue: 10000 },
           this
         );
         break;
@@ -519,4 +562,3 @@ export class FormValidation {
 }
 
 export default FormValidation;
-

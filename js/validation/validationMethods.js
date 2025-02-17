@@ -7,7 +7,12 @@ export default class ValidationMethods {
     if (!field) return true;
 
     const value = field.value.trim();
-    const { required = false, min = null, maxDecimals = 2 } = options;
+    const {
+      required = false,
+      min = null,
+      maxDecimals = 2,
+      maxValue = 10000,
+    } = options;
 
     if (required && value === "") {
       formInstance.addError(field, "Заполните поле");
@@ -24,9 +29,15 @@ export default class ValidationMethods {
     }
 
     const numericValue = parseFloat(value);
-    if (!isNaN(numericValue) && min !== null && numericValue < min) {
-      formInstance.addError(field, `Значение должно быть не менее ${min}`);
-      return false;
+    if (!isNaN(numericValue)) {
+      if (min !== null && numericValue < min) {
+        formInstance.addError(field, `Значение должно быть не менее ${min}`);
+        return false;
+      }
+      if (numericValue > maxValue) {
+        formInstance.addError(field, "Нет данных по этим параметрам");
+        return false;
+      }
     }
 
     return true;

@@ -1611,6 +1611,10 @@ input[type="number"] {
   justify-content: space-between;
   padding: 10px 30px 10px 15px;
   cursor: pointer;
+  border-top: 1px solid #ffffff3b;
+}
+.calc-select__label:hover{
+  background-color: #f09023;
 }
 
 .calc-select__label > .tooltip {

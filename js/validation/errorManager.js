@@ -2,7 +2,7 @@
 export default class ErrorManager {
   static addError(field, message) {
     if (!field) return;
-    const parent = field.closest(".form-group") || field.parentElement;
+    const parent = field.closest(".group-input") || field.parentElement;
     const errorSpan = parent?.querySelector(".error-message");
     if (errorSpan) {
       errorSpan.textContent = message;
@@ -14,7 +14,7 @@ export default class ErrorManager {
   static removeError(fieldEl) {
     if (!fieldEl) return;
     fieldEl.classList.remove("error-input");
-    const parent = fieldEl.closest(".form-group") || fieldEl.parentElement;
+    const parent = fieldEl.closest(".group-input") || fieldEl.parentElement;
     const errorSpan = parent?.querySelector(".error-message");
     if (errorSpan) {
       errorSpan.textContent = "";
