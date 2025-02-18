@@ -21,10 +21,7 @@ export default class ValidationMethods {
 
     const regex = new RegExp(`^\\d+(\\.\\d{0,${maxDecimals}})?$`);
     if (value && !regex.test(value)) {
-      formInstance.addError(
-        field,
-        `Введите число с не более ${maxDecimals} знаками после точки`
-      );
+      formInstance.addError(field, `Заполните поле правильно`);
       return false;
     }
 

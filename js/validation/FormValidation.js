@@ -353,16 +353,16 @@ export class FormValidation {
     if (isNaN(weight) || isNaN(volume)) return true;
 
     if (volume === 0) {
-      this.addError(weightField, "Нет данных по этим параметрам");
-      this.addError(volumeField, "Нет данных по этим параметрам");
+      this.addError(weightField, "Объём не соответствует весу");
+      this.addError(volumeField, "Объём не соответствует весу");
       return false;
     }
 
     const ratio = weight / volume;
 
     if (ratio > 10000) {
-      this.addError(weightField, "Нет данных по этим параметрам");
-      this.addError(volumeField, "Нет данных по этим параметрам");
+      this.addError(weightField, "Объём не соответствует весу");
+      this.addError(volumeField, "Объём не соответствует весу");
       return false;
     }
 
